@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — facade Kimi + moteur Option A · BUILD 2026-08-06-C12 -->
+<!-- Studio Magot — facade Kimi + moteur Option A · BUILD 2026-08-06-C13 -->
 
 <html lang="fr">
 <head>
@@ -347,6 +347,13 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .mprog .mp-bar>span{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,#E0A33E,#F6CE7C);transition:width .2s ease}
 .mprog.indet .mp-bar>span{width:40%!important;animation:mpind 1.05s ease-in-out infinite}
 @keyframes mpind{0%{margin-left:-42%}100%{margin-left:104%}}
+.pgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin:4px 0 14px}
+.pcell{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:3/4;background:#0e1a30;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.pcell img{width:100%;height:100%;object-fit:cover;display:block}
+.pcell.off img{filter:grayscale(1) brightness(.5)}
+.pc-n{position:absolute;left:3px;top:3px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:rgba(224,163,62,.94);color:#1c1305;font:700 9px system-ui;display:grid;place-items:center}
+.pc-x{position:absolute;right:3px;top:3px;width:15px;height:15px;border-radius:50%;background:rgba(0,0,0,.6);color:#ff9a9a;font-size:9px;display:grid;place-items:center}
+.pg-div{grid-column:1/-1;font:700 10px system-ui;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding:8px 2px 2px;border-top:1px solid var(--line);margin-top:4px}
 </style>
 </head>
 <body>
@@ -355,7 +362,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C12</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C13</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7465,7 +7472,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   /* ---------- 4) Feuilles (sources / ambiance / export) ---------- */
   function openSheet(n){ var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
   function closeSheets(){ qa(".sheet-bg").forEach(function(e){ e.classList.remove("show"); }); if(typeof stopPreview==="function") stopPreview(); }
-  qa(".source[data-sheet]").forEach(function(b){ b.onclick=function(){ openSheet(b.getAttribute("data-sheet")); }; });
+  qa(".source[data-sheet]").forEach(function(b){ b.onclick=function(){ var n=b.getAttribute("data-sheet"); openSheet(n); if(n==="photos"&&typeof renderPGrid==="function"){ try{ renderPGrid(); }catch(e){} } }; });
   var oa=$("openAmbience"); if(oa) oa.onclick=function(){ openSheet("amb"); };
   var eb=$("expBtn"); if(eb) eb.onclick=function(){ openSheet("export"); };
   qa("[data-close]").forEach(function(b){ b.onclick=closeSheets; });
@@ -7606,19 +7613,68 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   /* import & lecture pilotés par addImport()/useTrack() -> pas de dépendance à l'événement change du moteur */
 
   
-/* ---------- 6) Photos : vrai #thumbs + ajouter ---------- */
+/* ---------- 6) Photos : grille pro (ordre de passage + \u00e9cart\u00e9es \u00e0 la fin) ---------- */
   var psBody=q('.sheet-bg[data-bg="photos"] .sh-body');
+  var _pIv=null;
+  function showPProg(on,label){ var p=$("pProg"); if(!p) return; p.style.display=on?"block":"none"; if(label!=null){ var l=p.querySelector(".mp-label"); if(l) l.innerHTML=label; } }
+  function setPPct(pct){ var p=$("pProg"); if(!p) return; var b=p.querySelector(".mp-bar>span"); if(!b) return; if(pct==null){ p.classList.add("indet"); } else { p.classList.remove("indet"); b.style.width=Math.round(pct*100)+"%"; } }
+  function photoURL(p){ if(p._durl!=null) return p._durl; try{ p._durl=(p.c||p.img).toDataURL("image/jpeg",0.62); }catch(e){ p._durl=""; } return p._durl; }
+  function passageOrder(){ var order=[],seen={}; if(typeof SEGS!=="undefined"&&SEGS&&SEGS.length){ SEGS.forEach(function(sg){ if(sg&&sg.img>=0&&!seen[sg.img]){ seen[sg.img]=1; order.push(sg.img); } }); } return order; }
+  function pcell(i,num,skip){ var p=PHOTOS[i]; var u=photoURL(p);
+    return '<div class="pcell'+(skip?" off":"")+'" data-i="'+i+'">'
+      +(u?'<img src="'+u+'" alt="">':'')
+      +(skip?'<span class="pc-x">\u2715</span>':'<span class="pc-n">'+num+'</span>')
+      +'</div>';
+  }
+  function renderPGrid(){
+    var g=$("pGrid"); if(!g) return;
+    if(!(typeof PHOTOS!=="undefined")||!PHOTOS||!PHOTOS.length){ g.innerHTML='<p class="sh-note" style="opacity:.7">Aucune photo. Appuie sur \u00ab Ajouter des photos \u00bb.</p>'; return; }
+    var order=passageOrder(), inSet={}, inc=[], exc=[];
+    order.forEach(function(i){ var p=PHOTOS[i]; if(p&&!(p.feat&&p.feat.skip)){ inc.push(i); inSet[i]=1; } });
+    PHOTOS.forEach(function(p,i){ if(p&&!(p.feat&&p.feat.skip)&&!inSet[i]){ inc.push(i); inSet[i]=1; } });
+    PHOTOS.forEach(function(p,i){ if(p&&p.feat&&p.feat.skip){ exc.push(i); } });
+    var html=""; inc.forEach(function(i,pos){ html+=pcell(i,pos+1,false); });
+    if(exc.length){ html+='<div class="pg-div">\u00c9cart\u00e9es \u00b7 '+exc.length+'</div>'; exc.forEach(function(i){ html+=pcell(i,0,true); }); }
+    g.innerHTML=html;
+    Array.prototype.forEach.call(g.querySelectorAll(".pcell"),function(el){
+      el.onclick=function(){ var i=+el.getAttribute("data-i"); var p=PHOTOS[i]; if(p&&typeof toggleSkip==="function"){ try{ toggleSkip(p,p._thumb); }catch(e){} renderPGrid(); } };
+    });
+  }
+  function watchPhotoImport(){
+    if(_pIv) return;
+    var startLen=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
+    var t0=Date.now(), lastLen=startLen, stableSince=Date.now(), started=false;
+    showPProg(true,"Import\u2026"); setPPct(null);
+    _pIv=setInterval(function(){
+      var st=$("state"); var msg=st?(st.innerHTML||""):"";
+      var m=msg.match(/(\d+)\s*\/\s*(\d+)/);
+      var ongoing=!!m || /ception|raitement/.test(msg);
+      if(ongoing){ started=true; if(m){ showPProg(true,"Import\u2026 "+m[1]+"/"+m[2]); setPPct(+m[2]?(+m[1]/+m[2]):null); } }
+      renderPGrid();
+      var len=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
+      if(len!==lastLen){ lastLen=len; stableSince=Date.now(); }
+      var done = started && !ongoing && len>startLen && Date.now()-stableSince>700;
+      var cancelled = !started && Date.now()-t0>8000;
+      var timeout = Date.now()-t0>90000;
+      if(done||cancelled||timeout){
+        clearInterval(_pIv); _pIv=null;
+        if(len>startLen){ showPProg(true,"Termin\u00e9."); setPPct(1); setTimeout(function(){ showPProg(false); },700); } else { showPProg(false); }
+        renderPGrid();
+      }
+    },200);
+  }
   if(psBody){
-    psBody.innerHTML="";
-    var pnote=document.createElement("p"); pnote.className="sh-note";
-    pnote.innerHTML="Ajoute tes photos, puis <b>tape une vignette</b> pour l'ecarter (grisee) ou la reinclure.";
-    var pbtn=document.createElement("button"); pbtn.className="doexp"; pbtn.style.margin="12px 0"; pbtn.textContent="\uFF0B Ajouter des photos";
-    pbtn.onclick=function(){ var p=$("pickPhotos"); if(p) p.click(); };
-    psBody.appendChild(pnote); psBody.appendChild(pbtn);
-    var th=$("thumbs"); if(th){ th.style.cssText="display:flex;flex-wrap:wrap;gap:6px"; psBody.appendChild(th); }
+    psBody.innerHTML=
+      '<p class="sh-note">Ordre de passage du montage. <b>Tape une photo</b> pour l\'\u00e9carter (elle passe \u00e0 la fin) ou la r\u00e9inclure.</p>'
+     +'<button class="doexp" id="pImport" style="margin:6px 0 10px">\uFF0B Ajouter des photos</button>'
+     +'<div id="pProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
+     +'<div id="pGrid" class="pgrid"></div>';
+    var pib=$("pImport"); if(pib) pib.onclick=function(){ watchPhotoImport(); var p=$("pickPhotos"); if(p) p.click(); };
+    renderPGrid();
   }
 
-  /* ---------- 7) Video : ajouter des clips ---------- */
+  
+/* ---------- 7) Video : ajouter des clips ---------- */
   var vsBody=q('.sheet-bg[data-bg="video"] .sh-body');
   if(vsBody){
     vsBody.innerHTML="";
