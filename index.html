@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — facade Kimi + moteur Option A · BUILD 2026-08-06-C11 -->
+<!-- Studio Magot — facade Kimi + moteur Option A · BUILD 2026-08-06-C12 -->
 
 <html lang="fr">
 <head>
@@ -324,20 +324,21 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .hero .play-main,.hero .hero-top,.hero .hero-copy{transition:opacity .28s ease}
 .hero.chrome-hidden .play-main,.hero.chrome-hidden .hero-top,.hero.chrome-hidden .hero-copy{opacity:0!important;pointer-events:none!important}
 .mlib{display:flex;flex-direction:column;gap:8px;margin:6px 0 12px}
-.mtrack{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:8px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);color:#eaf1fb;cursor:pointer}
+.mtrack{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent);color:#eaf1fb}
 .mtrack.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(224,163,62,.5);background:linear-gradient(180deg,rgba(224,163,62,.10),transparent)}
+.mt-main{flex:1;min-width:0;display:flex;align-items:center;gap:11px;background:none;border:0;color:inherit;text-align:left;cursor:pointer;padding:0}
 .mt-cov{position:relative;width:46px;height:46px;border-radius:9px;flex-shrink:0;overflow:hidden;display:grid;place-items:center;background:linear-gradient(158deg,#2a4c7f,#12274c);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .mt-cov img{width:100%;height:100%;object-fit:cover}
 .mt-ph{color:#cfe0ff;font-size:20px}
-.mt-covplay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.42);color:#fff;font-size:15px}
+.mt-covplay{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;background:rgba(0,0,0,.30)}
 .mt-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .mt-meta b{font-size:14px;color:#f2f6fc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mt-meta small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mtrack.on .mt-meta b{color:var(--gold2)}
-.mt-play,.mt-dl,.mt-act,.mt-load{width:30px;height:30px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;font-size:13px}
-.mt-play{color:var(--gold)}
-.mt-dl{color:#7fb0ff}
-.mt-act{color:var(--gold)}
+.mt-addbtn{flex-shrink:0;background:none;border:0;cursor:pointer;padding:2px;display:grid;place-items:center}
+.mt-add{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#7fb0ff;border:1.5px solid rgba(127,176,255,.55);font-size:17px;line-height:1}
+.mt-act{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#1c1305;background:var(--gold);font-size:15px}
+.mt-load{width:30px;height:30px;display:grid;place-items:center}
 .mt-load::after{content:"";width:16px;height:16px;border-radius:50%;border:2px solid rgba(224,163,62,.28);border-top-color:var(--gold);animation:mtspin .7s linear infinite}
 @keyframes mtspin{to{transform:rotate(360deg)}}
 .mprog{display:none;margin:2px 0 12px}
@@ -354,7 +355,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C11</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C12</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7463,7 +7464,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
 
   /* ---------- 4) Feuilles (sources / ambiance / export) ---------- */
   function openSheet(n){ var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
-  function closeSheets(){ qa(".sheet-bg").forEach(function(e){ e.classList.remove("show"); }); }
+  function closeSheets(){ qa(".sheet-bg").forEach(function(e){ e.classList.remove("show"); }); if(typeof stopPreview==="function") stopPreview(); }
   qa(".source[data-sheet]").forEach(function(b){ b.onclick=function(){ openSheet(b.getAttribute("data-sheet")); }; });
   var oa=$("openAmbience"); if(oa) oa.onclick=function(){ openSheet("amb"); };
   var eb=$("expBtn"); if(eb) eb.onclick=function(){ openSheet("export"); };
@@ -7486,19 +7487,39 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }catch(e){}
   }
   function coverHTML(t){ return t.cover ? '<img src="'+esc(t.cover)+'" alt="" onerror="this.remove()">' : '<span class="mt-ph">\u266A</span>'; }
+  function byId(id){ return LIB.filter(function(x){return x.id===id;})[0]; }
+  var PREV=null;
+  function stopPreview(){ if(PREV){ try{PREV.audio.pause();}catch(e){} if(PREV.revoke){ try{URL.revokeObjectURL(PREV.src);}catch(e){} } PREV=null; renderLib(); } }
+  function togglePreview(t){
+    if(PREV && PREV.id===t.id){ if(PREV.audio.paused){ PREV.audio.play().catch(function(){}); } else { PREV.audio.pause(); } renderLib(); return; }
+    stopPreview();
+    var revoke=false, src=t.url||(t.file?(revoke=true,URL.createObjectURL(t.file)):null); if(!src) return;
+    var a=new Audio(); a.src=src; a.preload="auto";
+    a.onended=function(){ renderLib(); }; a.onpause=function(){ renderLib(); }; a.onplay=function(){ renderLib(); };
+    PREV={ id:t.id, audio:a, revoke:revoke, src:src };
+    a.play().catch(function(){});
+    renderLib();
+  }
   function renderLib(){
     var lib=$("mLib"); if(!lib) return;
     if(!LIB.length){ lib.innerHTML='<p class="sh-note" style="opacity:.72">Aucune piste pour l\'instant. Importe une musique, ou d\u00e9pose tes pistes + <b>musics.json</b> dans le d\u00e9p\u00f4t.</p>'; return; }
     lib.innerHTML=LIB.map(function(t){
       var act=(t.id===LIB_ACTIVE);
-      var right=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act">\u25CF</span>':(t.remote?'<span class="mt-dl">\u2193</span>':'<span class="mt-play">\u25B6</span>'));
-      return '<button class="mtrack'+(act?' on':'')+'" data-id="'+t.id+'">'
-        +'<span class="mt-cov">'+coverHTML(t)+(act?'<span class="mt-covplay">\u25B6</span>':'')+'</span>'
-        +'<span class="mt-meta"><b>'+esc(t.title)+'</b><small>'+esc(trackMeta(t))+'</small></span>'
-        +right+'</button>';
+      var playing=(PREV && PREV.id===t.id && PREV.audio && !PREV.audio.paused);
+      var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Utilis\u00e9e">\u2713</span>':'<span class="mt-add" title="Ajouter au montage">\uFF0B</span>');
+      return '<div class="mtrack'+(act?' on':'')+'" data-id="'+t.id+'">'
+        +'<button class="mt-main" data-id="'+t.id+'">'
+          +'<span class="mt-cov">'+coverHTML(t)+'<span class="mt-covplay">'+(playing?'\u23F8':'\u25B6')+'</span></span>'
+          +'<span class="mt-meta"><b>'+esc(t.title)+'</b><small>'+esc(trackMeta(t))+'</small></span>'
+        +'</button>'
+        +'<button class="mt-addbtn" data-id="'+t.id+'">'+addBtn+'</button>'
+      +'</div>';
     }).join("");
-    Array.prototype.forEach.call(lib.querySelectorAll(".mtrack"),function(b){
-      b.onclick=function(){ var id=b.getAttribute("data-id"); var t=LIB.filter(function(x){return x.id===id;})[0]; if(t) useTrack(t); };
+    Array.prototype.forEach.call(lib.querySelectorAll(".mt-main"),function(b){
+      b.onclick=function(){ var t=byId(b.getAttribute("data-id")); if(t) togglePreview(t); };
+    });
+    Array.prototype.forEach.call(lib.querySelectorAll(".mt-addbtn"),function(b){
+      b.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); var t=byId(b.getAttribute("data-id")); if(t) useTrack(t); };
     });
   }
   function showProg(on,label){ var p=$("mProg"); if(!p) return; p.style.display=on?"block":"none"; if(label!=null){ var l=p.querySelector(".mp-label"); if(l) l.innerHTML=label; } }
@@ -7536,6 +7557,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   function useTrack(t){
     if(_mLoading) return;
+    stopPreview();
     LIB_ACTIVE=t.id; t.loading=true; renderLib();
     if(t.file){ startLoad(t,t.file); }
     else if(t.url){ downloadThenLoad(t); }
