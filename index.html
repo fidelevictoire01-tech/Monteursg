@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — D2 (point de depart musique) · BUILD 2026-08-06-C24 -->
+<!-- Studio Magot — duree affichee = montage reel · BUILD 2026-08-06-C26 -->
 
 <html lang="fr">
 <head>
@@ -395,7 +395,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C24</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C26</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -449,11 +449,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       </article>
       <article class="source" data-sheet="photos">
         <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-        <div class="tx"><h4>Photos</h4><p>16 · 2 écartées</p></div><span class="chev">›</span>
+        <div class="tx"><h4>Photos</h4><p id="srcPho">—</p></div><span class="chev">›</span>
       </article>
       <article class="source" data-sheet="video">
         <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l2-6h12l2 6H4zm0 0v8h16v-8"/><path d="M8 4l-2 6M16 4l2 6"/></svg></div>
-        <div class="tx"><h4>Vidéo</h4><p>2 clips</p></div><span class="chev">›</span>
+        <div class="tx"><h4>Vidéo</h4><p id="srcVid">—</p></div><span class="chev">›</span>
       </article>
     </div>
   </section>
@@ -7503,9 +7503,10 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
 
   /* ---------- 3b) Contrôles vidéo qui s'auto-masquent (comme un lecteur) ---------- */
   var _chromeT=null, _wasPlaying=false;
-  function armHide(){ clearTimeout(_chromeT); if((typeof playing!=="undefined")&&playing){ _chromeT=setTimeout(function(){ if((typeof playing!=="undefined")&&playing&&hero) hero.classList.add("chrome-hidden"); },2600); } }
+  function armHide(){ clearTimeout(_chromeT); _chromeT=setTimeout(function(){ if(hero) hero.classList.add("chrome-hidden"); },2600); }
   function showChrome(){ if(hero) hero.classList.remove("chrome-hidden"); armHide(); }
   function forceChrome(){ clearTimeout(_chromeT); if(hero) hero.classList.remove("chrome-hidden"); }
+  if(hero) hero.classList.add("chrome-hidden");
   if(hero){
     hero.addEventListener("click",function(e){
       if(e.target && e.target.closest && e.target.closest(".play-main,.hero-top,.hero-copy")) return;
@@ -7738,6 +7739,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     order.forEach(function(i){ var p=PHOTOS[i]; if(p&&!(p.feat&&p.feat.skip)){ inc.push(i); inSet[i]=1; } });
     PHOTOS.forEach(function(p,i){ if(p&&!(p.feat&&p.feat.skip)&&!inSet[i]){ inc.push(i); inSet[i]=1; } });
     PHOTOS.forEach(function(p,i){ if(p&&p.feat&&p.feat.skip){ exc.push(i); } });
+    var _sp=$("srcPho"); if(_sp){ var _tot=inc.length+exc.length; _sp.textContent=_tot?(_tot+(exc.length?(" \u00b7 "+exc.length+" \u00e9cart\u00e9e"+(exc.length>1?"s":"")):"")):"\u2014"; }
     var html=""; inc.forEach(function(i,pos){ html+=pcell(i,pos+1,false); });
     if(exc.length){ html+='<div class="pg-div">\u00c9cart\u00e9es \u00b7 '+exc.length+'</div>'; exc.forEach(function(i){ html+=pcell(i,0,true); }); }
     g.innerHTML=html;
@@ -7787,6 +7789,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function renderVClips(){
     var g=$("vClips"); if(!g) return;
     var all=(typeof CLIPS!=="undefined"&&CLIPS)?CLIPS:[];
+    var _sv=$("srcVid"); if(_sv){ _sv.textContent=all.length?(all.length+" clip"+(all.length>1?"s":"")):"\u2014"; }
     if(!all.length){ g.innerHTML='<p class="sh-note" style="opacity:.72">Aucun clip. Appuie sur \u00ab Ajouter des clips \u00bb.</p>'; return; }
     var mo=vMorceaux();
     g.innerHTML=all.map(function(c,ci){
@@ -7905,7 +7908,8 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       if(typeof A==="undefined"||!A||!A.dur||typeof audioEl==="undefined"||!audioEl) return;
       var r=trk.getBoundingClientRect();
       var f=Math.max(0,Math.min(1,(x-r.left)/(r.width||1)));
-      try{ audioEl.currentTime=f*A.dur; }catch(e){}
+      var _mst=(window.MSTART_EFF||0), _mEnd=(window.MONTAGE_DUR||A.dur||0), _mlen=Math.max(0.1,_mEnd-_mst);
+      try{ audioEl.currentTime=_mst+f*_mlen; }catch(e){}
       var fl=q(".hero .trk span"); if(fl) fl.style.width=(f*100)+"%";
     }
     var down=false;
@@ -8063,12 +8067,14 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var np=(typeof SEGS!=="undefined"&&SEGS)?SEGS.length:0;
       if(hasA){
         var cur=(typeof audioEl!=="undefined"&&audioEl?audioEl.currentTime:0)||0;
-        var dur=A.dur||0;
-        var frac=dur?Math.min(1,cur/dur):0;
+        var _mst=(window.MSTART_EFF||0), _mEnd=(window.MONTAGE_DUR||A.dur||0), _mlen=Math.max(0.1,_mEnd-_mst);
+        var _mcur=Math.max(0,Math.min(_mlen,cur-_mst));
+        var dur=_mlen;
+        var frac=_mlen?Math.min(1,_mcur/_mlen):0;
         var fill=q(".hero .trk span"); if(fill) fill.style.width=(frac*100).toFixed(1)+"%";
         var ts=qa(".hero .progress-row > span");
-        if(ts[0]) ts[0].textContent=mmss(cur);
-        if(ts[1]) ts[1].textContent=dur?mmss(dur):"\u2014";
+        if(ts[0]) ts[0].textContent=mmss(_mcur);
+        if(ts[1]) ts[1].textContent=mmss(_mlen);
         var bpm=Math.round(A.bpmFelt||A.bpm||0);
         if(infos[1]){ var b1=infos[1].querySelector("b"); if(b1) b1.textContent=bpm?(bpm+" BPM"):"\u2014"; }
         if(infos[2]){ var b2=infos[2].querySelector("b"); if(b2) b2.textContent=np?(np+" plans"):"\u2014"; }
