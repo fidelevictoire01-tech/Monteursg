@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Phase3 (reordonner photos, glisser) · BUILD 2026-08-06-C20 -->
+<!-- Studio Magot — Phase3 glisser fluide · BUILD 2026-08-06-C21 -->
 
 <html lang="fr">
 <head>
@@ -372,7 +372,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .vchip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:46px;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:#cdd8e6;font:700 12px system-ui;cursor:pointer}
 .vchip small{font:600 9.5px ui-monospace,monospace;color:var(--muted)}
 .vchip.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,rgba(224,163,62,.14),transparent)}
-.pcell.dragging{opacity:.8;transform:scale(1.07);box-shadow:0 8px 20px rgba(0,0,0,.55);z-index:5}
+.pcell.ph{opacity:.3;filter:grayscale(.4)}
 </style>
 </head>
 <body>
@@ -381,7 +381,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C20</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C21</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7659,25 +7659,39 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function tapExclude(el){ var i=+el.getAttribute("data-i"); var p=PHOTOS[i]; if(p&&typeof toggleSkip==="function"){ try{ toggleSkip(p,p._thumb); }catch(e){} renderPGrid(); } }
   function bindPCell(el){
     if(el.classList.contains("off")){ el.onclick=function(){ tapExclude(el); }; return; }
-    var sx=0,sy=0,moved=false,active=false;
+    var sx=0,sy=0,moved=false,active=false,clone=null,curTarget=null;
     el.style.touchAction="none";
-    el.onpointerdown=function(e){ sx=e.clientX; sy=e.clientY; moved=false; active=true; try{ el.setPointerCapture(e.pointerId); }catch(x){} };
+    el.onpointerdown=function(e){ active=true; moved=false; sx=e.clientX; sy=e.clientY; curTarget=null; try{ el.setPointerCapture(e.pointerId); }catch(x){} };
     el.onpointermove=function(e){
       if(!active) return;
-      if(!moved && (Math.abs(e.clientX-sx)>8||Math.abs(e.clientY-sy)>8)){ moved=true; el.classList.add("dragging"); }
-      if(moved){
+      if(!moved){
+        if(Math.abs(e.clientX-sx)<8 && Math.abs(e.clientY-sy)<8) return;
+        moved=true;
+        var r=el.getBoundingClientRect();
+        clone=el.cloneNode(true);
+        clone.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;margin:0;pointer-events:none;z-index:9999;border-radius:7px;overflow:hidden;box-shadow:0 12px 26px rgba(0,0,0,.6);will-change:transform";
+        try{ document.body.appendChild(clone); }catch(x){}
+        el.classList.add("ph");
+      }
+      if(moved && clone){
+        clone.style.transform="translate("+(e.clientX-sx)+"px,"+(e.clientY-sy)+"px) scale(1.05)";
         el.style.pointerEvents="none";
         var t=document.elementFromPoint(e.clientX,e.clientY);
         el.style.pointerEvents="";
         var cell=t&&t.closest?t.closest(".pcell"):null;
-        if(cell&&cell!==el&&!cell.classList.contains("off")&&cell.parentNode===el.parentNode){
-          var r=cell.getBoundingClientRect();
-          var before=(e.clientX < r.left+r.width/2);
+        if(cell&&cell!==el&&cell!==curTarget&&!cell.classList.contains("off")&&cell.parentNode===el.parentNode){
+          curTarget=cell;
+          var r2=cell.getBoundingClientRect();
+          var before=(e.clientX < r2.left+r2.width/2);
           if(before) el.parentNode.insertBefore(el,cell); else el.parentNode.insertBefore(el,cell.nextSibling);
         }
       }
     };
-    function up(e){ if(!active) return; active=false; el.classList.remove("dragging"); try{ el.releasePointerCapture(e.pointerId); }catch(x){}
+    function up(e){
+      if(!active) return; active=false;
+      try{ el.releasePointerCapture(e.pointerId); }catch(x){}
+      el.classList.remove("ph"); el.style.pointerEvents="";
+      if(clone){ try{ clone.remove(); }catch(x){} clone=null; }
       if(moved) commitOrder(); else tapExclude(el);
     }
     el.onpointerup=up; el.onpointercancel=up;
