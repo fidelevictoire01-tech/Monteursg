@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Phase2 (bibliotheque video) · BUILD 2026-08-06-C16 -->
+<!-- Studio Magot — Phase2 + fix barre import · BUILD 2026-08-06-C17 -->
 
 <html lang="fr">
 <head>
@@ -380,7 +380,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C16</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C17</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7664,12 +7664,11 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     if(_pIv) return;
     var startLen=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
     var t0=Date.now(), lastLen=startLen, stableSince=Date.now(), started=false;
-    showPProg(true,"Import\u2026"); setPPct(null);
     _pIv=setInterval(function(){
       var st=$("state"); var msg=st?(st.innerHTML||""):"";
       var m=msg.match(/(\d+)\s*\/\s*(\d+)/);
       var ongoing=!!m || /ception|raitement/.test(msg);
-      if(ongoing){ started=true; if(m){ showPProg(true,"Import\u2026 "+m[1]+"/"+m[2]); setPPct(+m[2]?(+m[1]/+m[2]):null); } }
+      if(ongoing){ if(!started){ started=true; showPProg(true,"Import\u2026"); setPPct(null); } if(m){ showPProg(true,"Import\u2026 "+m[1]+"/"+m[2]); setPPct(+m[2]?(+m[1]/+m[2]):null); } }
       renderPGrid();
       var len=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
       if(len!==lastLen){ lastLen=len; stableSince=Date.now(); }
@@ -7743,13 +7742,12 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function watchVideoImport(){
     if(_vIv) return;
     var start=vClipsReady().length; var t0=Date.now(), stableSince=Date.now(), last=start, started=false;
-    showVProg(true,"Pr\u00e9paration des clips\u2026"); setVPct(null);
     _vIv=setInterval(function(){
       var st=$("state"); var msg=st?(st.innerHTML||""):"";
-      if(/clip|Clip|pr\u00eat|Pr\u00e9paration|ception/.test(msg)) started=true;
+      if(/clip|Clip|pr\u00eat|Pr\u00e9paration|ception/.test(msg)){ if(!started){ started=true; showVProg(true,"Pr\u00e9paration des clips\u2026"); setVPct(null); } }
       renderVideoSheet();
       var now=vClipsReady().length;
-      if(now!==last){ last=now; stableSince=Date.now(); started=true; }
+      if(now!==last){ last=now; stableSince=Date.now(); if(!started){ started=true; showVProg(true,"Pr\u00e9paration des clips\u2026"); setVPct(null); } }
       var done = started && now>start && Date.now()-stableSince>700;
       var cancelled = !started && Date.now()-t0>8000;
       if(done||cancelled||Date.now()-t0>90000){
