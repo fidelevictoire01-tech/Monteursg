@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — facade Kimi + moteur Option A + Phase1 (video/16:9) · BUILD 2026-08-06-C14 -->
+<!-- Studio Magot — moteur Option A + Phase1 + plans video x2 · BUILD 2026-08-06-C15 -->
 
 <html lang="fr">
 <head>
@@ -362,7 +362,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C14</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C15</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -872,6 +872,8 @@ function buildPartition(){
       for(var _s3=0;_s3<SEGS.length;_s3++){ if(SEGS[_s3].video){ var _ci=_rc[_n%_rc.length]; SEGS[_s3].vclip=_ci; (_byClip[_ci]=_byClip[_ci]||[]).push(_s3); _n++; } }
       for(var _ck in _byClip){ var _arr=_byClip[_ck], _d=CLIPS[_ck].dur||1; for(var _j=0;_j<_arr.length;_j++){ SEGS[_arr[_j]].vstart=Math.max(0,Math.min(_d-0.35,_d*(_j+0.5)/_arr.length)); } }
     }
+    /* plans video ~2 photos : chaque plan video absorbe le suivant */
+    for(var _mv=SEGS.length-2; _mv>=0; _mv--){ if(SEGS[_mv].video && SEGS[_mv+1] && !SEGS[_mv+1].video){ SEGS[_mv].end=SEGS[_mv+1].end; SEGS.splice(_mv+1,1); } }
   }
 }
 
@@ -7254,7 +7256,7 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
   files.forEach(function(fl){
     if(CLIPS.length>=5) return;                       /* limite iOS : peu de décodeurs simultanés */
     var v=document.createElement("video"); v.muted=true; v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
-    v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1"; /* iOS: taille de decodage reelle, cachee derriere l'app */
+    v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1";
     var u=URL.createObjectURL(fl); v.src=u; v._u=u;
     var clip={el:v, dur:0, ready:false}; CLIPS.push(clip); document.body.appendChild(v); v.load();
     v.onloadedmetadata=function(){ clip.dur=v.duration||0; clip.ready=(clip.dur>0.5); clipVidReady=CLIPS.some(function(c){return c.ready;}); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); paintStrip(playing?visualTime():0); } var _nr=CLIPS.filter(function(c){return c.ready;}).length; setState(_nr+" clip(s) vidéo — intercalés dans le montage (muet)."); };
