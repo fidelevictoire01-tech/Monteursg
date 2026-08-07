@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — D1 (duree auto + anti-boucle + fondu) · BUILD 2026-08-06-C22 -->
+<!-- Studio Magot — D1 + drag robuste · BUILD 2026-08-06-C23 -->
 
 <html lang="fr">
 <head>
@@ -383,7 +383,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C22</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C23</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -829,17 +829,12 @@ function buildPartition(){
   if(glReady && TR.ready){ trCompileAll(); atmCompileAll(); }
   trReset(); atmReset();
   var M=MOODS[MOOD], beats=A.beats, str=A.strength||[], dur=A.dur;
-  /* D1 : duree = nb photos incluses x cadence du mode (fini la boucle) ; musique trop courte -> on comprime dans la limite du mode */
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=dur, _nP=0;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)) _nP++; }
-  if(_nP>0){
-    var want=_nP*M.tgtSec;
+  if(_nP>0){ var want=_nP*M.tgtSec;
     if(want<=dur){ bdur=want; window.DUR_FIT=1; }
-    else { var per=dur/_nP;
-      if(per>=M.minSec){ etgt=per; emin=Math.max(0.5,per*0.78); emax=per*1.35; bdur=dur; window.DUR_FIT=1; }
-      else { etgt=M.minSec; emin=M.minSec; emax=M.minSec*1.35; bdur=dur; window.DUR_FIT=0; } }
-    window.DUR_NP=_nP;
-  }
+    else { var per=dur/_nP; if(per>=M.minSec){ etgt=per; emin=Math.max(0.5,per*0.78); emax=per*1.35; bdur=dur; window.DUR_FIT=1; } else { etgt=M.minSec; emin=M.minSec; emax=M.minSec*1.35; bdur=dur; window.DUR_FIT=0; } }
+    window.DUR_NP=_nP; }
   bdur=Math.max(1,Math.min(bdur,dur)); window.MONTAGE_DUR=bdur;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
      -> chaque coupe tombe sur un accent réel ; jamais de seconde arbitraire. */
@@ -7662,6 +7657,8 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       +(skip?'<span class="pc-x">\u2715</span>':'<span class="pc-n">'+num+'</span>')
       +'</div>';
   }
+  var _drag=null;
+  function purgeClones(){ try{ Array.prototype.forEach.call(document.querySelectorAll(".pg-clone"),function(c){ try{ c.remove(); }catch(x){} }); }catch(e){} }
   function commitOrder(){
     var g=$("pGrid"); if(!g) return;
     var inc=[]; Array.prototype.forEach.call(g.querySelectorAll(".pcell:not(.off)"),function(c){ inc.push(+c.getAttribute("data-i")); });
@@ -7671,47 +7668,57 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     renderPGrid();
   }
   function tapExclude(el){ var i=+el.getAttribute("data-i"); var p=PHOTOS[i]; if(p&&typeof toggleSkip==="function"){ try{ toggleSkip(p,p._thumb); }catch(e){} renderPGrid(); } }
+  function pgMove(e){
+    var d=_drag; if(!d) return;
+    if(!d.on){
+      if(Math.abs(e.clientX-d.sx)<8 && Math.abs(e.clientY-d.sy)<8) return;
+      d.on=true;
+      var r=d.el.getBoundingClientRect();
+      var c=d.el.cloneNode(true); c.className="pg-clone";
+      c.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;margin:0;pointer-events:none;z-index:99999;border-radius:7px;overflow:hidden;box-shadow:0 12px 26px rgba(0,0,0,.6);will-change:transform";
+      d.clone=c; try{ document.body.appendChild(c); }catch(x){}
+      d.el.classList.add("ph");
+    }
+    if(d.on && d.clone){
+      d.clone.style.transform="translate("+(e.clientX-d.sx)+"px,"+(e.clientY-d.sy)+"px) scale(1.05)";
+      d.el.style.pointerEvents="none";
+      var t=document.elementFromPoint(e.clientX,e.clientY);
+      d.el.style.pointerEvents="";
+      var cell=t&&t.closest?t.closest(".pcell"):null;
+      if(cell&&cell!==d.el&&cell!==d.curTarget&&!cell.classList.contains("off")&&cell.parentNode===d.el.parentNode){
+        d.curTarget=cell;
+        var r2=cell.getBoundingClientRect();
+        var before=(e.clientX < r2.left+r2.width/2);
+        if(before) d.el.parentNode.insertBefore(d.el,cell); else d.el.parentNode.insertBefore(d.el,cell.nextSibling);
+      }
+      if(e.cancelable) e.preventDefault();
+    }
+  }
+  function pgUp(e){
+    var d=_drag; if(!d) return; _drag=null;
+    document.removeEventListener("pointermove",pgMove,true);
+    document.removeEventListener("pointerup",pgUp,true);
+    document.removeEventListener("pointercancel",pgUp,true);
+    purgeClones();
+    if(d.el){ d.el.classList.remove("ph"); d.el.style.pointerEvents=""; }
+    if(d.on) commitOrder(); else if(d.el) tapExclude(d.el);
+  }
   function bindPCell(el){
     if(el.classList.contains("off")){ el.onclick=function(){ tapExclude(el); }; return; }
-    var sx=0,sy=0,moved=false,active=false,clone=null,curTarget=null;
     el.style.touchAction="none";
-    el.onpointerdown=function(e){ active=true; moved=false; sx=e.clientX; sy=e.clientY; curTarget=null; try{ el.setPointerCapture(e.pointerId); }catch(x){} };
-    el.onpointermove=function(e){
-      if(!active) return;
-      if(!moved){
-        if(Math.abs(e.clientX-sx)<8 && Math.abs(e.clientY-sy)<8) return;
-        moved=true;
-        var r=el.getBoundingClientRect();
-        clone=el.cloneNode(true);
-        clone.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;margin:0;pointer-events:none;z-index:9999;border-radius:7px;overflow:hidden;box-shadow:0 12px 26px rgba(0,0,0,.6);will-change:transform";
-        try{ document.body.appendChild(clone); }catch(x){}
-        el.classList.add("ph");
-      }
-      if(moved && clone){
-        clone.style.transform="translate("+(e.clientX-sx)+"px,"+(e.clientY-sy)+"px) scale(1.05)";
-        el.style.pointerEvents="none";
-        var t=document.elementFromPoint(e.clientX,e.clientY);
-        el.style.pointerEvents="";
-        var cell=t&&t.closest?t.closest(".pcell"):null;
-        if(cell&&cell!==el&&cell!==curTarget&&!cell.classList.contains("off")&&cell.parentNode===el.parentNode){
-          curTarget=cell;
-          var r2=cell.getBoundingClientRect();
-          var before=(e.clientX < r2.left+r2.width/2);
-          if(before) el.parentNode.insertBefore(el,cell); else el.parentNode.insertBefore(el,cell.nextSibling);
-        }
-      }
+    el.onpointerdown=function(e){
+      if(_drag) pgUp(e);
+      purgeClones();
+      _drag={ el:el, id:+el.getAttribute("data-i"), sx:e.clientX, sy:e.clientY, on:false, clone:null, curTarget:null };
+      document.addEventListener("pointermove",pgMove,true);
+      document.addEventListener("pointerup",pgUp,true);
+      document.addEventListener("pointercancel",pgUp,true);
     };
-    function up(e){
-      if(!active) return; active=false;
-      try{ el.releasePointerCapture(e.pointerId); }catch(x){}
-      el.classList.remove("ph"); el.style.pointerEvents="";
-      if(clone){ try{ clone.remove(); }catch(x){} clone=null; }
-      if(moved) commitOrder(); else tapExclude(el);
-    }
-    el.onpointerup=up; el.onpointercancel=up;
   }
   function renderPGrid(){
     var g=$("pGrid"); if(!g) return;
+    if(_drag && _drag.on) return;
+    purgeClones();
     if(!(typeof PHOTOS!=="undefined")||!PHOTOS||!PHOTOS.length){ g.innerHTML='<p class="sh-note" style="opacity:.7">Aucune photo. Appuie sur \u00ab Ajouter des photos \u00bb.</p>'; return; }
     var order=passageOrder(), inSet={}, inc=[], exc=[];
     order.forEach(function(i){ var p=PHOTOS[i]; if(p&&!(p.feat&&p.feat.skip)){ inc.push(i); inSet[i]=1; } });
@@ -7733,8 +7740,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var len=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
       if(len>startLen && !started){ started=true; showPProg(true,"Import\u2026"); setPPct(null); }
       if(ongoing){ if(!started){ started=true; showPProg(true,"Import\u2026"); setPPct(null); } if(m){ showPProg(true,"Import\u2026 "+m[1]+"/"+m[2]); setPPct(+m[2]?(+m[1]/+m[2]):null); } }
-      renderPGrid();
-      if(len!==lastLen){ lastLen=len; stableSince=Date.now(); }
+      if(len!==lastLen){ lastLen=len; stableSince=Date.now(); if(!(_drag&&_drag.on)) renderPGrid(); }
       var done = started && !ongoing && len>startLen && Date.now()-stableSince>700;
       var cancelled = !started && Date.now()-t0>12000;
       var timeout = Date.now()-t0>120000;
