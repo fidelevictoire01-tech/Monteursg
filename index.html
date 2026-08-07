@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Phase2 + fix barre import · BUILD 2026-08-06-C17 -->
+<!-- Studio Magot — refresh import live · BUILD 2026-08-06-C18 -->
 
 <html lang="fr">
 <head>
@@ -380,7 +380,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C17</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C18</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7668,13 +7668,14 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var st=$("state"); var msg=st?(st.innerHTML||""):"";
       var m=msg.match(/(\d+)\s*\/\s*(\d+)/);
       var ongoing=!!m || /ception|raitement/.test(msg);
+      var len=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
+      if(len>startLen && !started){ started=true; showPProg(true,"Import\u2026"); setPPct(null); }
       if(ongoing){ if(!started){ started=true; showPProg(true,"Import\u2026"); setPPct(null); } if(m){ showPProg(true,"Import\u2026 "+m[1]+"/"+m[2]); setPPct(+m[2]?(+m[1]/+m[2]):null); } }
       renderPGrid();
-      var len=(typeof PHOTOS!=="undefined"&&PHOTOS)?PHOTOS.length:0;
       if(len!==lastLen){ lastLen=len; stableSince=Date.now(); }
       var done = started && !ongoing && len>startLen && Date.now()-stableSince>700;
-      var cancelled = !started && Date.now()-t0>8000;
-      var timeout = Date.now()-t0>90000;
+      var cancelled = !started && Date.now()-t0>12000;
+      var timeout = Date.now()-t0>120000;
       if(done||cancelled||timeout){
         clearInterval(_pIv); _pIv=null;
         if(len>startLen){ showPProg(true,"Termin\u00e9."); setPPct(1); setTimeout(function(){ showPProg(false); },700); } else { showPProg(false); }
@@ -7749,8 +7750,8 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var now=vClipsReady().length;
       if(now!==last){ last=now; stableSince=Date.now(); if(!started){ started=true; showVProg(true,"Pr\u00e9paration des clips\u2026"); setVPct(null); } }
       var done = started && now>start && Date.now()-stableSince>700;
-      var cancelled = !started && Date.now()-t0>8000;
-      if(done||cancelled||Date.now()-t0>90000){
+      var cancelled = !started && Date.now()-t0>12000;
+      if(done||cancelled||Date.now()-t0>120000){
         clearInterval(_vIv); _vIv=null;
         if(now>start){ showVProg(true,"Termin\u00e9."); setVPct(1); setTimeout(function(){ showVProg(false); },700); } else { showVProg(false); }
         renderVideoSheet();
