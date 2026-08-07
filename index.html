@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — refresh import video live · BUILD 2026-08-06-C19 -->
+<!-- Studio Magot — Phase3 (reordonner photos, glisser) · BUILD 2026-08-06-C20 -->
 
 <html lang="fr">
 <head>
@@ -372,6 +372,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .vchip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:46px;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:#cdd8e6;font:700 12px system-ui;cursor:pointer}
 .vchip small{font:600 9.5px ui-monospace,monospace;color:var(--muted)}
 .vchip.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,rgba(224,163,62,.14),transparent)}
+.pcell.dragging{opacity:.8;transform:scale(1.07);box-shadow:0 8px 20px rgba(0,0,0,.55);z-index:5}
 </style>
 </head>
 <body>
@@ -380,7 +381,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C19</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C20</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -800,6 +801,7 @@ function qualityScore(c){
   }catch(e){ return 0.5; }
 }
 function computePhotoOrder(){
+  if(window.USER_ORDER && window.USER_ORDER.length){ var _uo=[]; for(var _u2=0;_u2<window.USER_ORDER.length;_u2++){ var _pi2=window.USER_ORDER[_u2]; if(PHOTOS[_pi2] && !(PHOTOS[_pi2].feat&&PHOTOS[_pi2].feat.skip)) _uo.push(_pi2); } if(_uo.length) return _uo; }
   var N=PHOTOS.length, i; var order=[]; for(i=0;i<N;i++){ if(!(PHOTOS[i].feat&&PHOTOS[i].feat.skip)) order.push(i); }
   if(order.length===0){ for(i=0;i<N;i++) order.push(i); }   /* sécurité : ne jamais tout vider */
   if(order.length<=2) return order;
@@ -7646,6 +7648,40 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       +(skip?'<span class="pc-x">\u2715</span>':'<span class="pc-n">'+num+'</span>')
       +'</div>';
   }
+  function commitOrder(){
+    var g=$("pGrid"); if(!g) return;
+    var inc=[]; Array.prototype.forEach.call(g.querySelectorAll(".pcell:not(.off)"),function(c){ inc.push(+c.getAttribute("data-i")); });
+    var full=inc.slice(); if(typeof PHOTOS!=="undefined"&&PHOTOS){ PHOTOS.forEach(function(p,i){ if(p&&full.indexOf(i)<0) full.push(i); }); }
+    window.USER_ORDER=full;
+    try{ if(typeof buildPartition==="function"){ buildPartition(); if(typeof paintStrip==="function") paintStrip((typeof playing!=="undefined"&&playing&&typeof visualTime==="function")?visualTime():0); } }catch(e){}
+    renderPGrid();
+  }
+  function tapExclude(el){ var i=+el.getAttribute("data-i"); var p=PHOTOS[i]; if(p&&typeof toggleSkip==="function"){ try{ toggleSkip(p,p._thumb); }catch(e){} renderPGrid(); } }
+  function bindPCell(el){
+    if(el.classList.contains("off")){ el.onclick=function(){ tapExclude(el); }; return; }
+    var sx=0,sy=0,moved=false,active=false;
+    el.style.touchAction="none";
+    el.onpointerdown=function(e){ sx=e.clientX; sy=e.clientY; moved=false; active=true; try{ el.setPointerCapture(e.pointerId); }catch(x){} };
+    el.onpointermove=function(e){
+      if(!active) return;
+      if(!moved && (Math.abs(e.clientX-sx)>8||Math.abs(e.clientY-sy)>8)){ moved=true; el.classList.add("dragging"); }
+      if(moved){
+        el.style.pointerEvents="none";
+        var t=document.elementFromPoint(e.clientX,e.clientY);
+        el.style.pointerEvents="";
+        var cell=t&&t.closest?t.closest(".pcell"):null;
+        if(cell&&cell!==el&&!cell.classList.contains("off")&&cell.parentNode===el.parentNode){
+          var r=cell.getBoundingClientRect();
+          var before=(e.clientX < r.left+r.width/2);
+          if(before) el.parentNode.insertBefore(el,cell); else el.parentNode.insertBefore(el,cell.nextSibling);
+        }
+      }
+    };
+    function up(e){ if(!active) return; active=false; el.classList.remove("dragging"); try{ el.releasePointerCapture(e.pointerId); }catch(x){}
+      if(moved) commitOrder(); else tapExclude(el);
+    }
+    el.onpointerup=up; el.onpointercancel=up;
+  }
   function renderPGrid(){
     var g=$("pGrid"); if(!g) return;
     if(!(typeof PHOTOS!=="undefined")||!PHOTOS||!PHOTOS.length){ g.innerHTML='<p class="sh-note" style="opacity:.7">Aucune photo. Appuie sur \u00ab Ajouter des photos \u00bb.</p>'; return; }
@@ -7656,9 +7692,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var html=""; inc.forEach(function(i,pos){ html+=pcell(i,pos+1,false); });
     if(exc.length){ html+='<div class="pg-div">\u00c9cart\u00e9es \u00b7 '+exc.length+'</div>'; exc.forEach(function(i){ html+=pcell(i,0,true); }); }
     g.innerHTML=html;
-    Array.prototype.forEach.call(g.querySelectorAll(".pcell"),function(el){
-      el.onclick=function(){ var i=+el.getAttribute("data-i"); var p=PHOTOS[i]; if(p&&typeof toggleSkip==="function"){ try{ toggleSkip(p,p._thumb); }catch(e){} renderPGrid(); } };
-    });
+    Array.prototype.forEach.call(g.querySelectorAll(".pcell"),function(el){ bindPCell(el); });
   }
   function watchPhotoImport(){
     if(_pIv) return;
@@ -7678,6 +7712,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var timeout = Date.now()-t0>120000;
       if(done||cancelled||timeout){
         clearInterval(_pIv); _pIv=null;
+        if(window.USER_ORDER && typeof PHOTOS!=="undefined" && PHOTOS){ var _ch=false; PHOTOS.forEach(function(p,i){ if(window.USER_ORDER.indexOf(i)<0){ window.USER_ORDER.push(i); _ch=true; } }); if(_ch){ try{ if(typeof buildPartition==="function"){ buildPartition(); if(typeof paintStrip==="function") paintStrip(0); } }catch(e){} } }
         if(len>startLen){ showPProg(true,"Termin\u00e9."); setPPct(1); setTimeout(function(){ showPProg(false); },700); } else { showPProg(false); }
         renderPGrid();
       }
@@ -7685,7 +7720,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   if(psBody){
     psBody.innerHTML=
-      '<p class="sh-note">Ordre de passage du montage. <b>Tape une photo</b> pour l\'\u00e9carter (elle passe \u00e0 la fin) ou la r\u00e9inclure.</p>'
+      '<p class="sh-note">Ordre de passage. <b>Maintiens et glisse</b> une photo pour la d\u00e9placer ; <b>tape</b> pour l\'\u00e9carter (elle passe \u00e0 la fin).</p>'
      +'<button class="doexp" id="pImport" style="margin:6px 0 10px">\uFF0B Ajouter des photos</button>'
      +'<div id="pProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
      +'<div id="pGrid" class="pgrid"></div>';
