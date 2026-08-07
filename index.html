@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — facade Kimi + moteur Option A · BUILD 2026-08-06-C13 -->
+<!-- Studio Magot — facade Kimi + moteur Option A + Phase1 (video/16:9) · BUILD 2026-08-06-C14 -->
 
 <html lang="fr">
 <head>
@@ -362,7 +362,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C13</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C14</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -491,10 +491,10 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   <div class="sh-body">
     <p class="sh-note">Choisis le format, puis lance l'export. Par défaut : <b>9:16</b> (vertical).</p>
     <div class="efmts">
-      <button class="efmt on" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
+      <button class="efmt" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
       <button class="efmt" data-ef="f"><div class="ef-sh ef-v" style="width:14px"></div><div class="ef-tx"><b>4:5</b><span>Portrait · fil Instagram</span></div></button>
       <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span>Carré · fil Instagram</span></div></button>
-      <button class="efmt" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
+      <button class="efmt on" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
     </div>
     <button class="doexp" id="doExport"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Exporter en 9:16</button>
   </div>
@@ -7254,7 +7254,7 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
   files.forEach(function(fl){
     if(CLIPS.length>=5) return;                       /* limite iOS : peu de décodeurs simultanés */
     var v=document.createElement("video"); v.muted=true; v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
-    v.style.cssText="position:fixed;right:0;bottom:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1";
+    v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1"; /* iOS: taille de decodage reelle, cachee derriere l'app */
     var u=URL.createObjectURL(fl); v.src=u; v._u=u;
     var clip={el:v, dur:0, ready:false}; CLIPS.push(clip); document.body.appendChild(v); v.load();
     v.onloadedmetadata=function(){ clip.dur=v.duration||0; clip.ready=(clip.dur>0.5); clipVidReady=CLIPS.some(function(c){return c.ready;}); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); paintStrip(playing?visualTime():0); } var _nr=CLIPS.filter(function(c){return c.ready;}).length; setState(_nr+" clip(s) vidéo — intercalés dans le montage (muet)."); };
@@ -7757,6 +7757,15 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   });
   var doExp=$("doExport");
   if(doExp) doExp.onclick=function(){ closeSheets(); var xb=$("exportBtn"); if(xb) xb.click(); };
+
+  /* ---------- 11b) Format par defaut : 16:9 (YouTube) ---------- */
+  (function default169(){
+    try{
+      var hf=q('.fmt[data-n="16:9"]'); if(hf) hf.click();
+      qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
+      var eh=q('.efmt[data-ef="h"]'); if(eh) eh.classList.add("on");
+    }catch(e){}
+  })();
 
   /* ---------- 12) IA : recalcul reel du montage ---------- */
   var ia=$("iaBtn");
