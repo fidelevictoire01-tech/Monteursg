@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Phase3 glisser fluide · BUILD 2026-08-06-C21 -->
+<!-- Studio Magot — D1 (duree auto + anti-boucle + fondu) · BUILD 2026-08-06-C22 -->
 
 <html lang="fr">
 <head>
@@ -373,6 +373,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .vchip small{font:600 9.5px ui-monospace,monospace;color:var(--muted)}
 .vchip.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,rgba(224,163,62,.14),transparent)}
 .pcell.ph{opacity:.3;filter:grayscale(.4)}
+.hero{position:relative}
+#fadeOv{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:3;transition:opacity .08s linear;border-radius:inherit}
 </style>
 </head>
 <body>
@@ -381,7 +383,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C21</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C22</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -827,11 +829,23 @@ function buildPartition(){
   if(glReady && TR.ready){ trCompileAll(); atmCompileAll(); }
   trReset(); atmReset();
   var M=MOODS[MOOD], beats=A.beats, str=A.strength||[], dur=A.dur;
+  /* D1 : duree = nb photos incluses x cadence du mode (fini la boucle) ; musique trop courte -> on comprime dans la limite du mode */
+  var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=dur, _nP=0;
+  for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)) _nP++; }
+  if(_nP>0){
+    var want=_nP*M.tgtSec;
+    if(want<=dur){ bdur=want; window.DUR_FIT=1; }
+    else { var per=dur/_nP;
+      if(per>=M.minSec){ etgt=per; emin=Math.max(0.5,per*0.78); emax=per*1.35; bdur=dur; window.DUR_FIT=1; }
+      else { etgt=M.minSec; emin=M.minSec; emax=M.minSec*1.35; bdur=dur; window.DUR_FIT=0; } }
+    window.DUR_NP=_nP;
+  }
+  bdur=Math.max(1,Math.min(bdur,dur)); window.MONTAGE_DUR=bdur;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
      -> chaque coupe tombe sur un accent réel ; jamais de seconde arbitraire. */
-  var cuts=[], lastCut=0, bi=0, gi=0, span=(M.maxSec-M.minSec)||1;
+  var cuts=[], lastCut=0, bi=0, gi=0, span=(emax-emin)||1;
   while(gi++<20000){
-    var lo=lastCut+M.minSec, hi=lastCut+M.maxSec, tgt=lastCut+M.tgtSec;
+    var lo=lastCut+emin, hi=lastCut+emax, tgt=lastCut+etgt;
     while(bi<beats.length && beats[bi]<lo) bi++;
     if(bi>=beats.length) break;
     var eLoc=energyAt(lastCut);
@@ -846,13 +860,13 @@ function buildPartition(){
     }
     if(bestK<0) bestK=bi;                       /* fenêtre sans temps : le 1er après le plancher (reste un vrai temps) */
     var cut=snapKick(beats[bestK]);             /* on cale sur le VRAI coup de batterie, pas juste le tick */
-    if(cut>=dur-0.30) break;
+    if(cut>=bdur-0.30) break;
     cuts.push({t:cut, s:(str[bestK]||0)}); lastCut=cut; bi=bestK+1;
   }
-  while(cuts.length && (dur - cuts[cuts.length-1].t) < 0.5) cuts.pop();   /* pas de dernier plan trop court */
+  while(cuts.length && (bdur - cuts[cuts.length-1].t) < 0.5) cuts.pop();   /* pas de dernier plan trop court */
   var pts=[{t:0,s:0.6}].concat(cuts);           /* 1er plan : du début au 1er accent */
   for(var c=0;c<pts.length;c++){
-    var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:dur);
+    var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:bdur);
     if(end-start<0.4) continue;
     var strong=(pts[c].s>=M.accent) || energyAt(start)>0.55;
     SEGS.push({start:start,end:end,strong:strong,e:energyAt(start)});
@@ -892,7 +906,7 @@ function buildPartition(){
       for(var _s3=0;_s3<SEGS.length;_s3++){ if(SEGS[_s3].video){ var _ci=_rc[_n%_rc.length]; SEGS[_s3].vclip=_ci; (_byClip[_ci]=_byClip[_ci]||[]).push(_s3); _n++; } }
       for(var _ck in _byClip){ var _arr=_byClip[_ck], _d=CLIPS[_ck].dur||1; for(var _j=0;_j<_arr.length;_j++){ SEGS[_arr[_j]].vstart=Math.max(0,Math.min(_d-0.35,_d*(_j+0.5)/_arr.length)); } }
     }
-    /* plans video ~2 photos : chaque plan video absorbe le suivant */
+    /* plans video ~2 photos */
     for(var _mv=SEGS.length-2; _mv>=0; _mv--){ if(SEGS[_mv].video && SEGS[_mv+1] && !SEGS[_mv+1].video){ SEGS[_mv].end=SEGS[_mv+1].end; SEGS.splice(_mv+1,1); } }
   }
 }
@@ -7157,7 +7171,7 @@ function loop(){
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
-  /* Option A : la transition se RESOUT sur le temps -> joue sur [coupe-TRd, coupe] ; image suivante en place PILE sur le beat. */
+  /* Option A : la transition se RESOUT sur le temps */
   var next=(idx>=0 && idx+1<SEGS.length)?SEGS[idx+1]:null;
   var trName=next?next.trans:"none";
   var TRd=(next&&trName!=="cut"&&trName!=="none")?Math.min((next.trDur!=null?next.trDur:0.5),(sg?(sg.end-sg.start)*0.5:0)):0;
@@ -7323,7 +7337,7 @@ function renderMontageAt(t){
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
-  /* Option A : la transition se RESOUT sur le temps -> joue sur [coupe-TRd, coupe] ; image suivante en place PILE sur le beat. */
+  /* Option A : la transition se RESOUT sur le temps */
   var next=(idx>=0 && idx+1<SEGS.length)?SEGS[idx+1]:null;
   var trName=next?next.trans:"none";
   var TRd=(next&&trName!=="cut"&&trName!=="none")?Math.min((next.trDur!=null?next.trDur:0.5),(sg?(sg.end-sg.start)*0.5:0)):0;
@@ -7894,6 +7908,29 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   });
   var doExp=$("doExport");
   if(doExp) doExp.onclick=function(){ closeSheets(); var xb=$("exportBtn"); if(xb) xb.click(); };
+
+  /* ---------- 11a) D1 : fin du montage a la duree cible + fondu ---------- */
+  (function d1fade(){
+    var hero=q(".hero");
+    if(hero && !$("fadeOv")){ var ov=document.createElement("div"); ov.id="fadeOv"; hero.appendChild(ov); }
+    var FADE=1.2;
+    function fadeWatch(){
+      try{
+        var pl=(typeof playing!=="undefined")&&playing;
+        var a=(typeof audioEl!=="undefined")?audioEl:null;
+        var md=window.MONTAGE_DUR||0;
+        var ov=$("fadeOv");
+        if(pl && a && md>0.5){
+          var t=a.currentTime||0;
+          if(t < md-FADE){ if(ov && ov.style.opacity!=="0") ov.style.opacity="0"; if(a.volume<1) a.volume=1; }
+          else if(t < md){ var k=(md-t)/FADE; try{ a.volume=Math.max(0,Math.min(1,k)); }catch(e){} if(ov) ov.style.opacity=(1-k).toFixed(3); }
+          else { try{ if(typeof stopPlay==="function") stopPlay(); if(typeof resetBtn==="function") resetBtn(); a.volume=1; }catch(e){} }
+        }
+      }catch(e){}
+      requestAnimationFrame(fadeWatch);
+    }
+    requestAnimationFrame(fadeWatch);
+  })();
 
   /* ---------- 11b) Format par defaut : 16:9 (YouTube) ---------- */
   (function default169(){
