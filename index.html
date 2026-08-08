@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — style par photo en menu deroulant ancre (sans bouton global) · BUILD 2026-08-06-C40 -->
+<!-- Studio Magot — commentaire=plan 2x + ticker circule + signature sur bandeau · BUILD 2026-08-06-C41 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C40</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C41</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -900,11 +900,11 @@ function buildPartition(){
   var M=MOODS[MOOD], beats=A.beats, str=A.strength||[], dur=A.dur;
   var MST=Math.max(0,Math.min(window.MSTART||0, Math.max(0,dur-1)));
   var avail=Math.max(1,dur-MST);
-  var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0;
-  for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)) _nP++; }
-  if(_nP>0){ var want=_nP*M.tgtSec;
+  var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, _wP=0;
+  for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _cc=PHOTOS[_pp]._cap; _wP += (_cc && (""+_cc).trim() ? 2 : 1); } }
+  if(_wP>0){ var want=_wP*M.tgtSec;
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
-    else { var per=avail/_nP; if(per>=M.minSec){ etgt=per; emin=Math.max(0.5,per*0.78); emax=per*1.35; bdur=avail; window.DUR_FIT=1; } else { etgt=M.minSec; emin=M.minSec; emax=M.minSec*1.35; bdur=avail; window.DUR_FIT=0; } }
+    else { var per=avail/_wP; if(per>=M.minSec){ etgt=per; emin=Math.max(0.5,per*0.78); emax=per*1.35; bdur=avail; window.DUR_FIT=1; } else { etgt=M.minSec; emin=M.minSec; emax=M.minSec*1.35; bdur=avail; window.DUR_FIT=0; } }
     window.DUR_NP=_nP; }
   bdur=Math.max(1,Math.min(bdur,avail)); var wEnd=MST+bdur; window.MONTAGE_DUR=wEnd; window.MSTART_EFF=MST;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
@@ -1074,9 +1074,12 @@ function _mmtDraw(ctx,opt){
     ctx.fillText("MAGOT",brandW/2,yb+bh*0.65);
     ctx.save(); ctx.beginPath(); ctx.rect(brandW+8,yb,W-brandW-12,bh); ctx.clip();
     ctx.font="750 "+Math.round(fs*0.72)+"px system-ui,sans-serif"; ctx.textAlign="left"; ctx.fillStyle=WHITE;
-    var visW=W-brandW-16, tw=ctx.measureText(text).width;
-    if(tw<=visW*0.98){ ctx.fillText(text,brandW+16,yb+bh*0.66); }
-    else { var full=text+"    \u25c6    "; var fw=ctx.measureText(full).width; var travel=visW+fw; var off=_mmtClamp((time)/Math.max(0.2,duration),0,1)*travel; var x=(brandW+16+visW)-off; ctx.fillText(full,x,yb+bh*0.66); if(x+fw<W){ ctx.fillText(full,x+fw,yb+bh*0.66); } }
+    var visW=W-brandW-16;
+    var full=text+"      \u25c6      "; var fw=ctx.measureText(full).width;
+    var travel=visW+fw; var off=_mmtClamp(time/Math.max(0.2,duration),0,1)*travel;
+    var x=(brandW+16+visW)-off;
+    ctx.fillText(full,x,yb+bh*0.66);
+    if(x+fw<W) ctx.fillText(full,x+fw,yb+bh*0.66);
     ctx.restore(); ctx.restore(); return;
   }
   /* ---------- Mot par mot : révélation sur les TEMPS de la musique ---------- */
@@ -1201,7 +1204,6 @@ function drawSegAt(sg,t,ox,smul){
   bctx.save(); bctx.translate(cx+ox+dx, cy+dy);
   bctx.drawImage(img,-wf/2,-hf/2,wf,hf);
   bctx.restore();
-  bctx.save(); bctx.globalAlpha=0.30; bctx.font="700 "+Math.round(Hd*0.021)+"px system-ui,sans-serif"; bctx.textAlign="right"; bctx.textBaseline="alphabetic"; bctx.shadowColor="rgba(0,0,0,.55)"; bctx.shadowBlur=4; bctx.fillStyle="#fff"; bctx.fillText("\u25c8 magot", Wd-Wd*0.03, Hd-Hd*0.026); bctx.restore();
   if(sg && sg.img>=0 && PHOTOS[sg.img] && PHOTOS[sg.img]._cap){ var _cp=(""+PHOTOS[sg.img]._cap).trim(); if(_cp){ var _cs=PHOTOS[sg.img]._capStyle||(typeof window!=="undefined"&&window.CAPPRESET)||"auto"; drawCaption(bctx,Wd,Hd,_cp,ox,(t-sg.start),(sg.end-sg.start),t,_cs); } }
 }
 function renderBaseFrame(t){
@@ -7578,6 +7580,8 @@ async function exportFast(){
   stopPlay(); EXPORTING=true; expShow(0);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
+  /* commentaire -> plan 2x : la photo commentee dure 2 plans (le texte a le temps de defiler / s'afficher) ; sans commentaire = 1x cale sur la musique */
+  if(_PORDER && _PORDER.length){ var _cpi=0, _csi=0; while(_csi<SEGS.length){ if(SEGS[_csi].video){ _csi++; continue; } if(_cpi>=_PORDER.length) break; var _cph=_PORDER[_cpi]; SEGS[_csi].img=_cph; var _ccap=PHOTOS[_cph]&&PHOTOS[_cph]._cap; if(_ccap && (""+_ccap).trim() && _csi+1<SEGS.length && !SEGS[_csi+1].video){ SEGS[_csi].end=SEGS[_csi+1].end; SEGS.splice(_csi+1,1); } _cpi++; _csi++; } }
   var DUR=Math.max(1, Math.min(A.dur||6, SEGS.length?SEGS[SEGS.length-1].end:(A.dur||6)));
   var N=Math.round(DUR*FPS);
   var _ow=base.width,_oh=base.height;
