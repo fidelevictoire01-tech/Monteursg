@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — synchro texte plan/musique + fonds + signature + menu deroulant · BUILD 2026-08-06-C39 -->
+<!-- Studio Magot — style par photo en menu deroulant ancre (sans bouton global) · BUILD 2026-08-06-C40 -->
 
 <html lang="fr">
 <head>
@@ -430,6 +430,12 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .csheet-chip.on{background:var(--gold);color:#1c1305;border-color:var(--gold)}
 .pr-style{color:var(--gold2);font-weight:700}
 .capdrop{background:rgba(255,255,255,.05);border:1px solid var(--line);color:#e8eef7;border-radius:999px;padding:7px 14px;font:700 12px system-ui;cursor:pointer}
+.style-dd-bd{position:fixed;inset:0;z-index:99997;background:transparent}
+.style-dd{position:fixed;z-index:99998;background:#0f1830;border:1px solid #2a3a58;border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.6);padding:5px;max-height:60vh;overflow:auto;-webkit-overflow-scrolling:touch}
+.sdd-item{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;color:#e2e9f4;font:600 14px system-ui;padding:11px 10px;border-radius:8px;cursor:pointer;text-align:left}
+.sdd-item:hover,.sdd-item.on{background:rgba(224,163,62,.14)}
+.sdd-item.on{color:var(--gold2)}
+.sdd-ck{width:16px;color:var(--gold);font-size:13px;flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -438,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C39</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C40</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7871,25 +7877,29 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function photoDur(i){ if(typeof SEGS==="undefined"||!SEGS) return 0; for(var k=0;k<SEGS.length;k++){ if(SEGS[k].img===i) return Math.max(0,SEGS[k].end-SEGS[k].start); } return 0; }
   var CAPLABELS={auto:"Auto",cinema:"Cin\u00e9ma",doux:"Doux",voyage:"Voyage",dynamique:"Dynamique",band:"Bande info",documentary:"Documentaire",subtitle:"Sous-titre",box:"Encadr\u00e9",line:"Ligne",title:"Titre",elegant:"\u00c9l\u00e9gant",karaoke:"Mot par mot"};
   function styleLabel(v){ return CAPLABELS[v]||v; }
-  function updateCapDrop(){ var d=$("capDrop"); if(d) d.textContent=(CAPLABELS[window.CAPPRESET||"auto"]||"Auto")+" \u25be"; }
-  function openStyleMenu(target){
-    var isG=(target==="global"); var p=isG?null:PHOTOS[target]; if(!isG && !p) return;
-    var cur=isG?(window.CAPPRESET||"auto"):(p._capStyle||"auto");
-    var opts=[["auto",isG?"Auto (mode)":"Auto (mode)"],["cinema","Cin\u00e9ma"],["doux","Doux"],["voyage","Voyage"],["dynamique","Dynamique"],["band","Bande info"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["title","Titre"],["elegant","\u00c9l\u00e9gant"],["karaoke","Mot par mot"]];
-    var ov=document.createElement("div"); ov.className="csheet-ov";
-    var h='<div class="csheet"><div class="csheet-h">'+(isG?"Style du texte (par d\u00e9faut)":"Style du texte de cette photo")+'</div><div class="csheet-grid">';
-    for(var k=0;k<opts.length;k++){ h+='<button class="csheet-chip'+(opts[k][0]===cur?" on":"")+'" data-v="'+opts[k][0]+'">'+esc(opts[k][1])+'</button>'; }
-    h+='</div></div>';
-    ov.innerHTML=h; document.body.appendChild(ov);
-    function close(){ try{ ov.remove(); }catch(e){} }
-    ov.addEventListener("click",function(e){ if(e.target===ov) close(); });
-    Array.prototype.forEach.call(ov.querySelectorAll(".csheet-chip"),function(ch){ ch.onclick=function(){ var v=ch.getAttribute("data-v");
-      if(isG){ window.CAPPRESET=v; updateCapDrop(); }
-      else { if(v==="auto"){ try{ delete p._capStyle; }catch(e){ p._capStyle=null; } } else p._capStyle=v; renderPGrid(); }
-      close();
-      try{ if(typeof renderMontageAt==="function"&&typeof SEGS!=="undefined"&&SEGS.length){ var _t=(typeof audioEl!=="undefined"&&audioEl)?audioEl.currentTime:(window.MSTART_EFF||0); renderMontageAt(_t); } }catch(e){}
-    }; });
+  function openStyleMenu(i, anchorEl){
+    var p=PHOTOS[i]; if(!p) return;
+    var cur=p._capStyle||"auto";
+    var opts=[["auto","Auto (mode)"],["cinema","Cin\u00e9ma"],["doux","Doux"],["voyage","Voyage"],["dynamique","Dynamique"],["band","Bande info"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["title","Titre"],["elegant","\u00c9l\u00e9gant"],["karaoke","Mot par mot"]];
+    var ex=document.getElementById("styleDD"); if(ex) ex.remove();
+    var exb=document.getElementById("styleDDbd"); if(exb) exb.remove();
+    var bd=document.createElement("div"); bd.id="styleDDbd"; bd.className="style-dd-bd"; document.body.appendChild(bd);
+    var dd=document.createElement("div"); dd.id="styleDD"; dd.className="style-dd";
+    var h="";
+    for(var k=0;k<opts.length;k++){ h+='<button class="sdd-item'+(opts[k][0]===cur?" on":"")+'" data-v="'+opts[k][0]+'"><span class="sdd-ck">'+(opts[k][0]===cur?"\u2713":"")+'</span><span>'+esc(opts[k][1])+'</span></button>'; }
+    dd.innerHTML=h; document.body.appendChild(dd);
+    function close(){ try{dd.remove();}catch(e){} try{bd.remove();}catch(e){} }
+    bd.onclick=close;
+    var r=(anchorEl&&anchorEl.getBoundingClientRect)?anchorEl.getBoundingClientRect():{right:window.innerWidth-12,bottom:120,top:100};
+    var ddw=Math.min(230, window.innerWidth-16);
+    var left=Math.min(r.right-ddw, window.innerWidth-ddw-8); if(left<8) left=8;
+    dd.style.left=left+"px"; dd.style.width=ddw+"px";
+    var ddh=dd.offsetHeight||300; var top=r.bottom+6;
+    if(top+ddh>window.innerHeight-8){ top=Math.max(8, r.top-ddh-6); if(top<8){ top=8; dd.style.maxHeight=(window.innerHeight-16)+"px"; } }
+    dd.style.top=top+"px";
+    Array.prototype.forEach.call(dd.querySelectorAll(".sdd-item"),function(ch){ ch.onclick=function(){ var v=ch.getAttribute("data-v"); if(v==="auto"){ try{ delete p._capStyle; }catch(e){ p._capStyle=null; } } else p._capStyle=v; close(); renderPGrid(); try{ if(typeof renderMontageAt==="function"&&typeof SEGS!=="undefined"&&SEGS.length){ var _t=(typeof audioEl!=="undefined"&&audioEl)?audioEl.currentTime:(window.MSTART_EFF||0); renderMontageAt(_t); } }catch(e){} }; });
   }
+
   function autoTag(p){ var l=(p&&p.feat&&p.feat.label)?p.feat.label:""; return l?String(l).split(",")[0]:""; }
   function capOf(p){ return (p&&p._cap!=null)?p._cap:""; }
   var _drag=null;
@@ -7935,7 +7945,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     document.removeEventListener("pointercancel",pgUp,true);
     var g=$("pGrid"); if(g) g.classList.remove("dragging");
     if(d.el) d.el.classList.remove("drag");
-    if(d.on) commitOrder(); else if(d.id!=null) openStyleMenu(d.id);
+    if(d.on) commitOrder(); else if(d.id!=null) openStyleMenu(d.id, d.el&&d.el.querySelector?d.el.querySelector(".pr-drag"):null);
   }
   function bindRow(el){
     if(el.classList.contains("off")){
@@ -8013,11 +8023,9 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       '<p class="sh-note">Ordre de passage. Glisse par la poign\u00e9e <b>\u2261</b> pour r\u00e9ordonner ; <b>tape</b> la vignette pour \u00e9carter ; \u00e9cris un <b>texte</b> sous chaque photo.</p>'
      +'<button class="doexp" id="pImport" style="margin:6px 0 10px">\uFF0B Ajouter des photos</button>'
      +'<div id="pProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
-     +'<div class="capbar"><span class="capbar-lab">Texte</span><button id="capDrop" class="capdrop">Auto \u25be</button></div>'
      +'<div id="pGrid" class="pgrid"></div>';
     var pib=$("pImport"); if(pib) pib.onclick=function(){ watchPhotoImport(); var p=$("pickPhotos"); if(p) p.click(); };
     renderPGrid();
-    (function(){ window.CAPPRESET=window.CAPPRESET||"auto"; updateCapDrop(); var d=$("capDrop"); if(d) d.onclick=function(){ openStyleMenu("global"); }; })();
   }
 
   
