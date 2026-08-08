@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — arrangeur qui CALCULE le raccord (joue jusqu-au bout + entree pic-matchee, cale sur les temps) extensible multi-pistes · BUILD 2026-08-06-C52 -->
+<!-- Studio Magot — FIX sync boucle (decalage XF) + resync changement de mode · BUILD 2026-08-06-C53 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C52</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C53</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -695,7 +695,8 @@ function _waSchedule(){
     }catch(e){ try{ g.gain.value=1; }catch(_e){} }
     try{ s.start(startAt, from); s.stop(endAt+0.10); }catch(e){}
     WA.srcs.push({src:s,end:endAt,start:startAt});
-    WA._nextFrom=ls; WA._nextCtx=endAt-XF;
+    /* FIX sync boucle : la reprise demarre XF AVANT le point d'entree -> au raccord elle est PILE a LOOP_START */
+    WA._nextFrom=Math.max(0, ls-XF); WA._nextCtx=endAt-XF;
   }
   var now=ctx.currentTime; WA.srcs=WA.srcs.filter(function(o){ return o.end>now-0.3; });
 }
@@ -719,16 +720,15 @@ function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.LOOP_ON){ mBase=_perfNo
 function _mediaBeatP(bts){ var d=[]; for(var i=1;i<bts.length;i++){ var x=bts[i]-bts[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); return d.length?d[d.length>>1]:0.5; }
 function _eWinAt(a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=energyAt(t); n++; } return n?s/n:energyAt(a); }
 function _bestBeat(bts,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<bts.length;k++){ var t=bts[k]; if(t>=a&&t<=b){ var m=(A.metric&&A.metric[k]!=null)?A.metric[k]:0.4; var s=score(t,m,energyAt(t),k); if(s>sc){ sc=s; bt=t; } } } return bt; }
-/* Renvoie {start,end,xf} : end = quasi fin (joue jusqu'au bout) ; start = entree dont l'intensite matche le raccord (pic) */
 function computeLoopJoin(bts,dur){
   var P=_mediaBeatP(bts);
   var XF=Math.max(1.2, Math.min(2.8, Math.round(2.0/P)*P));
-  var end=_bestBeat(bts, dur*0.88, dur*0.995, function(t,m,e){ return m*0.6+e*0.4; });
+  var end=_bestBeat(bts, dur*0.86, Math.min(dur-0.1,dur*0.97), function(t,m,e){ return m*0.6+e*0.4; });
   if(end==null){ for(var g=bts.length-1;g>=0;g--){ if(bts[g]<=dur-0.1){ end=bts[g]; break; } } if(end==null) end=dur*0.95; }
   var eJoin=_eWinAt(Math.max(0,end-XF), end);
-  var start=_bestBeat(bts, dur*0.05, dur*0.40, function(t,m,e){ var eS=_eWinAt(t,t+XF); return -Math.abs(eS-eJoin) - 0.15*(t/dur) + m*0.05; });
-  if(start==null) start=Math.min(dur*0.10, dur-4);
-  if(end<=start+Math.max(4,XF+1)) end=Math.min(dur*0.98, start+Math.max(6,(dur-start)*0.7));
+  var start=_bestBeat(bts, Math.max(dur*0.05, XF+0.3), dur*0.40, function(t,m,e){ var eS=_eWinAt(t,t+XF); return -Math.abs(eS-eJoin) - 0.15*(t/dur) + m*0.05; });
+  if(start==null) start=Math.max(XF+0.3, Math.min(dur*0.10, dur-4));
+  if(end<=start+Math.max(4,XF+1)) end=Math.min(dur-0.1, start+Math.max(6,(dur-start)*0.7));
   return {start:start, end:end, xf:XF};
 }
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
@@ -964,7 +964,6 @@ function buildPartition(){
   if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
-      /* SYSTEME calcule : la musique joue jusqu'au bout, puis raccord energie-matche cale sur les temps */
       var _J=computeLoopJoin(beats,dur); WA.XF=_J.xf;
       var _lb0=_J.start, _lb1=_J.end, _ll=Math.max(2,_lb1-_lb0);
       window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_lb0; window.LOOP_END=_lb1; window.LOOP_LEN=_ll;
@@ -7553,7 +7552,7 @@ function syncApply(){ if(syncEl) syncEl.value=Math.round(curSync()*1000); syncLa
 if(syncEl) syncEl.oninput=function(){ SYNC_M[MOOD]=(+syncEl.value)/1000; syncLabel(); if(A) paintStrip(playing?visualTime():0); };
 var srst=document.getElementById("syncReset"); if(srst) srst.onclick=function(){ SYNC_M[MOOD]=autoSync(MOOD,(A&&A.bpmFelt)?A.bpmFelt:((A&&A.bpm)?A.bpm:120)); syncApply(); };
 syncApply();
-document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); paintStrip(playing?visualTime():0); } setState("Ambiance : <b>"+btn.textContent+"</b> · sync "+Math.round(curSync()*1000)+" ms"); }; });
+document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); if(playing && window.LOOP_ON){ try{ seekMontageTo(montageNow()); }catch(e){} } paintStrip(playing?visualTime():0); } setState("Ambiance : <b>"+btn.textContent+"</b> · sync "+Math.round(curSync()*1000)+" ms"); }; });
 
 document.getElementById("fMusic").onchange=function(e){
   var file=e.target.files&&e.target.files[0]; if(!file) return; setMusicEl(file);
