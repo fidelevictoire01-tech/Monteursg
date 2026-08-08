@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — sync DJ : horloge=audio + fondu cale sur des temps entiers + intensite matchee (fenetre) · BUILD 2026-08-06-C50 -->
+<!-- Studio Magot — arrangeur qui CALCULE le raccord (joue jusqu-au bout + entree pic-matchee, cale sur les temps) extensible multi-pistes · BUILD 2026-08-06-C52 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C50</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C52</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -677,7 +677,6 @@ var mBase=0, waMt0=0, waCtxT0=0;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
 function audioAt(mt){ if(!window.LOOP_ON) return mt; var le=window.LOOP_END||(A?A.dur:mt); if(mt<=le) return mt; var ls=window.LOOP_START||0, ll=window.LOOP_LEN||1; return ls + ((mt - le) % ll); }
 function montageNow(){ if(window.LOOP_ON){ if(WA.on && ctx){ return waMt0 + (ctx.currentTime - waCtxT0); } return _perfNow()-mBase; } return audioEl?audioEl.currentTime:0; }
-/* ===== Fondu enchaine DJ (Web Audio) — horloge=audio, fondu cale sur des temps ===== */
 var WA={srcs:[],gain:null,on:false,_iv:0,_nextCtx:0,_nextFrom:0,_first:true,XF:2.0};
 var _xfIn=null,_xfOut=null;
 function _xfCurves(){ if(_xfIn) return; var N=48; _xfIn=new Float32Array(N); _xfOut=new Float32Array(N); for(var i=0;i<N;i++){ var x=i/(N-1); _xfIn[i]=Math.sin(x*Math.PI/2); _xfOut[i]=Math.cos(x*Math.PI/2); } }
@@ -716,6 +715,22 @@ function waStart(mt){
 }
 function masterVol(v){ v=Math.max(0,Math.min(1,v)); if(window.LOOP_ON && WA.on && WA.gain){ try{ WA.gain.gain.value=v; }catch(e){} } else if(audioEl){ try{ audioEl.volume=v; }catch(e){} } }
 function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.LOOP_ON){ mBase=_perfNow()-mt; if(WA.on){ waStart(mt); return; } } try{ if(audioEl) audioEl.currentTime=audioAt(mt); }catch(e){} }
+/* ===== Arrangeur : calcule le raccord (loop A->A ; extensible A->B) a partir de l'analyse ===== */
+function _mediaBeatP(bts){ var d=[]; for(var i=1;i<bts.length;i++){ var x=bts[i]-bts[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); return d.length?d[d.length>>1]:0.5; }
+function _eWinAt(a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=energyAt(t); n++; } return n?s/n:energyAt(a); }
+function _bestBeat(bts,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<bts.length;k++){ var t=bts[k]; if(t>=a&&t<=b){ var m=(A.metric&&A.metric[k]!=null)?A.metric[k]:0.4; var s=score(t,m,energyAt(t),k); if(s>sc){ sc=s; bt=t; } } } return bt; }
+/* Renvoie {start,end,xf} : end = quasi fin (joue jusqu'au bout) ; start = entree dont l'intensite matche le raccord (pic) */
+function computeLoopJoin(bts,dur){
+  var P=_mediaBeatP(bts);
+  var XF=Math.max(1.2, Math.min(2.8, Math.round(2.0/P)*P));
+  var end=_bestBeat(bts, dur*0.88, dur*0.995, function(t,m,e){ return m*0.6+e*0.4; });
+  if(end==null){ for(var g=bts.length-1;g>=0;g--){ if(bts[g]<=dur-0.1){ end=bts[g]; break; } } if(end==null) end=dur*0.95; }
+  var eJoin=_eWinAt(Math.max(0,end-XF), end);
+  var start=_bestBeat(bts, dur*0.05, dur*0.40, function(t,m,e){ var eS=_eWinAt(t,t+XF); return -Math.abs(eS-eJoin) - 0.15*(t/dur) + m*0.05; });
+  if(start==null) start=Math.min(dur*0.10, dur-4);
+  if(end<=start+Math.max(4,XF+1)) end=Math.min(dur*0.98, start+Math.max(6,(dur-start)*0.7));
+  return {start:start, end:end, xf:XF};
+}
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
 var EXPORTING=false;
 var EXPFMT={w:540,h:960,name:"9:16"};
@@ -949,25 +964,14 @@ function buildPartition(){
   if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
-      /* fondu = nombre ENTIER de temps (pour que les beats coincident au raccord) */
-      var _diffs=[]; for(var _di=1;_di<beats.length;_di++){ var _dd=beats[_di]-beats[_di-1]; if(_dd>0.15&&_dd<2) _diffs.push(_dd); }
-      _diffs.sort(function(a,b){return a-b;}); var _P=_diffs.length?_diffs[_diffs.length>>1]:0.5;
-      WA.XF=Math.max(1.0, Math.min(3.0, Math.round(2.0/_P)*_P));
-      var _eWin=function(a,b){ var s=0,n=0; for(var _tw=a;_tw<=b;_tw+=0.15){ s+=energyAt(_tw); n++; } return n?s/n:energyAt(a); };
-      /* LB1 = bon downbeat dans le corps (evite l'outro) */
-      var _lb1=dur*0.85, _s1=-1;
-      for(var _q1=0;_q1<beats.length;_q1++){ var _bb=beats[_q1]; if(_bb>=dur*0.70 && _bb<=dur*0.92){ var _mm=(A.metric&&A.metric[_q1]!=null)?A.metric[_q1]:0.4; var _sc=_mm*0.4+energyAt(_bb)*0.6; if(_sc>_s1){ _s1=_sc; _lb1=_bb; } } }
-      var _eEnd=_eWin(Math.max(0,_lb1-WA.XF), _lb1);
-      /* LB0 = downbeat 1er tiers dont la fenetre d'entree matche l'INTENSITE d'avant-raccord */
-      var _lb0=dur*0.22, _best=1e9;
-      for(var _q0=0;_q0<beats.length;_q0++){ var _b0=beats[_q0]; if(_b0>=dur*0.12 && _b0<=dur*0.45){ var _eS=_eWin(_b0,_b0+WA.XF); var _m0=(A.metric&&A.metric[_q0]!=null)?A.metric[_q0]:0.4; var _df=Math.abs(_eS-_eEnd)+(1-_m0)*0.12; if(_df<_best){ _best=_df; _lb0=_b0; } } }
-      if(_lb1<=_lb0+Math.max(3,WA.XF+1)){ _lb1=Math.min(dur*0.94, _lb0+Math.max(4,(dur-_lb0)*0.55)); }
-      var _ll=Math.max(2,_lb1-_lb0);
+      /* SYSTEME calcule : la musique joue jusqu'au bout, puis raccord energie-matche cale sur les temps */
+      var _J=computeLoopJoin(beats,dur); WA.XF=_J.xf;
+      var _lb0=_J.start, _lb1=_J.end, _ll=Math.max(2,_lb1-_lb0);
       window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_lb0; window.LOOP_END=_lb1; window.LOOP_LEN=_ll;
       var _extB=[], _extS=[];
       for(var _b4=0;_b4<beats.length;_b4++){ if(beats[_b4]<=_lb1+0.01){ _extB.push(beats[_b4]); _extS.push(str[_b4]||0.5); } }
       var _bse=_lb1;
-      while(_bse < MST+want+4){ for(var _b5=0;_b5<beats.length;_b5++){ if(beats[_b5]>=_lb0 && beats[_b5]<=_lb1){ _extB.push(_bse+(beats[_b5]-_lb0)); _extS.push(str[_b5]||0.5); } } _bse+=_ll; }
+      while(_bse < MST+want+4){ for(var _b5=0;_b5<beats.length;_b5++){ if(beats[_b5]>=_lb0 && beats[_b5]<_lb1-0.01){ _extB.push(_bse+(beats[_b5]-_lb0)); _extS.push(str[_b5]||0.5); } } _bse+=_ll; }
       beats=_extB; str=_extS;
       avail=want; bdur=want; window.DUR_FIT=1;
     }
