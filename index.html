@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — duree commentaire = temps lisible cale sur les temps · BUILD 2026-08-06-C42 -->
+<!-- Studio Magot — ticker lent/gros + durees lisibles par style + style Generique vertical · BUILD 2026-08-06-C43 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C42</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C43</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1035,7 +1035,8 @@ var _MMT_STYLES={
   line:{anim:"slideUp",kind:"line",weight:650,transition:0.52},
   title:{anim:"pop",kind:"title",weight:800,transition:0.48},
   elegant:{anim:"fade",kind:"elegant",weight:600,transition:0.70},
-  karaoke:{anim:"karaoke",kind:"karaoke",weight:760,transition:0.36}
+  karaoke:{anim:"karaoke",kind:"karaoke",weight:760,transition:0.36},
+  credits:{anim:"credits",kind:"credits",weight:700,transition:0.40}
 };
 function _mmtClamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 function _mmtEoc(x){ x=_mmtClamp(x,0,1); return 1-Math.pow(1-x,3); }
@@ -1050,9 +1051,10 @@ function _capNeeded(ci){
   var style=p._capStyle||((typeof window!=="undefined"&&window.CAPPRESET)||"auto");
   var st=_mmtResolve((typeof MOOD!=="undefined"?MOOD:"cinema"),style,"comment");
   var k=st.kind;
-  if(k==="ticker") return Math.max(2.6, chars*0.12 + 1.6);   /* defile lisible + fin */
-  if(k==="karaoke") return Math.max(2.2, words*0.45 + 0.9);  /* un mot ~ un temps */
-  return Math.max(1.8, chars*0.058 + 1.3);                    /* statique : apparition + lecture */
+  if(k==="ticker") return Math.max(3.4, chars*0.14 + 2.2);    /* defile lentement, lisible, + fin */
+  if(k==="karaoke") return Math.max(2.8, words*0.52 + 1.1);   /* un mot ~ un temps, lisible */
+  if(k==="credits") return Math.max(3.6, chars*0.09 + 2.6);   /* montee verticale lisible */
+  return Math.max(2.2, chars*0.072 + 1.6);                    /* statique : apparition + LECTURE + sortie */
 }
 function capBeatPulse(abs){ if(typeof A==="undefined"||!A||!A.beats||!A.beats.length) return 0; var b=A.beats, lo=0, hi=b.length-1; if(abs<b[0]) return 0; while(lo<hi){ var mid=(lo+hi+1)>>1; if(b[mid]<=abs) lo=mid; else hi=mid-1; } var dt=abs-b[lo]; if(dt<0||dt>0.10) return 0; var s=(A.strength&&A.strength[lo]!=null)?A.strength[lo]:0.5; return (1-dt/0.10)*Math.max(0,Math.min(1,s)); }
 function _softBg(ctx,w,h,r){ ctx.fillStyle="rgba(6,12,20,0.42)"; _mmtRr(ctx,-w/2,-h/2,w,h,r); ctx.fill(); }
@@ -1066,7 +1068,7 @@ function _mmtDraw(ctx,opt){
   var TR=Math.max(0.12,Math.min(st.transition,duration*0.42));
   var pin=_mmtClamp(time/TR,0,1), pout=_mmtClamp((duration-time)/TR,0,1);
   var ein=_mmtEoc(pin);
-  var alpha=Math.min(ein,_mmtEoc(pout)); if(alpha<=0.01) return;
+  var alpha=Math.min(ein,_mmtEoc(pout)); if(st.kind==="credits") alpha=1; if(alpha<=0.01) return;
   var GOLD="#E0A33E", WHITE="#FFFFFF";
   var fs=Math.max(18,Math.round(H*(role==="title"?0.060:0.043)));
   var small=Math.max(11,Math.round(fs*0.52));
@@ -1075,22 +1077,22 @@ function _mmtDraw(ctx,opt){
   ctx.save(); ctx.globalAlpha=alpha; ctx.textBaseline="alphabetic";
   /* ---------- Bande info : UNE passe complète dans la durée du plan (ou statique si ça tient) ---------- */
   if(st.kind==="ticker"){
-    var bh=Math.max(52,H*0.092);
-    var yb=H-bh-H*0.045+(1-ein)*bh;
-    ctx.fillStyle="rgba(4,10,17,.92)"; ctx.fillRect(0,yb,W,bh);
-    ctx.fillStyle=GOLD; ctx.fillRect(0,yb,W,Math.max(2,bh*0.045));
-    var brandW=Math.min(W*0.24,Math.max(88,fs*4.2));
+    var bh=Math.max(66,H*0.112);
+    var yb=H-bh-H*0.04+(1-ein)*bh;
+    ctx.fillStyle="rgba(4,10,17,.94)"; ctx.fillRect(0,yb,W,bh);
+    ctx.fillStyle=GOLD; ctx.fillRect(0,yb,W,Math.max(2,bh*0.05));
+    var brandW=Math.min(W*0.26,Math.max(96,fs*4.6));
     ctx.fillStyle=GOLD; ctx.fillRect(0,yb,brandW,bh);
-    ctx.fillStyle="#171006"; ctx.font="800 "+Math.round(fs*0.66)+"px system-ui,sans-serif"; ctx.textAlign="center";
-    ctx.fillText("MAGOT",brandW/2,yb+bh*0.65);
+    ctx.fillStyle="#171006"; ctx.font="800 "+Math.round(fs*0.64)+"px system-ui,sans-serif"; ctx.textAlign="center";
+    ctx.fillText("MAGOT",brandW/2,yb+bh*0.63);
     ctx.save(); ctx.beginPath(); ctx.rect(brandW+8,yb,W-brandW-12,bh); ctx.clip();
-    ctx.font="750 "+Math.round(fs*0.72)+"px system-ui,sans-serif"; ctx.textAlign="left"; ctx.fillStyle=WHITE;
+    ctx.font="700 "+Math.round(fs*0.96)+"px system-ui,sans-serif"; ctx.textAlign="left"; ctx.fillStyle=WHITE;
     var visW=W-brandW-16;
-    var full=text+"      \u25c6      "; var fw=ctx.measureText(full).width;
+    var full=text+"        \u25c6        "; var fw=ctx.measureText(full).width;
     var travel=visW+fw; var off=_mmtClamp(time/Math.max(0.2,duration),0,1)*travel;
     var x=(brandW+16+visW)-off;
-    ctx.fillText(full,x,yb+bh*0.66);
-    if(x+fw<W) ctx.fillText(full,x+fw,yb+bh*0.66);
+    ctx.fillText(full,x,yb+bh*0.63);
+    if(x+fw<W) ctx.fillText(full,x+fw,yb+bh*0.63);
     ctx.restore(); ctx.restore(); return;
   }
   /* ---------- Mot par mot : révélation sur les TEMPS de la musique ---------- */
@@ -1107,6 +1109,16 @@ function _mmtDraw(ctx,opt){
     ctx.shadowColor="rgba(0,0,0,.78)"; ctx.shadowBlur=fs*0.22; ctx.fillStyle=WHITE;
     yy=kcy-blockH/2+fs; for(i=0;i<lines.length;i++){ ctx.fillText(lines[i],W/2,yy); yy+=lh; }
     ctx.shadowBlur=0; ctx.fillStyle=GOLD; ctx.fillRect(W/2-wmax/2,kcy+blockH/2+fs*0.10,wmax*frac,Math.max(2,fs*0.065));
+    ctx.restore(); return;
+  }
+  /* ---------- Generique : le texte MONTE verticalement (fin de film) ---------- */
+  if(st.kind==="credits"){
+    ctx.font=st.weight+" "+fs+"px system-ui,sans-serif";
+    lines=_mmtWrap(ctx,text,W*0.82,6); lh=fs*1.5; blockH=lines.length*lh;
+    var prog=_mmtClamp(time/Math.max(0.2,duration),0,1);
+    var startY=H+fs*1.2, endY=-blockH-fs*0.6, y0=startY+(endY-startY)*prog;
+    ctx.textAlign="center"; ctx.shadowColor="rgba(0,0,0,.82)"; ctx.shadowBlur=fs*0.30; ctx.fillStyle=WHITE;
+    yy=y0; for(i=0;i<lines.length;i++){ ctx.fillText(lines[i],W/2,yy); yy+=lh; }
     ctx.restore(); return;
   }
   ctx.font=st.weight+" "+fs+"px system-ui,sans-serif";
@@ -7591,7 +7603,7 @@ async function exportFast(){
   stopPlay(); EXPORTING=true; expShow(0);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
-  /* commentaire -> duree lisible : on fusionne les plans suivants (cales sur les temps) jusqu'a atteindre le temps necessaire au texte */
+  /* commentaire -> duree lisible : fusionne les plans suivants (cales sur les temps) jusqu'a atteindre le temps necessaire */
   if(_PORDER && _PORDER.length){ var _cpi=0, _csi=0; while(_csi<SEGS.length){ if(SEGS[_csi].video){ _csi++; continue; } if(_cpi>=_PORDER.length) break; var _cph=_PORDER[_cpi]; SEGS[_csi].img=_cph; var _need=_capNeeded(_cph); if(_need>0){ while((SEGS[_csi].end-SEGS[_csi].start) < _need-0.01 && _csi+1<SEGS.length && !SEGS[_csi+1].video){ SEGS[_csi].end=SEGS[_csi+1].end; SEGS.splice(_csi+1,1); } } _cpi++; _csi++; } }
   var DUR=Math.max(1, Math.min(A.dur||6, SEGS.length?SEGS[SEGS.length-1].end:(A.dur||6)));
   var N=Math.round(DUR*FPS);
@@ -7895,7 +7907,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function openStyleMenu(i, anchorEl){
     var p=PHOTOS[i]; if(!p) return;
     var cur=p._capStyle||"auto";
-    var opts=[["auto","Auto (mode)"],["cinema","Cin\u00e9ma"],["doux","Doux"],["voyage","Voyage"],["dynamique","Dynamique"],["band","Bande info"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["title","Titre"],["elegant","\u00c9l\u00e9gant"],["karaoke","Mot par mot"]];
+    var opts=[["auto","Auto (mode)"],["cinema","Cin\u00e9ma"],["doux","Doux"],["voyage","Voyage"],["dynamique","Dynamique"],["band","Bande info"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["title","Titre"],["elegant","\u00c9l\u00e9gant"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"]];
     var ex=document.getElementById("styleDD"); if(ex) ex.remove();
     var exb=document.getElementById("styleDDbd"); if(exb) exb.remove();
     var bd=document.createElement("div"); bd.id="styleDDbd"; bd.className="style-dd-bd"; document.body.appendChild(bd);
