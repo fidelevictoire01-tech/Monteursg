@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — timeline photo + zones de transition · BUILD 2026-08-06-C28 -->
+<!-- Studio Magot — lecture demarre au point de depart · BUILD 2026-08-06-C30 -->
 
 <html lang="fr">
 <head>
@@ -403,7 +403,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C28</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C30</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7153,11 +7153,11 @@ var strip=document.getElementById("strip"), sctx=strip.getContext("2d");
 var stripBg=document.createElement("canvas"); stripBg.width=strip.width; stripBg.height=strip.height; var sbx=stripBg.getContext("2d"); var stripDirty=true;
 function renderStripBg(){
   var Wd=stripBg.width,Hd=stripBg.height; sbx.clearRect(0,0,Wd,Hd); sbx.fillStyle="#0e1630"; sbx.fillRect(0,0,Wd,Hd);
-  if(!A||!A.dur) return; var dur=A.dur;
-  if(A.energy&&A.energy.length){ sbx.beginPath(); for(var x=0;x<Wd;x++){ var tt=x/Wd*dur; var i=Math.round(tt*A.fps); var e=A.energy[Math.max(0,Math.min(A.energy.length-1,i))]||0; var y=Hd-6-e*(Hd-14); if(x===0) sbx.moveTo(x,y); else sbx.lineTo(x,y); } sbx.strokeStyle="rgba(120,150,220,.5)"; sbx.lineWidth=1.5; sbx.stroke(); }
-  (A.beats||[]).forEach(function(b,i){ var x=b/dur*Wd; var s=A.strength[i]||0; var hgt=6+s*(Hd-16); var acc=s>=MOODS[MOOD].accent;
+  if(!A||!A.dur) return; var dur=A.dur; var w0=(window.MSTART_EFF||0), w1=(window.MONTAGE_DUR||A.dur), wlen=Math.max(0.1,w1-w0);
+  if(A.energy&&A.energy.length){ sbx.beginPath(); for(var x=0;x<Wd;x++){ var tt=w0 + x/Wd*wlen; var i=Math.round(tt*A.fps); var e=A.energy[Math.max(0,Math.min(A.energy.length-1,i))]||0; var y=Hd-6-e*(Hd-14); if(x===0) sbx.moveTo(x,y); else sbx.lineTo(x,y); } sbx.strokeStyle="rgba(120,150,220,.5)"; sbx.lineWidth=1.5; sbx.stroke(); }
+  (A.beats||[]).forEach(function(b,i){ var x=(b-w0)/wlen*Wd; if(x<-2||x>Wd+2) return; var s=A.strength[i]||0; var hgt=6+s*(Hd-16); var acc=s>=MOODS[MOOD].accent;
     sbx.strokeStyle=acc?"rgba(224,163,62,.9)":"rgba(140,160,200,.35)"; sbx.lineWidth=acc?2:1; sbx.beginPath(); sbx.moveTo(x,Hd-4); sbx.lineTo(x,Hd-4-hgt); sbx.stroke(); });
-  SEGS.forEach(function(sg){ var x=sg.start/dur*Wd; sbx.fillStyle=sg.strong?"#E0A33E":"#7fd0ff"; sbx.fillRect(x-1,0,2,8); });
+  SEGS.forEach(function(sg){ var x=(sg.start-w0)/wlen*Wd; sbx.fillStyle=sg.strong?"#E0A33E":"#7fd0ff"; sbx.fillRect(x-1,0,2,8); });
 }
 var zoomC=document.getElementById("zoom"), zctx=zoomC?zoomC.getContext("2d"):null;
 function paintZoom(t){
@@ -7175,8 +7175,9 @@ function paintStrip(t){
   if(stripDirty){ renderStripBg(); stripDirty=false; }
   var Wd=strip.width,Hd=strip.height; sctx.clearRect(0,0,Wd,Hd); sctx.drawImage(stripBg,0,0);
   if(!A||!A.dur) return;
-  if(SEGS&&SEGS.length){ sctx.strokeStyle="rgba(224,163,62,0.85)"; sctx.lineWidth=1; var off=LEAD+curSync(); for(var _i=0;_i<SEGS.length;_i++){ var cx=(SEGS[_i].start-off)/A.dur*Wd; if(cx>=0&&cx<=Wd){ sctx.beginPath(); sctx.moveTo(cx,0); sctx.lineTo(cx,Hd); sctx.stroke(); } } }
-  var px=t/A.dur*Wd; sctx.strokeStyle="#fff"; sctx.lineWidth=1.5; sctx.beginPath(); sctx.moveTo(px,0); sctx.lineTo(px,Hd); sctx.stroke();
+  var w0=(window.MSTART_EFF||0), w1=(window.MONTAGE_DUR||A.dur), wlen=Math.max(0.1,w1-w0);
+  if(SEGS&&SEGS.length){ sctx.strokeStyle="rgba(224,163,62,0.85)"; sctx.lineWidth=1; var off=LEAD+curSync(); for(var _i=0;_i<SEGS.length;_i++){ var cx=(SEGS[_i].start-off-w0)/wlen*Wd; if(cx>=0&&cx<=Wd){ sctx.beginPath(); sctx.moveTo(cx,0); sctx.lineTo(cx,Hd); sctx.stroke(); } } }
+  var px=(t-w0)/wlen*Wd; sctx.strokeStyle="#fff"; sctx.lineWidth=1.5; sctx.beginPath(); sctx.moveTo(px,0); sctx.lineTo(px,Hd); sctx.stroke();
   paintZoom(t);
 }
 
@@ -7216,7 +7217,7 @@ function startPlay(){
   if(!audioEl){ setState("Musique non chargée."); return; }
   buildPartition();
   document.getElementById("empty").style.display="none";
-  try{ audioEl.currentTime=pausedOffset||0; }catch(e){}
+  try{ audioEl.currentTime=pausedOffset||(window.MSTART_EFF||0); }catch(e){}
   var go=function(){ playing=true; if(OVL.on && ovVid){ var p=ovVid.play(); if(p&&p.then) p.catch(function(){}); } cancelAnimationFrame(raf); loop(); };
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ setState("Lecture bloquée — retape « Lire »."); }); else go();
