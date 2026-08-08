@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — boucle DJ calee sur des temps forts (gros morceau) : demi-bout + sync corriges · BUILD 2026-08-06-C49 -->
+<!-- Studio Magot — sync DJ : horloge=audio + fondu cale sur des temps entiers + intensite matchee (fenetre) · BUILD 2026-08-06-C50 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C49</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C50</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -673,11 +673,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 "use strict";
 /* ================= État ================= */
 var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
-var mBase=0;
+var mBase=0, waMt0=0, waCtxT0=0;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
 function audioAt(mt){ if(!window.LOOP_ON) return mt; var le=window.LOOP_END||(A?A.dur:mt); if(mt<=le) return mt; var ls=window.LOOP_START||0, ll=window.LOOP_LEN||1; return ls + ((mt - le) % ll); }
-function montageNow(){ return window.LOOP_ON ? (_perfNow()-mBase) : (audioEl?audioEl.currentTime:0); }
-/* ===== Moteur de fondu enchaine facon DJ (Web Audio) — boucle calee sur des temps forts, transition 2s ===== */
+function montageNow(){ if(window.LOOP_ON){ if(WA.on && ctx){ return waMt0 + (ctx.currentTime - waCtxT0); } return _perfNow()-mBase; } return audioEl?audioEl.currentTime:0; }
+/* ===== Fondu enchaine DJ (Web Audio) — horloge=audio, fondu cale sur des temps ===== */
 var WA={srcs:[],gain:null,on:false,_iv:0,_nextCtx:0,_nextFrom:0,_first:true,XF:2.0};
 var _xfIn=null,_xfOut=null;
 function _xfCurves(){ if(_xfIn) return; var N=48; _xfIn=new Float32Array(N); _xfOut=new Float32Array(N); for(var i=0;i<N;i++){ var x=i/(N-1); _xfIn[i]=Math.sin(x*Math.PI/2); _xfOut[i]=Math.cos(x*Math.PI/2); } }
@@ -695,7 +695,7 @@ function _waSchedule(){
       if(foStart>startAt+XF+0.02 || WA.srcs.length===0){ g.gain.setValueCurveAtTime(_xfOut, foStart, XF); }
     }catch(e){ try{ g.gain.value=1; }catch(_e){} }
     try{ s.start(startAt, from); s.stop(endAt+0.10); }catch(e){}
-    WA.srcs.push({src:s,end:endAt});
+    WA.srcs.push({src:s,end:endAt,start:startAt});
     WA._nextFrom=ls; WA._nextCtx=endAt-XF;
   }
   var now=ctx.currentTime; WA.srcs=WA.srcs.filter(function(o){ return o.end>now-0.3; });
@@ -709,6 +709,7 @@ function waStart(mt){
     WA.on=true; WA._first=true; WA._nextFrom=audioAt(mt); WA._nextCtx=ctx.currentTime+0.06;
     _waSchedule();
     if(!WA.srcs.length){ WA.on=false; return false; }
+    waMt0=mt; waCtxT0=(WA.srcs[0].start||ctx.currentTime);
     WA._iv=setInterval(_waSchedule, 300);
     return true;
   }catch(e){ WA.on=false; return false; }
@@ -948,18 +949,21 @@ function buildPartition(){
   if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
-      /* --- REBOUCLAGE : gros morceau, extremites calees sur des temps forts (downbeats), energie-matchee --- */
-      var _endE=energyAt(dur-0.8);
-      /* LB1 = downbeat proche de la fin */
-      var _lb1=dur-0.15; for(var _b=beats.length-1;_b>=0;_b--){ if(beats[_b]<=dur-0.15){ _lb1=beats[_b]; break; } }
-      if(A.metric){ var _bm=-1; for(var _b2=0;_b2<beats.length;_b2++){ if(beats[_b2]>=dur-4 && beats[_b2]<=dur-0.15){ var _mm=(A.metric[_b2]||0); if(_mm>_bm){ _bm=_mm; _lb1=beats[_b2]; } } } }
-      /* LB0 = downbeat dans le premier tiers, energie proche de la fin (gros bout) */
-      var _lb0=dur*0.25, _bsc=-1;
-      for(var _b3=0;_b3<beats.length;_b3++){ var _bt3=beats[_b3]; if(_bt3>=dur*0.14 && _bt3<=dur*0.46){ var _e3=energyAt(_bt3); var _match=1-Math.min(1,Math.abs(_e3-_endE)); var _m3=(A.metric&&A.metric[_b3]!=null)?A.metric[_b3]:0.4; var _sc=_match*0.68+_m3*0.32; if(_sc>_bsc){ _bsc=_sc; _lb0=_bt3; } } }
-      if(_lb1<=_lb0+2){ _lb1=Math.min(dur-0.15, _lb0+Math.max(3,(dur-_lb0)*0.6)); }
+      /* fondu = nombre ENTIER de temps (pour que les beats coincident au raccord) */
+      var _diffs=[]; for(var _di=1;_di<beats.length;_di++){ var _dd=beats[_di]-beats[_di-1]; if(_dd>0.15&&_dd<2) _diffs.push(_dd); }
+      _diffs.sort(function(a,b){return a-b;}); var _P=_diffs.length?_diffs[_diffs.length>>1]:0.5;
+      WA.XF=Math.max(1.0, Math.min(3.0, Math.round(2.0/_P)*_P));
+      var _eWin=function(a,b){ var s=0,n=0; for(var _tw=a;_tw<=b;_tw+=0.15){ s+=energyAt(_tw); n++; } return n?s/n:energyAt(a); };
+      /* LB1 = bon downbeat dans le corps (evite l'outro) */
+      var _lb1=dur*0.85, _s1=-1;
+      for(var _q1=0;_q1<beats.length;_q1++){ var _bb=beats[_q1]; if(_bb>=dur*0.70 && _bb<=dur*0.92){ var _mm=(A.metric&&A.metric[_q1]!=null)?A.metric[_q1]:0.4; var _sc=_mm*0.4+energyAt(_bb)*0.6; if(_sc>_s1){ _s1=_sc; _lb1=_bb; } } }
+      var _eEnd=_eWin(Math.max(0,_lb1-WA.XF), _lb1);
+      /* LB0 = downbeat 1er tiers dont la fenetre d'entree matche l'INTENSITE d'avant-raccord */
+      var _lb0=dur*0.22, _best=1e9;
+      for(var _q0=0;_q0<beats.length;_q0++){ var _b0=beats[_q0]; if(_b0>=dur*0.12 && _b0<=dur*0.45){ var _eS=_eWin(_b0,_b0+WA.XF); var _m0=(A.metric&&A.metric[_q0]!=null)?A.metric[_q0]:0.4; var _df=Math.abs(_eS-_eEnd)+(1-_m0)*0.12; if(_df<_best){ _best=_df; _lb0=_b0; } } }
+      if(_lb1<=_lb0+Math.max(3,WA.XF+1)){ _lb1=Math.min(dur*0.94, _lb0+Math.max(4,(dur-_lb0)*0.55)); }
       var _ll=Math.max(2,_lb1-_lb0);
       window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_lb0; window.LOOP_END=_lb1; window.LOOP_LEN=_ll;
-      /* temps etendus : 1er passage jusqu'a LB1, puis on repete [LB0,LB1] (beats coincident au raccord) */
       var _extB=[], _extS=[];
       for(var _b4=0;_b4<beats.length;_b4++){ if(beats[_b4]<=_lb1+0.01){ _extB.push(beats[_b4]); _extS.push(str[_b4]||0.5); } }
       var _bse=_lb1;
