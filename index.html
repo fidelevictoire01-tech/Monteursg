@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — reboucle STABLE (lecteur unique) + reprise energie-matchee + onended blinde ; moteur DJ retire · BUILD 2026-08-06-C46 -->
+<!-- Studio Magot — fondu enchaine 2 lecteurs (equal-power) au rebouclage + repli · BUILD 2026-08-06-C47 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C46</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C47</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -673,12 +673,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 "use strict";
 /* ================= État ================= */
 var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
-var mBase=0;
+var mBase=0, audioEl2=null, LPa=null, LPb=null, _xfActive=false;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
 function audioAt(mt){ if(!window.LOOP_ON) return mt; var md=window.MUSIC_DUR||(A?A.dur:mt); if(mt<md) return mt; var ll=window.LOOP_LEN||1; return (window.LOOP_START||0)+((mt-md)%ll); }
 function montageNow(){ return window.LOOP_ON ? (_perfNow()-mBase) : (audioEl?audioEl.currentTime:0); }
-function masterVol(v){ v=Math.max(0,Math.min(1,v)); if(audioEl){ try{ audioEl.volume=v; }catch(e){} } }
-function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.LOOP_ON){ mBase=_perfNow()-mt; } try{ if(audioEl){ audioEl.currentTime=audioAt(mt); if(audioEl.paused && playing){ var p=audioEl.play(); if(p&&p.then) p.catch(function(){}); } } }catch(e){} }
+function masterVol(v){ v=Math.max(0,Math.min(1,v)); if(window.LOOP_ON && LPa){ try{ LPa.volume=v; }catch(e){} } else if(audioEl){ try{ audioEl.volume=v; }catch(e){} } }
+function _ensureAudio2(){ if(audioEl2) return audioEl2; try{ audioEl2=new Audio(); audioEl2.src=(audioEl&&(audioEl.currentSrc||audioEl.src))||audioURL||""; audioEl2.preload="auto"; audioEl2.onended=function(){ if(window.LOOP_ON){ try{ audioEl2.currentTime=window.LOOP_START||0; }catch(e){} } }; }catch(e){ audioEl2=null; } return audioEl2; }
+function seekMontageTo(mt){ mt=Math.max(0,mt);
+  if(window.LOOP_ON){ mBase=_perfNow()-mt; try{ if(audioEl2){ audioEl2.pause(); audioEl2.volume=0; } }catch(e){} LPa=audioEl; LPb=audioEl2; _xfActive=false; try{ if(audioEl){ audioEl.volume=1; audioEl.currentTime=audioAt(mt); if(audioEl.paused && playing){ var p=audioEl.play(); if(p&&p.then)p.catch(function(){}); } } }catch(e){} return; }
+  try{ if(audioEl){ audioEl.currentTime=audioAt(mt); if(audioEl.paused && playing){ var p2=audioEl.play(); if(p2&&p2.then)p2.catch(function(){}); } } }catch(e){} }
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
 var EXPORTING=false;
 var EXPFMT={w:540,h:960,name:"9:16"};
@@ -7426,7 +7429,17 @@ function paintStrip(t){
 function visualTime(){ return montageNow() + (window.LOOP_ON?0:LEAD) + curSync(); }
 function loop(){
   if(!playing) return;
-  if(window.LOOP_ON && audioEl){ var _md=window.MUSIC_DUR||(A?A.dur:0); if(_md>0 && audioEl.currentTime>=_md-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
+  if(window.LOOP_ON && LPa){
+    var _md=window.MUSIC_DUR||(A?A.dur:0), _XF=1.4, _ls2=window.LOOP_START||0;
+    if(_md>0 && montageNow() < (window.MONTAGE_DUR||1e9)-2.0){
+      var _ct=LPa.currentTime||0, _dist=_md-_ct;
+      if(LPb){
+        if(!_xfActive && _dist<=_XF && _dist>0.02){ try{ LPb.currentTime=_ls2; LPb.volume=0; var _pp=LPb.play(); if(_pp&&_pp.then)_pp.catch(function(){}); }catch(e){} _xfActive=true; }
+        if(_xfActive){ var _k=Math.max(0,Math.min(1,(_XF-_dist)/_XF)); try{ LPa.volume=Math.cos(_k*Math.PI/2); LPb.volume=Math.sin(_k*Math.PI/2); }catch(e){} }
+        if(_dist<=0.04){ try{ LPa.pause(); LPa.volume=1; }catch(e){} var _sw=LPa; LPa=LPb; LPb=_sw; _xfActive=false; try{ if(LPa) LPa.volume=1; }catch(e){} }
+      } else { if(_ct>=_md-0.06){ try{ LPa.currentTime=_ls2; }catch(e){} } }
+    }
+  }
   var t=visualTime(); if(t<0) t=0;
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
@@ -7460,13 +7473,16 @@ function startPlay(){
   buildPartition();
   document.getElementById("empty").style.display="none";
   var _st0=pausedOffset||(window.MSTART_EFF||0);
-  if(window.LOOP_ON){ mBase=_perfNow()-_st0; }
-  try{ audioEl.muted=false; audioEl.currentTime=audioAt(_st0); }catch(e){}
+  if(window.LOOP_ON){
+    mBase=_perfNow()-_st0; _ensureAudio2(); LPa=audioEl; LPb=audioEl2; _xfActive=false;
+    try{ audioEl.muted=false; audioEl.volume=1; audioEl.currentTime=audioAt(_st0); }catch(e){}
+    if(audioEl2){ try{ audioEl2.volume=0; var _p2=audioEl2.play(); if(_p2&&_p2.then) _p2.then(function(){ try{audioEl2.pause();}catch(e){} }).catch(function(){}); else audioEl2.pause(); }catch(e){} }
+  } else { try{ audioEl.muted=false; audioEl.volume=1; audioEl.currentTime=_st0; }catch(e){} }
   var go=function(){ playing=true; if(OVL.on && ovVid){ var p=ovVid.play(); if(p&&p.then) p.catch(function(){}); } cancelAnimationFrame(raf); loop(); };
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ setState("Lecture bloquée — retape « Lire »."); }); else go();
 }
-function stopPlay(){ if(playing){ pausedOffset=Math.max(0, montageNow()); } playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
+function stopPlay(){ if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ if(audioEl2) audioEl2.pause(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
 function resetBtn(){ pausedOffset=0; document.getElementById("play").textContent="▶ Lire le film"; }
 
 /* ================= UI ================= */
