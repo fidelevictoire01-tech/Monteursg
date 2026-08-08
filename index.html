@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — moteur DJ Web Audio remis + onended blinde (anti-pause) + transition 2s · BUILD 2026-08-06-C48 -->
+<!-- Studio Magot — boucle DJ calee sur des temps forts (gros morceau) : demi-bout + sync corriges · BUILD 2026-08-06-C49 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C48</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C49</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -675,19 +675,19 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
 var mBase=0;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
-function audioAt(mt){ if(!window.LOOP_ON) return mt; var md=window.MUSIC_DUR||(A?A.dur:mt); if(mt<md) return mt; var ll=window.LOOP_LEN||1; return (window.LOOP_START||0)+((mt-md)%ll); }
+function audioAt(mt){ if(!window.LOOP_ON) return mt; var le=window.LOOP_END||(A?A.dur:mt); if(mt<=le) return mt; var ls=window.LOOP_START||0, ll=window.LOOP_LEN||1; return ls + ((mt - le) % ll); }
 function montageNow(){ return window.LOOP_ON ? (_perfNow()-mBase) : (audioEl?audioEl.currentTime:0); }
-/* ===== Moteur de fondu enchaine facon DJ (Web Audio) — transition 2s ===== */
+/* ===== Moteur de fondu enchaine facon DJ (Web Audio) — boucle calee sur des temps forts, transition 2s ===== */
 var WA={srcs:[],gain:null,on:false,_iv:0,_nextCtx:0,_nextFrom:0,_first:true,XF:2.0};
 var _xfIn=null,_xfOut=null;
 function _xfCurves(){ if(_xfIn) return; var N=48; _xfIn=new Float32Array(N); _xfOut=new Float32Array(N); for(var i=0;i<N;i++){ var x=i/(N-1); _xfIn[i]=Math.sin(x*Math.PI/2); _xfOut[i]=Math.cos(x*Math.PI/2); } }
 function waStop(){ if(WA._iv){ try{clearInterval(WA._iv);}catch(e){} WA._iv=0; } for(var i=0;i<WA.srcs.length;i++){ try{ WA.srcs[i].src.stop(); }catch(e){} } WA.srcs=[]; WA.on=false; }
 function _waSchedule(){
   if(!WA.on||!ctx||!AUDIOBUF||!WA.gain) return;
-  var md=window.MUSIC_DUR||AUDIOBUF.duration, ls=window.LOOP_START||0, XF=WA.XF, guard=0;
+  var le=window.LOOP_END||AUDIOBUF.duration, ls=window.LOOP_START||0, XF=WA.XF, guard=0;
   while(WA.on && WA._nextCtx < ctx.currentTime+3.0 && guard++<60){
     var from=WA._nextFrom, startAt=Math.max(ctx.currentTime+0.03, WA._nextCtx);
-    var playLen=Math.max(0.4, md-from), endAt=startAt+playLen, foStart=Math.max(startAt+0.001, endAt-XF);
+    var playLen=Math.max(0.4, le-from), endAt=startAt+playLen, foStart=Math.max(startAt+0.001, endAt-XF);
     var s=ctx.createBufferSource(); s.buffer=AUDIOBUF; var g=ctx.createGain(); s.connect(g); g.connect(WA.gain);
     try{
       if(WA._first){ g.gain.setValueAtTime(1,startAt); WA._first=false; }
@@ -948,14 +948,23 @@ function buildPartition(){
   if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
+      /* --- REBOUCLAGE : gros morceau, extremites calees sur des temps forts (downbeats), energie-matchee --- */
       var _endE=energyAt(dur-0.8);
-      var _ls=Math.min(dur*0.25,Math.max(1,dur-2)), _bdiff=1e9;
-      for(var _bk=0;_bk<beats.length;_bk++){ var _bt=beats[_bk]; if(_bt>=dur*0.12 && _bt<=dur*0.62){ var _e=energyAt(_bt); var _df=Math.abs(_e-_endE); if(_df<_bdiff){ _bdiff=_df; _ls=_bt; } } }
-      var _ll=Math.max(2,dur-_ls);
-      var _extB=beats.slice(), _extS=str.slice(), _bse=dur;
-      while(_bse < MST+want+4){ for(var _bk2=0;_bk2<beats.length;_bk2++){ if(beats[_bk2]>=_ls){ _extB.push(_bse+(beats[_bk2]-_ls)); _extS.push(str[_bk2]||0.5); } } _bse+=_ll; }
+      /* LB1 = downbeat proche de la fin */
+      var _lb1=dur-0.15; for(var _b=beats.length-1;_b>=0;_b--){ if(beats[_b]<=dur-0.15){ _lb1=beats[_b]; break; } }
+      if(A.metric){ var _bm=-1; for(var _b2=0;_b2<beats.length;_b2++){ if(beats[_b2]>=dur-4 && beats[_b2]<=dur-0.15){ var _mm=(A.metric[_b2]||0); if(_mm>_bm){ _bm=_mm; _lb1=beats[_b2]; } } } }
+      /* LB0 = downbeat dans le premier tiers, energie proche de la fin (gros bout) */
+      var _lb0=dur*0.25, _bsc=-1;
+      for(var _b3=0;_b3<beats.length;_b3++){ var _bt3=beats[_b3]; if(_bt3>=dur*0.14 && _bt3<=dur*0.46){ var _e3=energyAt(_bt3); var _match=1-Math.min(1,Math.abs(_e3-_endE)); var _m3=(A.metric&&A.metric[_b3]!=null)?A.metric[_b3]:0.4; var _sc=_match*0.68+_m3*0.32; if(_sc>_bsc){ _bsc=_sc; _lb0=_bt3; } } }
+      if(_lb1<=_lb0+2){ _lb1=Math.min(dur-0.15, _lb0+Math.max(3,(dur-_lb0)*0.6)); }
+      var _ll=Math.max(2,_lb1-_lb0);
+      window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_lb0; window.LOOP_END=_lb1; window.LOOP_LEN=_ll;
+      /* temps etendus : 1er passage jusqu'a LB1, puis on repete [LB0,LB1] (beats coincident au raccord) */
+      var _extB=[], _extS=[];
+      for(var _b4=0;_b4<beats.length;_b4++){ if(beats[_b4]<=_lb1+0.01){ _extB.push(beats[_b4]); _extS.push(str[_b4]||0.5); } }
+      var _bse=_lb1;
+      while(_bse < MST+want+4){ for(var _b5=0;_b5<beats.length;_b5++){ if(beats[_b5]>=_lb0 && beats[_b5]<=_lb1){ _extB.push(_bse+(beats[_b5]-_lb0)); _extS.push(str[_b5]||0.5); } } _bse+=_ll; }
       beats=_extB; str=_extS;
-      window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_ls; window.LOOP_LEN=_ll;
       avail=want; bdur=want; window.DUR_FIT=1;
     }
     window.DUR_NP=_nP; }
@@ -7462,7 +7471,7 @@ function paintStrip(t){
 function visualTime(){ return montageNow() + (window.LOOP_ON?0:LEAD) + curSync(); }
 function loop(){
   if(!playing) return;
-  if(window.LOOP_ON && !WA.on && audioEl){ var _md=window.MUSIC_DUR||(A?A.dur:0); if(_md>0 && audioEl.currentTime>=_md-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
+  if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
   var t=visualTime(); if(t<0) t=0;
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
