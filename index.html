@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — ticker lent/gros + durees lisibles par style + style Generique vertical · BUILD 2026-08-06-C43 -->
+<!-- Studio Magot — duree pilotee par le contenu + rebouclage musical (horloge decouplee) · BUILD 2026-08-06-C44 -->
 
 <html lang="fr">
 <head>
@@ -444,7 +444,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C43</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C44</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -673,6 +673,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 "use strict";
 /* ================= État ================= */
 var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
+var mBase=0;
+function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
+function audioAt(mt){ if(!window.LOOP_ON) return mt; var md=window.MUSIC_DUR||(A?A.dur:mt); if(mt<md) return mt; var ll=window.LOOP_LEN||1; return (window.LOOP_START||0)+((mt-md)%ll); }
+function montageNow(){ return window.LOOP_ON ? (_perfNow()-mBase) : (audioEl?audioEl.currentTime:0); }
+function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.LOOP_ON){ mBase=_perfNow()-mt; } try{ if(audioEl) audioEl.currentTime=audioAt(mt); }catch(e){} }
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
 var EXPORTING=false;
 var EXPFMT={w:540,h:960,name:"9:16"};
@@ -902,9 +907,20 @@ function buildPartition(){
   var avail=Math.max(1,dur-MST);
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, want=0;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _nd=_capNeeded(_pp); want += (_nd>0?_nd:M.tgtSec); } }
-  if(_nP>0){
+  window.LOOP_ON=0;
+  if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
-    else { var _scl=avail/want; etgt=Math.max(M.minSec,M.tgtSec*_scl); emin=Math.max(0.5,M.minSec*_scl); emax=Math.max(etgt*1.2,M.maxSec*_scl); bdur=avail; window.DUR_FIT=(_scl>=0.6?1:0); }
+    else {
+      /* musique trop courte -> REBOUCLAGE depuis son passage le plus energique (meme tonalite) */
+      var _ls=Math.min(dur*0.25,Math.max(1,dur-2)), _lbest=-1;
+      for(var _bk=0;_bk<beats.length;_bk++){ if(beats[_bk]>=dur*0.12 && beats[_bk]<=dur*0.58){ var _sv=(str[_bk]||0); if(_sv>_lbest){ _lbest=_sv; _ls=beats[_bk]; } } }
+      var _ll=Math.max(2,dur-_ls);
+      var _extB=beats.slice(), _extS=str.slice(), _bse=dur;
+      while(_bse < MST+want+4){ for(var _bk2=0;_bk2<beats.length;_bk2++){ if(beats[_bk2]>=_ls){ _extB.push(_bse+(beats[_bk2]-_ls)); _extS.push(str[_bk2]||0.5); } } _bse+=_ll; }
+      beats=_extB; str=_extS;
+      window.LOOP_ON=1; window.MUSIC_DUR=dur; window.LOOP_START=_ls; window.LOOP_LEN=_ll;
+      avail=want; bdur=want; window.DUR_FIT=1;
+    }
     window.DUR_NP=_nP; }
   bdur=Math.max(1,Math.min(bdur,avail)); var wEnd=MST+bdur; window.MONTAGE_DUR=wEnd; window.MSTART_EFF=MST;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
@@ -7406,9 +7422,10 @@ function paintStrip(t){
 }
 
 /* ================= Horloge audio + boucle ================= */
-function visualTime(){ return (audioEl?audioEl.currentTime:0) + LEAD + curSync(); }
+function visualTime(){ return montageNow() + (window.LOOP_ON?0:LEAD) + curSync(); }
 function loop(){
   if(!playing) return;
+  if(window.LOOP_ON && audioEl){ var _md=window.MUSIC_DUR||(A?A.dur:0); if(_md>0 && audioEl.currentTime>=_md-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
   var t=visualTime(); if(t<0) t=0;
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
@@ -7441,12 +7458,12 @@ function startPlay(){
   if(!audioEl){ setState("Musique non chargée."); return; }
   buildPartition();
   document.getElementById("empty").style.display="none";
-  try{ audioEl.currentTime=pausedOffset||(window.MSTART_EFF||0); }catch(e){}
+  var _st0=pausedOffset||(window.MSTART_EFF||0); if(window.LOOP_ON){ mBase=_perfNow()-_st0; } try{ audioEl.currentTime=audioAt(_st0); }catch(e){}
   var go=function(){ playing=true; if(OVL.on && ovVid){ var p=ovVid.play(); if(p&&p.then) p.catch(function(){}); } cancelAnimationFrame(raf); loop(); };
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ setState("Lecture bloquée — retape « Lire »."); }); else go();
 }
-function stopPlay(){ if(playing && audioEl){ pausedOffset=Math.max(0,audioEl.currentTime); } playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
+function stopPlay(){ if(playing){ pausedOffset=Math.max(0, montageNow()); } playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
 function resetBtn(){ pausedOffset=0; document.getElementById("play").textContent="▶ Lire le film"; }
 
 /* ================= UI ================= */
@@ -7605,7 +7622,7 @@ async function exportFast(){
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
   /* commentaire -> duree lisible : fusionne les plans suivants (cales sur les temps) jusqu'a atteindre le temps necessaire */
   if(_PORDER && _PORDER.length){ var _cpi=0, _csi=0; while(_csi<SEGS.length){ if(SEGS[_csi].video){ _csi++; continue; } if(_cpi>=_PORDER.length) break; var _cph=_PORDER[_cpi]; SEGS[_csi].img=_cph; var _need=_capNeeded(_cph); if(_need>0){ while((SEGS[_csi].end-SEGS[_csi].start) < _need-0.01 && _csi+1<SEGS.length && !SEGS[_csi+1].video){ SEGS[_csi].end=SEGS[_csi+1].end; SEGS.splice(_csi+1,1); } } _cpi++; _csi++; } }
-  var DUR=Math.max(1, Math.min(A.dur||6, SEGS.length?SEGS[SEGS.length-1].end:(A.dur||6)));
+  var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
   var N=Math.round(DUR*FPS);
   var _ow=base.width,_oh=base.height;
   if(base.width!==W||base.height!==H){ setRenderSize(W,H); await new Promise(function(r){ setTimeout(r,30); }); }
@@ -8079,7 +8096,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }).join("");
   }
   function seekMontage(t){
-    try{ if(typeof audioEl!=="undefined"&&audioEl){ audioEl.currentTime=Math.max(0,t); } }catch(e){}
+    try{ if(typeof seekMontageTo==="function"){ seekMontageTo(Math.max(0,t)); } else if(typeof audioEl!=="undefined"&&audioEl){ audioEl.currentTime=Math.max(0,t); } }catch(e){}
     if(!((typeof playing!=="undefined")&&playing)){ var p=$("play"); if(p) p.click(); }
     closeSheets();
   }
@@ -8186,7 +8203,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var r=trk.getBoundingClientRect();
       var f=Math.max(0,Math.min(1,(x-r.left)/(r.width||1)));
       var _mst=(window.MSTART_EFF||0), _mEnd=(window.MONTAGE_DUR||A.dur||0), _mlen=Math.max(0.1,_mEnd-_mst);
-      try{ audioEl.currentTime=_mst+f*_mlen; }catch(e){}
+      var _mt=_mst+f*_mlen; try{ if(typeof seekMontageTo==="function") seekMontageTo(_mt); else audioEl.currentTime=_mt; }catch(e){}
       var fl=q(".hero .trk span"); if(fl) fl.style.width=(f*100)+"%";
     }
     var down=false;
@@ -8223,9 +8240,9 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
         var ov=$("fadeOv");
         var bar=$("mstBar"); if(bar){ var show=(typeof A!=="undefined"&&A); bar.style.display=show?"block":"none"; }
         var mst=window.MSTART_EFF||0;
-        if(pl && a && mst>0.05 && (a.currentTime||0) < mst-0.05){ try{ a.currentTime=mst; }catch(e){} }
+        var _mn=(typeof montageNow==="function")?montageNow():(a.currentTime||0); if(pl && a && mst>0.05 && _mn < mst-0.05){ try{ if(typeof seekMontageTo==="function") seekMontageTo(mst); else a.currentTime=mst; }catch(e){} }
         if(pl && a && md>0.5){
-          var t=a.currentTime||0;
+          var t=(typeof montageNow==="function")?montageNow():(a.currentTime||0);
           if(t < md-FADE){ if(ov && ov.style.opacity!=="0") ov.style.opacity="0"; if(a.volume<1) a.volume=1; }
           else if(t < md){ var k=(md-t)/FADE; try{ a.volume=Math.max(0,Math.min(1,k)); }catch(e){} if(ov) ov.style.opacity=(1-k).toFixed(3); }
           else { try{ if(typeof stopPlay==="function") stopPlay(); if(typeof resetBtn==="function") resetBtn(); a.volume=1; }catch(e){} }
@@ -8343,7 +8360,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var hasA=(typeof A!=="undefined")&&A;
       var np=(typeof SEGS!=="undefined"&&SEGS)?SEGS.length:0;
       if(hasA){
-        var cur=(typeof audioEl!=="undefined"&&audioEl?audioEl.currentTime:0)||0;
+        var cur=(typeof montageNow==="function")?montageNow():((typeof audioEl!=="undefined"&&audioEl?audioEl.currentTime:0)||0);
         var _mst=(window.MSTART_EFF||0), _mEnd=(window.MONTAGE_DUR||A.dur||0), _mlen=Math.max(0.1,_mEnd-_mst);
         var _mcur=Math.max(0,Math.min(_mlen,cur-_mst));
         var dur=_mlen;
