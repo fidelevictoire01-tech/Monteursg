@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — timeline photo pro + texte editable + glisser reflow · BUILD 2026-08-06-C31 -->
+<!-- Studio Magot — incrustation legendes (apercu + export) · BUILD 2026-08-06-C33 -->
 
 <html lang="fr">
 <head>
@@ -425,7 +425,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C31</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C33</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -864,7 +864,9 @@ function computePhotoOrder(){
   /* 3) refroidissement par sujet, appliqué au primaire puis au secondaire */
   var K=Math.max(1, Math.min(4, reps.length-1));
   function spread(list){ var rem=list.slice(), out=[], recent=[]; while(rem.length){ var pos=-1; for(var j=0;j<rem.length;j++){ if(recent.indexOf(cl[rem[j]])<0){ pos=j; break; } } if(pos<0) pos=0; var idx=rem[pos]; out.push(idx); rem.splice(pos,1); recent.push(cl[idx]); if(recent.length>K) recent.shift(); } return out; }
-  return spread(primary).concat(spread(secondary));
+  var _res=spread(primary).concat(spread(secondary));
+  for(var _k=1;_k<_res.length;_k++){ if(cl[_res[_k]]===cl[_res[_k-1]]){ for(var _m=_k+1;_m<_res.length;_m++){ if(cl[_res[_m]]!==cl[_res[_k-1]] && (_k+1>=_res.length||cl[_res[_m]]!==cl[_res[_k+1]])){ var _t=_res[_k]; _res[_k]=_res[_m]; _res[_m]=_t; break; } } } }
+  return _res;
 }
 function buildPartition(){
   SEGS=[]; stripDirty=true; if(!A||!A.beats||A.beats.length<2) return;
@@ -994,6 +996,28 @@ function docScore(c){
     return { lum:lum, sat:sat, edge:edges/n, paperFrac:paperCnt/n, textDen:textInPaper/Math.max(1,paperCnt) };
   }catch(e){ return null; }
 }
+function drawCaption(ctx,Wd,Hd,text,ox,into,dur){
+  var fs=Math.max(16,Math.round(Hd*0.044)), maxW=Wd*0.86;
+  ctx.save();
+  ctx.font="600 "+fs+"px -apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
+  ctx.textAlign="center"; ctx.textBaseline="alphabetic";
+  var words=(""+text).split(/\s+/), lines=[], cur="";
+  for(var i=0;i<words.length;i++){ var tst=cur?cur+" "+words[i]:words[i]; if(ctx.measureText(tst).width>maxW && cur){ lines.push(cur); cur=words[i]; } else cur=tst; }
+  if(cur) lines.push(cur);
+  if(lines.length>3){ lines=lines.slice(0,3); lines[2]=lines[2].replace(/\s+\S*$/,"")+"\u2026"; }
+  var lh=fs*1.24, blockH=lines.length*lh, yBottom=Hd-Hd*0.085, yTop=yBottom-blockH;
+  var a=1; if(into<0.35) a=Math.max(0,into/0.35); if(dur-into<0.35) a=Math.min(a,Math.max(0,(dur-into)/0.35));
+  ctx.globalAlpha=Math.max(0,Math.min(1,a));
+  ctx.translate(ox,0);
+  var g=ctx.createLinearGradient(0,yTop-fs*1.6,0,yBottom+fs*0.5);
+  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,0.52)");
+  ctx.fillStyle=g; ctx.fillRect(0,yTop-fs*1.8,Wd,(yBottom+fs*0.6)-(yTop-fs*1.8));
+  ctx.shadowColor="rgba(0,0,0,0.85)"; ctx.shadowBlur=fs*0.35; ctx.shadowOffsetY=1;
+  ctx.fillStyle="#ffffff";
+  var y=yTop+fs;
+  for(var L=0;L<lines.length;L++){ ctx.fillText(lines[L],Wd/2,y); y+=lh; }
+  ctx.restore();
+}
 function drawSegAt(sg,t,ox,smul){
   ox=ox||0; smul=smul||1;
   var Wd=base.width,Hd=base.height, cx=Wd/2, cy=Hd/2;
@@ -1026,6 +1050,7 @@ function drawSegAt(sg,t,ox,smul){
   bctx.save(); bctx.translate(cx+ox+dx, cy+dy);
   bctx.drawImage(img,-wf/2,-hf/2,wf,hf);
   bctx.restore();
+  if(sg && sg.img>=0 && PHOTOS[sg.img] && PHOTOS[sg.img]._cap){ var _cp=(""+PHOTOS[sg.img]._cap).trim(); if(_cp) drawCaption(bctx,Wd,Hd,_cp,ox,(t-sg.start),(sg.end-sg.start)); }
 }
 function renderBaseFrame(t){
   var Wd=base.width,Hd=base.height;
@@ -7780,7 +7805,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     purgeClones();
     g.className="ptl-list";
     if(!(typeof PHOTOS!=="undefined")||!PHOTOS||!PHOTOS.length){ g.innerHTML='<p class="sh-note" style="opacity:.7">Aucune photo. Appuie sur \u00ab Ajouter des photos \u00bb.</p>'; return; }
-    var order=passageOrder(), inSet={}, inc=[], exc=[];
+    var order=(window.USER_ORDER&&window.USER_ORDER.length)?window.USER_ORDER.slice():passageOrder(), inSet={}, inc=[], exc=[];
     order.forEach(function(i){ var p=PHOTOS[i]; if(p&&!(p.feat&&p.feat.skip)){ inc.push(i); inSet[i]=1; } });
     PHOTOS.forEach(function(p,i){ if(p&&!(p.feat&&p.feat.skip)&&!inSet[i]){ inc.push(i); inSet[i]=1; } });
     PHOTOS.forEach(function(p,i){ if(p&&p.feat&&p.feat.skip){ exc.push(i); } });
