@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Coupes multi calees sur les VRAIS downbeats de la piste en cours + energie par piste + latence audio compensee · BUILD 2026-08-09-C77 -->
+<!-- Studio Magot — Vrai fondu enchaine entre musiques (1.5-3s) + FIX alignement audio au raccord (entree=xf) · BUILD 2026-08-09-C79 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C77</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C79</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -757,7 +757,7 @@ function computeLoopJoin(bts,dur){
 var TRACKS=[]; window.MULTI=0; window.MPLAN=null;
 function _eOfA(An,t){ if(!An||!An.energy||!An.fps) return 0.5; var i=Math.round(t*An.fps); return An.energy[Math.max(0,Math.min(An.energy.length-1,i))]||0; }
 function _bestBeatA(An,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<An.beats.length;k++){ var t=An.beats[k]; if(t>=a&&t<=b){ var m=(An.metric&&An.metric[k]!=null)?An.metric[k]:0.4; var s=score(t,m,_eOfA(An,t)); if(s>sc){ sc=s; bt=t; } } } return bt; }
-function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; var xf=Math.round(1/P)*P; if(!(xf>0)) xf=P; return Math.max(0.45,Math.min(1.3,xf)); }
+function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; var xf=4*P; if(!(xf>0)) xf=2; return Math.max(1.5,Math.min(3.0,xf)); }
 function _eWinAtA(An,a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=_eOfA(An,t); n++; } return n?s/n:_eOfA(An,a); }
 /* énergie à un instant du MONTAGE, en suivant la piste en cours (multi) */
 function _eAt(mt){ if(window.MULTI && window.MPLAN && window.MPLAN.length && typeof TRACKS!=="undefined" && TRACKS.length){ var plan=window.MPLAN; for(var i=plan.length-1;i>=0;i--){ if(mt>=plan[i].mStart-0.001){ var seg=plan[i], An=TRACKS[seg.ti]&&TRACKS[seg.ti].A; if(An) return _eOfA(An, seg.entry+(mt-seg.mStart)); break; } } } return (typeof energyAt==="function")?energyAt(mt):0.5; }
@@ -771,14 +771,15 @@ function buildMusicPlan(MST, want){
   if(N<1) return [];
   while(m < MST+want-0.5 && guard++<200){
     var ti=k%N, An=TRACKS[ti].A; if(!An||!An.beats||!An.beats.length) break;
-    var xf=_xfOfA(An), b0=_firstDownbeat(An), end=_lastDownbeat(An);
-    if(end<=b0+4) end=Math.min(An.dur-0.1, An.dur*0.95);
-    plan.push({ti:ti, entry:b0, end:end, mStart:m, xfIn:(k===0?0:xf), len:Math.max(2,end-b0)});
-    m += Math.max(2, end-b0); k++;
+    var xf=Math.min(_xfOfA(An), An.dur*0.4, 3.0);
+    var entry=(k===0)?((An.beats&&An.beats.length)?An.beats[0]:0):xf; /* non-1re : entrée = xf -> l'intro fond en douceur, audio aligné au raccord */
+    var end=Math.max(entry+2, An.dur-0.05);
+    plan.push({ti:ti, entry:entry, end:end, mStart:m, xfIn:(k===0?0:xf), len:Math.max(2,end-entry)});
+    m += Math.max(2, end-entry); k++;
   }
   window.MPLAN=plan; return plan;
 }
-function planBeatGrid(plan){ var beats=[],str=[],metric=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ beats.push(seg.mStart+(b-seg.entry)); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); metric.push((An.metric&&An.metric[k]!=null)?An.metric[k]:0.4); } } } return {beats:beats,str:str,metric:metric}; }
+function planBeatGrid(plan){ var beats=[],str=[],metric=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ var mb=seg.mStart+(b-seg.entry); if(mb < 0) continue; if(beats.length && mb <= beats[beats.length-1]+1e-4) continue; beats.push(mb); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); metric.push((An.metric&&An.metric[k]!=null)?An.metric[k]:0.4); } } } return {beats:beats,str:str,metric:metric}; }
 function waStartPlan(mt0){ if(!ctx) return false; try{ if(ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){} _xfCurves(); waStop(); if(!WA.gain){ WA.gain=ctx.createGain(); WA.gain.gain.value=1; WA.gain.connect(ctx.destination); } var plan=window.MPLAN||[]; if(!plan.length) return false; WA.on=true; var t0=ctx.currentTime+0.08, first=null;
   for(var i=0;i<plan.length;i++){ var seg=plan[i], buf=TRACKS[seg.ti]&&TRACKS[seg.ti].buf; if(!buf) continue;
     var xin=seg.xfIn||0, xout=(i<plan.length-1)?(plan[i+1].xfIn||0):0;
