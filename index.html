@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Vrai fondu enchaine entre musiques (1.5-3s) + FIX alignement audio au raccord (entree=xf) · BUILD 2026-08-09-C79 -->
+<!-- Studio Magot — FIX sync : l-offset s-adapte au tempo de la piste en cours (etait fige sur la 1re musique) · BUILD 2026-08-09-C80 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C79</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C80</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -825,7 +825,17 @@ var SYNC_BASE={cinema:0, doux:0.08, dynamique:-0.06, voyage:0.02};   /* phase de
 function autoSync(mode,bpm){ var bi=(bpm&&bpm>0)?60/bpm:0.5; var fct=Math.max(0.6,Math.min(1.8, bi/0.5)); return Math.max(-0.35,Math.min(0.35,(SYNC_BASE[mode]||0)*fct)); }
 var SYNC_M={cinema:autoSync("cinema",120),doux:autoSync("doux",120),dynamique:autoSync("dynamique",120),voyage:autoSync("voyage",120)};
 function recomputeSync(){ var bpm=(A&&A.bpmFelt)?A.bpmFelt:((A&&A.bpm)?A.bpm:120); SYNC_M={cinema:autoSync("cinema",bpm),doux:autoSync("doux",bpm),dynamique:autoSync("dynamique",bpm),voyage:autoSync("voyage",bpm)}; if(typeof syncApply==="function") syncApply(); }
-function curSync(){ return SYNC_M[MOOD]||0; }
+function curSync(){ var base=SYNC_M[MOOD]||0;
+  if(window.MULTI && window.MPLAN && typeof TRACKS!=="undefined" && TRACKS.length && TRACKS[0] && TRACKS[0].A){
+    var pi=(typeof _curPlanTrackIdx==="function")?_curPlanTrackIdx():-1;
+    if(pi>=0 && TRACKS[pi] && TRACKS[pi].A){
+      var bC=(TRACKS[pi].A.bpmFelt||TRACKS[pi].A.bpm||120), bR=(TRACKS[0].A.bpmFelt||TRACKS[0].A.bpm||120);
+      var fC=Math.max(0.6,Math.min(1.8,(60/bC)/0.5)), fR=Math.max(0.6,Math.min(1.8,(60/bR)/0.5));
+      if(fR>0) return Math.max(-0.35,Math.min(0.35, base*(fC/fR)));
+    }
+  }
+  return base;
+}
 var AC=window.AudioContext||window.webkitAudioContext;
 var ctx=null, AUDIOBUF=null, pausedOffset=0;
 var audioEl=null, audioURL="";
@@ -7612,7 +7622,7 @@ function loop(){
   if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
   var t=visualTime(); if(t<0) t=0;
   if(!window.LOOP_ON && window.MONTAGE_DUR && t>=window.MONTAGE_DUR-0.02){ stopPlay(); resetBtn(); return; }
-  if(window.MULTI){ var _cti=_curPlanTrackIdx(); if(_cti!==window._lastCti){ window._lastCti=_cti; try{ updateBadge(); }catch(e){} } }
+  if(window.MULTI){ var _cti=_curPlanTrackIdx(); if(_cti!==window._lastCti){ window._lastCti=_cti; try{ updateBadge(); }catch(e){} try{ if(typeof syncLabel==="function") syncLabel(); }catch(e){} } }
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
@@ -7686,7 +7696,7 @@ if(ovlAmt) ovlAmt.oninput=function(){ OVL.amt=(+ovlAmt.value)/100; };
 document.getElementById("ovlOff").onclick=function(){ OVL.on=false; try{ ovVid.pause(); }catch(e){} };
 var syncEl=document.getElementById("sync"), syncVal=document.getElementById("syncVal");
 function syncLabel(){ var v=Math.round(curSync()*1000); if(syncVal) syncVal.textContent=(v>0?"+":"")+v+" ms"; }
-function syncApply(){ if(syncEl) syncEl.value=Math.round(curSync()*1000); syncLabel(); if(A) paintStrip(playing?visualTime():0); }
+function syncApply(){ if(syncEl) syncEl.value=Math.round((SYNC_M[MOOD]||0)*1000); syncLabel(); if(A) paintStrip(playing?visualTime():0); }
 if(syncEl) syncEl.oninput=function(){ SYNC_M[MOOD]=(+syncEl.value)/1000; syncLabel(); if(A) paintStrip(playing?visualTime():0); };
 var srst=document.getElementById("syncReset"); if(srst) srst.onclick=function(){ SYNC_M[MOOD]=autoSync(MOOD,(A&&A.bpmFelt)?A.bpmFelt:((A&&A.bpm)?A.bpm:120)); syncApply(); };
 syncApply();
