@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — moteur d-effets procedural (Neon or-violet, Braises, Etincelles, Poussiere, Feux d-artifice) deterministe + realisateur varie style-anim-effet · BUILD 2026-08-06-C60 -->
+<!-- Studio Magot — documentaire aligne a gauche (lower-third distinct de Voyage) · BUILD 2026-08-06-C61 -->
 
 <html lang="fr">
 <head>
@@ -452,7 +452,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C60</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C61</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1287,17 +1287,27 @@ function _mmtDraw(ctx,opt){
     _noSh(ctx); var rw=Math.min(Math.max(wmax*0.4,fs*2.2),fs*5); ctx.fillStyle=GOLD; ctx.globalAlpha*=0.92; ctx.fillRect(-rw/2,blockH*0.5+fs*0.18,rw,Math.max(1.5,fs*0.045));
     ctx.restore(); return;
   }
-  if(st.kind==="travel"||st.kind==="documentary"){
-    var eyeb=(st.kind==="travel")?"\u25C6 CARNET DE VOYAGE":"DOCUMENTAIRE";
-    var elsp=(st.kind==="travel")?fs*0.14:fs*0.18;
+  if(st.kind==="travel"){
+    var eyeb="\u25C6 CARNET DE VOYAGE";
     cy=bottom-blockH*0.5; left=S*0.075; boxW=Math.min(W*0.9,wmax+fs*1.8); boxH=blockH+fs*1.55;
     topY=cy-boxH/2-fs*0.4; _scrimTo(ctx,W,H,topY,alpha*0.6);
     ctx.translate(dx,dy);
     _glassCard(ctx,left,cy-boxH/2,boxW,boxH,fs*0.30,true);
-    ctx.textAlign="left"; _ls(ctx,Math.max(1,elsp)); ctx.font="700 "+Math.round(small*0.92)+"px system-ui,sans-serif"; ctx.fillStyle=GOLD;
+    ctx.textAlign="left"; _ls(ctx,Math.max(1,fs*0.14)); ctx.font="700 "+Math.round(small*0.92)+"px system-ui,sans-serif"; ctx.fillStyle=GOLD;
     ctx.fillText(eyeb,left+fs*0.7,cy-boxH/2+fs*0.86); _ls(ctx,0);
-    _soft(ctx,fs,0.42); ctx.font=st.weight+" "+fs+"px system-ui,sans-serif"; ctx.fillStyle=WHITE;
-    yy=cy-boxH/2+fs*1.9; for(i=0;i<lines.length;i++){ ctx.fillText(lines[i],left+fs*0.7,yy); yy+=lh; }
+    _soft(ctx,fs,0.42); ctx.font=st.weight+" "+fs+"px system-ui,sans-serif";
+    _lines(ctx,lines,left+fs*0.7,cy-boxH/2+fs*1.9,lh,fs,"left",WHITE,_STK);
+    ctx.restore(); return;
+  }
+  if(st.kind==="documentary"){
+    topY=bottom-blockH-fs*1.5; _scrimTo(ctx,W,H,topY,alpha*0.9);
+    ctx.translate(dx,dy);
+    cy=bottom-blockH*0.5; left=S*0.078;
+    ctx.textAlign="left"; _ls(ctx,Math.max(1,fs*0.2)); ctx.font="700 "+Math.round(small*0.9)+"px system-ui,sans-serif"; ctx.fillStyle=GOLD;
+    ctx.fillText("DOCUMENTAIRE",left,cy-blockH*0.5-fs*0.62); _ls(ctx,0);
+    _noSh(ctx); ctx.fillStyle=GOLD; ctx.globalAlpha=alpha*0.9; ctx.fillRect(left,cy-blockH*0.5-fs*0.42,S*0.11,Math.max(2,fs*0.045)); ctx.globalAlpha=alpha;
+    _soft(ctx,fs,0.34); ctx.font=st.weight+" "+fs+"px system-ui,sans-serif";
+    _lines(ctx,lines,left,cy-blockH*0.5+fs*0.84,lh,fs,"left",WHITE,_STK);
     ctx.restore(); return;
   }
   if(st.kind==="box"||st.kind==="title"){
