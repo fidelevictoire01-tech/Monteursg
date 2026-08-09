@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Fondu inter-pistes court (evite clash de tempos) + rebuild DJ + BPM piste en cours (tick) · BUILD 2026-08-09-C73 -->
+<!-- Studio Magot — Descente DJ douce au reset + cadence des coupes resserree (photos suivent mieux le tempo) · BUILD 2026-08-09-C74 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C73</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C74</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -776,14 +776,14 @@ function buildMusicPlan(MST,want){
       plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:0,len:Math.max(2,end-b0)});
       m+=Math.max(2,end-b0);
     } else {
-      /* entrée APPARIÉE (haut->haut) : phrase courte au point apparié */
+      /* entrée APPARIÉE (haut->haut) : phrase au point apparié, qui DURE */
       var mEntry=_entryMatched(An,prevEndE,nx);
-      var pEnd=_phraseEnd(An,mEntry,8); if(pEnd>end) pEnd=end; if(pEnd<=mEntry+0.5) pEnd=Math.min(end,mEntry+2);
+      var pEnd=_phraseEnd(An,mEntry,16); if(pEnd>end) pEnd=end; if(pEnd<=mEntry+0.5) pEnd=Math.min(end,mEntry+3);
       plan.push({ti:ti,entry:mEntry,end:pEnd,mStart:m,xfIn:nx,len:Math.max(1,pEnd-mEntry),phrase:true});
       m+=Math.max(1,pEnd-mEntry);
-      /* REBUILD : on redescend au début et on rebâtit la montée */
+      /* REBUILD : DESCENTE DOUCE (même piste, pas de clash) vers le début, puis on rebâtit la montée */
       if(b0 < mEntry-1){
-        plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:0.14,len:Math.max(2,end-b0),reset:true});
+        plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:1.5,len:Math.max(2,end-b0),reset:true});
         m+=Math.max(2,end-b0);
       }
     }
@@ -1062,6 +1062,8 @@ function buildPartition(){
   var MST=Math.max(0,Math.min(window.MSTART||0, Math.max(0,dur-1)));
   var avail=Math.max(1,dur-MST);
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, want=0;
+  /* cadence un peu plus serrée : les photos changent plus près du rythme (moins "long") */
+  emin*=0.86; etgt*=0.84; emax*=0.90;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _nd=_capNeeded(_pp); want += (_nd>0?_nd:M.tgtSec); } }
   window.LOOP_ON=0; window.MULTI=0;
   if(_nP>0 && TRACKS.length>1){ want=Math.min(want,600); window.MULTI=1; var _pl=buildMusicPlan(MST,want); var _g=planBeatGrid(_pl); if(_g.beats&&_g.beats.length){ beats=_g.beats; str=_g.str; } avail=want; bdur=want; window.DUR_FIT=1; window.DUR_NP=_nP; }
