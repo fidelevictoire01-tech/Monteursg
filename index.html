@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — RETOUR BASE STABLE : multi-pistes entierement retire (moteur+wiring), sync mono C53 restauree, import intact · BUILD 2026-08-06-C68 -->
+<!-- Studio Magot — MULTI-MUSIQUES cable dans ta bibliotheque (mix DJ) + export multi inclus · BUILD 2026-08-09-C69 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C68</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C69</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -699,7 +699,7 @@ var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
 var mBase=0, waMt0=0, waCtxT0=0;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
 function audioAt(mt){ if(!window.LOOP_ON) return mt; var le=window.LOOP_END||(A?A.dur:mt); if(mt<=le) return mt; var ls=window.LOOP_START||0, ll=window.LOOP_LEN||1; return ls + ((mt - le) % ll); }
-function montageNow(){ if(window.LOOP_ON){ if(WA.on && ctx){ return waMt0 + (ctx.currentTime - waCtxT0); } return _perfNow()-mBase; } return audioEl?audioEl.currentTime:0; }
+function montageNow(){ if(window.LOOP_ON||window.MULTI){ if(WA.on && ctx){ return waMt0 + (ctx.currentTime - waCtxT0); } return _perfNow()-mBase; } return audioEl?audioEl.currentTime:0; }
 var WA={srcs:[],gain:null,on:false,_iv:0,_nextCtx:0,_nextFrom:0,_first:true,XF:2.0};
 var _xfIn=null,_xfOut=null;
 function _xfCurves(){ if(_xfIn) return; var N=48; _xfIn=new Float32Array(N); _xfOut=new Float32Array(N); for(var i=0;i<N;i++){ var x=i/(N-1); _xfIn[i]=Math.sin(x*Math.PI/2); _xfOut[i]=Math.cos(x*Math.PI/2); } }
@@ -736,8 +736,8 @@ function waStart(mt){
     return true;
   }catch(e){ WA.on=false; return false; }
 }
-function masterVol(v){ v=Math.max(0,Math.min(1,v)); if(window.LOOP_ON && WA.on && WA.gain){ try{ WA.gain.gain.value=v; }catch(e){} } else if(audioEl){ try{ audioEl.volume=v; }catch(e){} } }
-function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.LOOP_ON){ mBase=_perfNow()-mt; if(WA.on){ waStart(mt); return; } } try{ if(audioEl) audioEl.currentTime=audioAt(mt); }catch(e){} }
+function masterVol(v){ v=Math.max(0,Math.min(1,v)); if((window.LOOP_ON||window.MULTI) && WA.on && WA.gain){ try{ WA.gain.gain.value=v; }catch(e){} } else if(audioEl){ try{ audioEl.volume=v; }catch(e){} } }
+function seekMontageTo(mt){ mt=Math.max(0,mt); if(window.MULTI){ mBase=_perfNow()-mt; if(WA.on){ waStartPlan(mt); return; } } if(window.LOOP_ON){ mBase=_perfNow()-mt; if(WA.on){ waStart(mt); return; } } try{ if(audioEl) audioEl.currentTime=audioAt(mt); }catch(e){} }
 function _mediaBeatP(bts){ var d=[]; for(var i=1;i<bts.length;i++){ var x=bts[i]-bts[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); return d.length?d[d.length>>1]:0.5; }
 function _eWinAt(a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=energyAt(t); n++; } return n?s/n:energyAt(a); }
 function _bestBeat(bts,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<bts.length;k++){ var t=bts[k]; if(t>=a&&t<=b){ var m=(A.metric&&A.metric[k]!=null)?A.metric[k]:0.4; var s=score(t,m,energyAt(t),k); if(s>sc){ sc=s; bt=t; } } } return bt; }
@@ -753,6 +753,43 @@ function computeLoopJoin(bts,dur){
   return {start:start, end:end, xf:XF};
 }
 
+/* ===== Multi-pistes (mix DJ) — chaque piste en entier, fondu beat-matché, ordre cyclique ===== */
+var TRACKS=[]; window.MULTI=0; window.MPLAN=null;
+function _eOfA(An,t){ if(!An||!An.energy||!An.fps) return 0.5; var i=Math.round(t*An.fps); return An.energy[Math.max(0,Math.min(An.energy.length-1,i))]||0; }
+function _bestBeatA(An,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<An.beats.length;k++){ var t=An.beats[k]; if(t>=a&&t<=b){ var m=(An.metric&&An.metric[k]!=null)?An.metric[k]:0.4; var s=score(t,m,_eOfA(An,t)); if(s>sc){ sc=s; bt=t; } } } return bt; }
+function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; return Math.max(1.2,Math.min(2.8,Math.round(2/P)*P)); }
+function _trackEE(An){ var entry=_bestBeatA(An,0,An.dur*0.10,function(t,m,e){return m*1.0-t*0.001;}); if(entry==null) entry=(An.beats&&An.beats[0])||0; var end=_bestBeatA(An,An.dur*0.86,Math.min(An.dur-0.1,An.dur*0.98),function(t,m,e){return m*0.6+e*0.4;}); if(end==null) end=(An.beats&&An.beats[An.beats.length-1])||(An.dur-0.1); if(end<=entry+4) end=Math.min(An.dur-0.1,entry+Math.max(6,An.dur*0.5)); return {entry:entry,end:end}; }
+function buildMusicPlan(MST,want){ var plan=[], m=MST, guard=0, N=TRACKS.length, k=0; if(N<1) return []; while(m<MST+want && guard++<300){ var ti=k%N, An=TRACKS[ti].A; if(!An||!An.beats||!An.beats.length){ break; } var ee=_trackEE(An), xf=_xfOfA(An), len=Math.max(2,ee.end-ee.entry); plan.push({ti:ti,entry:ee.entry,end:ee.end,mStart:m,xf:xf,len:len}); m+=len; k++; } window.MPLAN=plan; return plan; }
+function planBeatGrid(plan){ var beats=[],str=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ beats.push(seg.mStart+(b-seg.entry)); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); } } } return {beats:beats,str:str}; }
+function waStartPlan(mt0){ if(!ctx) return false; try{ if(ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){} _xfCurves(); waStop(); if(!WA.gain){ WA.gain=ctx.createGain(); WA.gain.gain.value=1; WA.gain.connect(ctx.destination); } var plan=window.MPLAN||[]; if(!plan.length) return false; WA.on=true; var t0=ctx.currentTime+0.08, first=null;
+  for(var i=0;i<plan.length;i++){ var seg=plan[i], buf=TRACKS[seg.ti]&&TRACKS[seg.ti].buf; if(!buf) continue; var xf=seg.xf; var segEndM=seg.mStart+seg.len; if(segEndM<=mt0) continue;
+    var fromPos, startM; if(mt0>=seg.mStart){ fromPos=seg.entry+(mt0-seg.mStart); startM=mt0; } else { fromPos=(i===0)?seg.entry:Math.max(0,seg.entry-xf); startM=(i===0)?seg.mStart:(seg.mStart-xf); }
+    var startAt=t0+(startM-mt0); if(startAt<ctx.currentTime+0.02) startAt=ctx.currentTime+0.02; var playLen=seg.end-fromPos; if(playLen<0.2) continue; var endAt=startAt+playLen;
+    var s=ctx.createBufferSource(); s.buffer=buf; var g=ctx.createGain(); s.connect(g); g.connect(WA.gain);
+    try{ if(i===0||mt0>=seg.mStart){ g.gain.setValueAtTime(1,startAt); } else { g.gain.setValueCurveAtTime(_xfIn,startAt,xf); g.gain.setValueAtTime(1,startAt+xf); } if(i<plan.length-1){ var fo=Math.max(startAt+0.01,endAt-xf); g.gain.setValueCurveAtTime(_xfOut,fo,xf); } }catch(e){ try{ g.gain.value=1; }catch(_e){} }
+    try{ s.start(startAt,fromPos); s.stop(endAt+0.1); }catch(e){} WA.srcs.push({src:s,end:endAt,start:startAt}); if(first==null) first=startAt; }
+  if(!WA.srcs.length){ WA.on=false; return false; } waMt0=mt0; waCtxT0=(first||ctx.currentTime); return true; }
+/* mixe le plan échantillon par échantillon (pour l'export) -> renvoie un AudioBuffer mono/stéréo de durée `dur` */
+function renderPlanToBuffer(dur, sr){
+  var plan=window.MPLAN||[]; if(!plan.length||!TRACKS.length||!ctx) return null;
+  var len=Math.max(1,Math.floor(dur*sr)); var out=ctx.createBuffer(2,len,sr);
+  var oL=out.getChannelData(0), oR=out.getChannelData(1);
+  for(var i=0;i<plan.length;i++){ var seg=plan[i], An=TRACKS[seg.ti], buf=An&&An.buf; if(!buf) continue;
+    var bsr=buf.sampleRate, L=buf.getChannelData(0), R=(buf.numberOfChannels>1)?buf.getChannelData(1):L;
+    var xf=seg.xf, segStartM=seg.mStart-((i>0)?xf:0), fromPos=(i>0)?Math.max(0,seg.entry-xf):seg.entry;
+    var segLen=seg.end-fromPos; if(segLen<=0) continue;
+    var oi0=Math.max(0,Math.floor(segStartM*sr)), oi1=Math.min(len,Math.ceil((segStartM+segLen)*sr));
+    for(var oi=oi0;oi<oi1;oi++){ var rel=oi/sr-segStartM; if(rel<0) continue; var si=Math.floor((fromPos+rel)*bsr); if(si<0||si>=buf.length) continue;
+      var gain=1; if(i>0 && rel<xf){ gain=Math.sin((rel/xf)*Math.PI/2); }
+      if(i<plan.length-1 && rel>segLen-xf){ gain*=Math.cos(Math.min(1,(rel-(segLen-xf))/xf)*Math.PI/2); }
+      oL[oi]+=L[si]*gain; oR[oi]+=R[si]*gain;
+    }
+  }
+  return out;
+}
+
+function analyzeBufferInto(buf, cb){ try{ essentiaReady.then(function(ok){ if(ok){ setTimeout(function(){ try{ toMono44(buf,function(sig,sr){ var An; try{ An=analyzeEssentia(sig,sr,buf.duration); }catch(e){ An=analyzeCustom(buf); } cb(An); }); }catch(e){ cb(analyzeCustom(buf)); } }, 20); } else { setTimeout(function(){ cb(analyzeCustom(buf)); }, 20); } }); }catch(e){ try{ cb(analyzeCustom(buf)); }catch(e2){ cb(null); } } }
+
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
 var EXPORTING=false;
 var EXPFMT={w:540,h:960,name:"9:16"};
@@ -765,7 +802,7 @@ var AC=window.AudioContext||window.webkitAudioContext;
 var ctx=null, AUDIOBUF=null, pausedOffset=0;
 var audioEl=null, audioURL="";
 function ensureAudio(){ if(!ctx){ try{ ctx=new AC(); }catch(e){} } }   /* ctx = analyse seulement ; le son sort d'un lecteur audio classique (comme Suno) */
-function setMusicEl(file){ try{ if(audioURL) URL.revokeObjectURL(audioURL); }catch(e){} audioURL=URL.createObjectURL(file); audioEl=new Audio(audioURL); audioEl.preload="auto"; audioEl.onended=function(){ if(window.LOOP_ON && playing){ try{ if(!WA.on){ audioEl.currentTime=window.LOOP_START||0; var _p=audioEl.play(); if(_p&&_p.then)_p.catch(function(){}); } }catch(e){} return; } if(playing){ stopPlay(); resetBtn(); } }; }
+function setMusicEl(file){ try{ if(audioURL) URL.revokeObjectURL(audioURL); }catch(e){} audioURL=URL.createObjectURL(file); audioEl=new Audio(audioURL); audioEl.preload="auto"; audioEl.onended=function(){ if((window.LOOP_ON||window.MULTI) && playing){ try{ if(!WA.on){ audioEl.currentTime=window.LOOP_START||0; var _p=audioEl.play(); if(_p&&_p.then)_p.catch(function(){}); } }catch(e){} return; } if(playing){ stopPlay(); resetBtn(); } }; }
 
 /* ================= Essentia (chargement asynchrone + repli) ================= */
 var essentia=null, ESSENTIA_STATE="loading";
@@ -982,8 +1019,9 @@ function buildPartition(){
   var avail=Math.max(1,dur-MST);
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, want=0;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _nd=_capNeeded(_pp); want += (_nd>0?_nd:M.tgtSec); } }
-  window.LOOP_ON=0;
-  if(_nP>0){ want=Math.min(want, 600);
+  window.LOOP_ON=0; window.MULTI=0;
+  if(_nP>0 && TRACKS.length>1){ want=Math.min(want,600); window.MULTI=1; var _pl=buildMusicPlan(MST,want); var _g=planBeatGrid(_pl); if(_g.beats&&_g.beats.length){ beats=_g.beats; str=_g.str; } avail=want; bdur=want; window.DUR_FIT=1; window.DUR_NP=_nP; }
+  else if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
       var _J=computeLoopJoin(beats,dur); WA.XF=_J.xf;
@@ -7536,7 +7574,7 @@ function paintStrip(t){
 }
 
 /* ================= Horloge audio + boucle ================= */
-function visualTime(){ return montageNow() + (window.LOOP_ON?0:LEAD) + curSync(); }
+function visualTime(){ return montageNow() + ((window.LOOP_ON||window.MULTI)?0:LEAD) + curSync(); }
 function loop(){
   if(!playing) return;
   if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
@@ -7573,7 +7611,8 @@ function startPlay(){
   buildPartition();
   document.getElementById("empty").style.display="none";
   var _st0=pausedOffset||(window.MSTART_EFF||0);
-  if(window.LOOP_ON){ mBase=_perfNow()-_st0; if(waStart(_st0)){ try{ audioEl.muted=true; }catch(e){} } else { try{ audioEl.muted=false; audioEl.currentTime=audioAt(_st0); }catch(e){} } }
+  if(window.MULTI){ mBase=_perfNow()-_st0; if(waStartPlan(_st0)){ try{ audioEl.muted=true; }catch(e){} } else { window.MULTI=0; try{ audioEl.muted=false; }catch(e){} } }
+  else if(window.LOOP_ON){ mBase=_perfNow()-_st0; if(waStart(_st0)){ try{ audioEl.muted=true; }catch(e){} } else { try{ audioEl.muted=false; audioEl.currentTime=audioAt(_st0); }catch(e){} } }
   else { try{ audioEl.muted=false; audioEl.currentTime=_st0; }catch(e){} }
   var go=function(){ playing=true; if(OVL.on && ovVid){ var p=ovVid.play(); if(p&&p.then) p.catch(function(){}); } cancelAnimationFrame(raf); loop(); };
   var pr=audioEl.play();
@@ -7771,8 +7810,10 @@ async function exportFast(){
     await venc.flush(); venc.close();
   }catch(e){ EXPORTING=false; expHide(); setState("Échec export image : "+((e&&e.message)||e)); return; }
   if(useAudio){ try{
-    var Lc=AUDIOBUF.getChannelData(0), Rc=(AUDIOBUF.numberOfChannels>1)?AUDIOBUF.getChannelData(1):AUDIOBUF.getChannelData(0);
-    var tot=Math.min(AUDIOBUF.length, Math.floor(DUR*Asr));
+    var _srcBuf=AUDIOBUF;
+    if(window.MULTI){ try{ var _pb=renderPlanToBuffer(DUR, Asr); if(_pb) _srcBuf=_pb; }catch(e){} }
+    var Lc=_srcBuf.getChannelData(0), Rc=(_srcBuf.numberOfChannels>1)?_srcBuf.getChannelData(1):_srcBuf.getChannelData(0);
+    var tot=Math.min(_srcBuf.length, Math.floor(DUR*Asr));
     var aenc=new AudioEncoder({ output:function(chunk,meta){ try{ if(meta&&meta.decoderConfig){ meta.decoderConfig.description=makeASC(Asr,Ach); } else { meta={decoderConfig:{description:makeASC(Asr,Ach)}}; } }catch(e){} muxer.addAudioChunk(chunk,meta); }, error:function(e){} });
     aenc.configure({codec:"mp4a.40.2", sampleRate:Asr, numberOfChannels:Ach, bitrate:128000});
     for(var off=0; off<tot; off+=1024){ var n=Math.min(1024,tot-off); var data=new Float32Array(n*2); data.set(Lc.subarray(off,off+n),0); data.set(Rc.subarray(off,off+n),n); var ad=new AudioData({format:"f32-planar",sampleRate:Asr,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(off*1000000/Asr),data:data}); aenc.encode(ad); ad.close(); }
@@ -7894,6 +7935,44 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   /* ---------- 5) Biblioth\u00e8que musique (fa\u00e7ade) ---------- */
   var msBody=q('.sheet-bg[data-bg="music"] .sh-body');
   var LIB=[], LIB_ACTIVE=null, LIB_SEQ=0, PENDING=null, _mLoading=false;
+  var MIX=[]; /* ids des pistes du mix, dans l'ordre (= enchaînement DJ) */
+  function inMix(id){ return MIX.indexOf(id)>=0; }
+  function mixPos(id){ return MIX.indexOf(id)+1; }
+  function addToMix(t){ if(inMix(t.id)) return; if(MIX.length>=4){ if(typeof showToast==="function") showToast("Maximum 4 musiques"); return; } MIX.push(t.id); onMixChange(); }
+  function removeFromMix(t){ var i=MIX.indexOf(t.id); if(i<0) return; MIX.splice(i,1); onMixChange(); }
+  function ensureTrackReady(t, cb){
+    if(t._A && t._buf){ cb(true); return; }
+    if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if(!ctx){ cb(false); return; }
+    t.loading=true; renderLib();
+    function gotBuf(buf){ t._buf=buf; analyzeBufferInto(buf,function(An){ if(An){ An.buf=buf; t._A=An; } t.loading=false; renderLib(); cb(!!An); }); }
+    function fail(){ t.loading=false; renderLib(); cb(false); }
+    try{
+      if(t.file){ t._file=t.file; t.file.arrayBuffer().then(function(ab){ ctx.decodeAudioData(ab.slice(0), gotBuf, fail); }).catch(fail); }
+      else if(t.url){ fetch(t.url).then(function(r){ return r.arrayBuffer(); }).then(function(ab){ try{ t._file=new File([ab],(t.title||"track")+".mp3",{type:"audio/mpeg"}); }catch(e){} ctx.decodeAudioData(ab.slice(0), gotBuf, fail); }).catch(fail); }
+      else fail();
+    }catch(e){ fail(); }
+  }
+  function onMixChange(){
+    if(MIX.length===0){ TRACKS=[]; window.MULTI=0; renderLib(); return; }
+    if(MIX.length===1){ TRACKS=[]; window.MULTI=0; var t0=byId(MIX[0]); if(t0) useTrack(t0); renderLib(); return; }
+    var pending=0;
+    MIX.forEach(function(id){ var t=byId(id); if(t && !(t._A&&t._buf)){ pending++; ensureTrackReady(t,function(){ if(--pending===0) assembleMix(); }); } });
+    if(pending===0) assembleMix();
+    renderLib();
+  }
+  function assembleMix(){
+    var ready=[], firstFile=null;
+    for(var i=0;i<MIX.length;i++){ var t=byId(MIX[i]); if(t&&t._A&&t._buf){ ready.push({buf:t._buf,A:t._A,name:t.title}); if(!firstFile) firstFile=t._file||t.file; } }
+    if(ready.length<2){ return; }
+    TRACKS=ready; AUDIOBUF=TRACKS[0].buf; A=TRACKS[0].A;
+    if(firstFile){ try{ setMusicEl(firstFile); }catch(e){} }
+    try{ if(typeof recomputeSync==="function") recomputeSync(); }catch(e){}
+    var sm=$("srcMus"); if(sm) sm.textContent=ready.length+" musiques \u00b7 mix DJ";
+    try{ if(typeof PHOTOS!=="undefined"&&PHOTOS.length&&typeof buildPartition==="function") buildPartition(); if(typeof paintStrip==="function") paintStrip(0); if(typeof updateBadge==="function") updateBadge(); }catch(e){}
+    if(typeof setState==="function") setState("Mix DJ : "+ready.length+" musiques. Ajoute des photos puis \u00ab Lire \u00bb.");
+    renderLib();
+  }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function cleanName(s){ return String(s||"").replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim(); }
   function clock(sec){ sec=Math.max(0,Math.round(sec||0)); var m=Math.floor(sec/60),s=sec%60; return m+":"+(s<10?"0":"")+s; }
@@ -7924,9 +8003,9 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var lib=$("mLib"); if(!lib) return;
     if(!LIB.length){ lib.innerHTML='<p class="sh-note" style="opacity:.72">Aucune piste pour l\'instant. Importe une musique, ou d\u00e9pose tes pistes + <b>musics.json</b> dans le d\u00e9p\u00f4t.</p>'; return; }
     lib.innerHTML=LIB.map(function(t){
-      var act=(t.id===LIB_ACTIVE);
+      var act=inMix(t.id); var _mp=mixPos(t.id);
       var playing=(PREV && PREV.id===t.id && PREV.audio && !PREV.audio.paused);
-      var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Utilis\u00e9e">\u2713</span>':'<span class="mt-add" title="Ajouter au montage">\uFF0B</span>');
+      var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Dans le mix">'+_mp+'</span>':'<span class="mt-add" title="Ajouter au mix">\uFF0B</span>');
       return '<div class="mtrack'+(act?' on':'')+'" data-id="'+t.id+'">'
         +'<button class="mt-main" data-id="'+t.id+'">'
           +'<span class="mt-cov">'+coverHTML(t)+'<span class="mt-covplay">'+(playing?'\u23F8':'\u25B6')+'</span></span>'
@@ -7939,7 +8018,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       b.onclick=function(){ var t=byId(b.getAttribute("data-id")); if(t) togglePreview(t); };
     });
     Array.prototype.forEach.call(lib.querySelectorAll(".mt-addbtn"),function(b){
-      b.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); var t=byId(b.getAttribute("data-id")); if(t) useTrack(t); };
+      b.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); var t=byId(b.getAttribute("data-id")); if(!t) return; if(inMix(t.id)) removeFromMix(t); else addToMix(t); };
     });
   }
   function showProg(on,label){ var p=$("mProg"); if(!p) return; p.style.display=on?"block":"none"; if(label!=null){ var l=p.querySelector(".mp-label"); if(l) l.innerHTML=label; } }
@@ -8005,7 +8084,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   if(msBody){
     msBody.innerHTML=
-      '<p class="sh-note">Tape une piste pour l\'utiliser. Le r\u00e9alisateur cale les coupes sur son tempo.</p>'
+      '<p class="sh-note">Tape le <b>\uFF0B</b> pour ajouter une musique au <b>mix DJ</b> (jusqu\u2019\u00e0 4, num\u00e9ro = ordre). Une seule = mono. Le r\u00e9alisateur cale les coupes sur le tempo de chacune.</p>'
      +'<div id="mLib" class="mlib"></div>'
      +'<div id="mProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
      +'<button class="doexp" id="mImport">\uFF0B Importer une musique</button>';
