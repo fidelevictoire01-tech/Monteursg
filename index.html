@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — multi-musiques : chargement-analyse (max 4) + plan DJ + apercu (mono intact, export multi a suivre) · BUILD 2026-08-06-C64 -->
+<!-- Studio Magot — panneau Musiques : liste ordonnee + ajouter-retirer-reordonner (max 4, ordre = enchainement DJ) · BUILD 2026-08-06-C65 -->
 
 <html lang="fr">
 <head>
@@ -444,6 +444,21 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 #styleDD .sdd-sep{ padding:8px 14px 4px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#9ca8b8; font-weight:700; border-top:1px solid rgba(255,255,255,.08); margin-top:4px; }
 #styleDD .sdd-anim.on{ color:#f4bd4a; }
 #styleDD .sdd-fx.on{ color:#7cc0ff; }
+/* Panneau Musiques */
+.mm-bd{ position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; }
+.mm-panel{ position:fixed; left:0; right:0; bottom:0; z-index:61; background:#0e1a29; border-top:1px solid rgba(255,255,255,.10); border-radius:18px 18px 0 0; padding:14px 14px calc(14px + env(safe-area-inset-bottom)); box-shadow:0 -10px 40px rgba(0,0,0,.5); }
+.mm-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.mm-head b{ color:#f5f7fb; font-size:17px; } .mm-head small{ color:#9ca8b8; flex:1; }
+#mmClose{ background:rgba(255,255,255,.08); color:#f5f7fb; border:0; border-radius:50%; width:30px; height:30px; font-size:15px; }
+.mm-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; max-height:46vh; overflow:auto; }
+.mm-empty{ color:#9ca8b8; font-size:14px; padding:14px; text-align:center; }
+.mm-row{ display:flex; align-items:center; gap:10px; background:#122033; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 12px; }
+.mm-num{ width:24px; height:24px; border-radius:50%; background:#e5aa34; color:#1a1206; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:13px; }
+.mm-name{ flex:1; color:#f5f7fb; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mm-ord button{ background:rgba(255,255,255,.08); color:#f5f7fb; border:0; border-radius:8px; width:30px; height:30px; font-size:15px; margin-left:4px; }
+.mm-ord button:disabled{ opacity:.3; }
+.mm-del{ background:rgba(229,90,80,.16); color:#ff8f88; border:0; border-radius:8px; width:32px; height:32px; font-size:15px; }
+.mm-add{ width:100%; background:linear-gradient(90deg,#e5aa34,#f4bd4a); color:#1a1206; font-weight:800; border:0; border-radius:12px; padding:14px; font-size:16px; }
 </style>
 </head>
 <body>
@@ -452,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C64</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C65</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8576,11 +8591,14 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   try{ fm.multiple=true; }catch(e){}
   fm.onchange=function(e){
     var files=Array.prototype.slice.call(e.target.files||[]); e.target.value="";
-    if(!files.length) return; files=files.slice(0,4);
+    if(!files.length) return;
+    if(!Array.isArray(TRACKS)) TRACKS=[];
+    var room=Math.max(0,4-TRACKS.length); files=files.slice(0,room);
+    if(!files.length){ if(typeof showToast==="function") showToast("Maximum 4 musiques"); return; }
     try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(er){}
     if(typeof ctx==="undefined"||!ctx){ try{ ctx=new AC(); }catch(er){} }
     if(!ctx){ if(typeof setState==="function") setState("Audio indisponible."); return; }
-    TRACKS=[]; window.MPLAN=null;
+    window.MPLAN=null;
     if(typeof setState==="function") setState("Décodage de "+files.length+" musique(s)…");
     var idx=0;
     function analyzeBuf(buf,done){
@@ -8598,12 +8616,13 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var sm=document.getElementById("srcMus"); if(sm) sm.textContent=(TRACKS.length>1?(TRACKS.length+" musiques · mix DJ"):(files[0].name.replace(/\.[^.]+$/,"")));
       if(typeof setState==="function") setState(TRACKS.length+" musique(s) prête(s)"+(TRACKS.length>1?" — mix DJ (aperçu)":"")+". Ajoute des photos puis « Lire ».");
       try{ if(typeof PHOTOS!=="undefined" && PHOTOS.length && typeof buildPartition==="function") buildPartition(); if(typeof paintStrip==="function") paintStrip(0); if(typeof updateBadge==="function") updateBadge(); }catch(er){}
+      renderTrackList();
     }
     function next(){
       if(idx>=files.length){ finishAll(); return; }
       var f=files[idx], rd=new FileReader();
       rd.onload=function(){
-        var onBuf=function(buf){ analyzeBuf(buf,function(An){ if(An) TRACKS.push({buf:buf,A:An}); idx++; if(typeof setState==="function") setState("Analyse "+idx+"/"+files.length+"…"); setTimeout(next,10); }); };
+        var onBuf=function(buf){ analyzeBuf(buf,function(An){ if(An) TRACKS.push({buf:buf,A:An,name:(f.name||"Musique").replace(/\.[^.]+$/,"")}); idx++; if(typeof setState==="function") setState("Analyse "+idx+"/"+files.length+"…"); setTimeout(next,10); }); };
         var fail=function(){ idx++; setTimeout(next,10); };
         var p; try{ p=ctx.decodeAudioData(rd.result,onBuf,fail); }catch(er){ fail(); return; }
         if(p&&p.then) p.then(onBuf,fail);
@@ -8613,6 +8632,27 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     next();
   };
 })();
+
+/* ===== Panneau Musiques (liste ordonnée, ajouter/retirer/réordonner) ===== */
+function _mmRefreshAudio(){ if(typeof TRACKS==="undefined") return; if(TRACKS.length){ try{ AUDIOBUF=TRACKS[0].buf; A=TRACKS[0].A; }catch(e){} } else { try{ AUDIOBUF=null; A=null; window.MULTI=0; }catch(e){} } var sm=document.getElementById("srcMus"); if(sm) sm.textContent=(TRACKS.length>1?(TRACKS.length+" musiques · mix DJ"):(TRACKS.length?TRACKS[0].name:"\u2014")); try{ if(typeof PHOTOS!=="undefined"&&PHOTOS.length&&typeof buildPartition==="function") buildPartition(); if(typeof paintStrip==="function") paintStrip(0); }catch(e){} }
+function renderTrackList(){ var list=document.getElementById("mmList"); if(!list) return; if(typeof TRACKS==="undefined"||!TRACKS.length){ list.innerHTML='<div class="mm-empty">Aucune musique. Ajoute-en jusqu\u2019\u00e0 4 \u2014 elles s\u2019encha\u00eenent dans l\u2019ordre (mix DJ).</div>'; return; } var h=""; for(var i=0;i<TRACKS.length;i++){ h+='<div class="mm-row"><span class="mm-num">'+(i+1)+'</span><span class="mm-name">'+esc(TRACKS[i].name||("Musique "+(i+1)))+'</span><span class="mm-ord"><button data-up="'+i+'" '+(i===0?"disabled":"")+'>\u2191</button><button data-dn="'+i+'" '+(i===TRACKS.length-1?"disabled":"")+'>\u2193</button></span><button class="mm-del" data-del="'+i+'">\u2715</button></div>'; }
+  list.innerHTML=h;
+  Array.prototype.forEach.call(list.querySelectorAll("[data-del]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-del"); TRACKS.splice(i,1); _mmRefreshAudio(); renderTrackList(); }; });
+  Array.prototype.forEach.call(list.querySelectorAll("[data-up]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-up"); if(i>0){ var t=TRACKS[i]; TRACKS[i]=TRACKS[i-1]; TRACKS[i-1]=t; _mmRefreshAudio(); renderTrackList(); } }; });
+  Array.prototype.forEach.call(list.querySelectorAll("[data-dn]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-dn"); if(i<TRACKS.length-1){ var t=TRACKS[i]; TRACKS[i]=TRACKS[i+1]; TRACKS[i+1]=t; _mmRefreshAudio(); renderTrackList(); } }; });
+}
+(function(){ try{
+  if(!document||!document.body) return;
+  var bd=document.createElement("div"); bd.id="mmBd"; bd.className="mm-bd"; bd.style.display="none";
+  var pn=document.createElement("div"); pn.id="mmPanel"; pn.className="mm-panel"; pn.style.display="none";
+  pn.innerHTML='<div class="mm-head"><b>Musiques</b><small>jusqu\u2019\u00e0 4 \u00b7 elles s\u2019encha\u00eenent en mix DJ</small><button id="mmClose">\u2715</button></div><div id="mmList" class="mm-list"></div><button id="mmAdd" class="mm-add">\uFF0B Ajouter une musique</button>';
+  document.body.appendChild(bd); document.body.appendChild(pn);
+  function open(){ renderTrackList(); bd.style.display="block"; pn.style.display="block"; }
+  function close(){ bd.style.display="none"; pn.style.display="none"; }
+  bd.onclick=close; document.getElementById("mmClose").onclick=close;
+  document.getElementById("mmAdd").onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} var f=document.getElementById("fMusic"); if(f) f.click(); };
+  var pm=document.getElementById("pickMusic"); if(pm){ pm.onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} open(); }; }
+}catch(_pe){} })();
 
 
 </script>
