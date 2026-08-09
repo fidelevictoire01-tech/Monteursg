@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Descente DJ douce au reset + cadence des coupes resserree (photos suivent mieux le tempo) · BUILD 2026-08-09-C74 -->
+<!-- Studio Magot — Retour au raccord apparie en energie (fenetre 3s, sans rebuild artificiel) + cadence normale · BUILD 2026-08-09-C75 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C74</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C75</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -761,34 +761,19 @@ function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beat
 function _eWinAtA(An,a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=_eOfA(An,t); n++; } return n?s/n:_eOfA(An,a); }
 function _firstDownbeat(An){ var e=_bestBeatA(An,0,An.dur*0.12,function(t,m){return m*1.0 - t*0.002;}); return (e==null)?((An.beats&&An.beats[0])||0):e; }
 function _lastDownbeat(An){ var e=_bestBeatA(An,An.dur*0.86,Math.min(An.dur-0.1,An.dur*0.98),function(t,m,en){return m*0.6+en*0.4;}); if(e==null){ for(var g=(An.beats?An.beats.length-1:0);g>=0;g--){ if(An.beats[g]<=An.dur-0.1){ e=An.beats[g]; break; } } } return (e==null)?(An.dur*0.95):e; }
-/* entrée appariée : le temps dont l'énergie (sur la fenêtre de fondu) colle le mieux à la fin de la piste précédente -> pas de saut ressenti */
-function _entryMatched(An, targetE, xf){ var bt=_bestBeatA(An, Math.max(0,xf*0.5), An.dur*0.62, function(t,m,en){ var eW=_eWinAtA(An,t,Math.min(An.dur,t+xf)); return -Math.abs(eW-targetE) - 0.10*(t/An.dur) + m*0.06; }); return (bt==null)?_firstDownbeat(An):bt; }
-function _phraseEnd(An, from, bars){ bars=bars||8; var idx=-1; for(var i=0;i<An.beats.length;i++){ if(An.beats[i]>=from-0.001){ idx=i; break; } } if(idx<0) return Math.min(An.dur, from+3); var j=Math.min(An.beats.length-1, idx+bars); return An.beats[j]; }
+/* entrée appariée : le downbeat dont l'énergie (fenêtre ~3s = l'ambiance) colle le mieux à la fin de la précédente */
+function _entryMatched(An, targetE, EW){ var bt=_bestBeatA(An, EW*0.5, An.dur*0.62, function(t,m,en){ var eW=_eWinAtA(An,t,Math.min(An.dur,t+EW)); return -Math.abs(eW-targetE)*1.5 - 0.08*(t/An.dur) + m*0.10; }); return (bt==null)?_firstDownbeat(An):bt; }
 function buildMusicPlan(MST,want){
-  var plan=[], m=MST, guard=0, N=TRACKS.length, k=0, prevEndE=null;
+  var plan=[], m=MST, guard=0, N=TRACKS.length, k=0, prevEndE=null, EW=3.0;
   if(N<1) return [];
-  while(m<MST+want && guard++<400){
+  while(m<MST+want && guard++<300){
     var ti=k%N, An=TRACKS[ti].A; if(!An||!An.beats||!An.beats.length) break;
-    var nx=_xfOfA(An), b0=_firstDownbeat(An), end=_lastDownbeat(An);
-    if(end<=b0+4) end=Math.min(An.dur-0.1, b0+Math.max(6,(An.dur-b0)*0.7));
-    if(prevEndE==null){
-      /* 1re piste : intro naturelle -> fin */
-      plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:0,len:Math.max(2,end-b0)});
-      m+=Math.max(2,end-b0);
-    } else {
-      /* entrée APPARIÉE (haut->haut) : phrase au point apparié, qui DURE */
-      var mEntry=_entryMatched(An,prevEndE,nx);
-      var pEnd=_phraseEnd(An,mEntry,16); if(pEnd>end) pEnd=end; if(pEnd<=mEntry+0.5) pEnd=Math.min(end,mEntry+3);
-      plan.push({ti:ti,entry:mEntry,end:pEnd,mStart:m,xfIn:nx,len:Math.max(1,pEnd-mEntry),phrase:true});
-      m+=Math.max(1,pEnd-mEntry);
-      /* REBUILD : DESCENTE DOUCE (même piste, pas de clash) vers le début, puis on rebâtit la montée */
-      if(b0 < mEntry-1){
-        plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:1.5,len:Math.max(2,end-b0),reset:true});
-        m+=Math.max(2,end-b0);
-      }
-    }
-    prevEndE=_eWinAtA(An, Math.max(0,end-nx), end);
-    k++;
+    var xf=_xfOfA(An), b0=_firstDownbeat(An), end=_lastDownbeat(An);
+    var entry=(prevEndE==null)?b0:_entryMatched(An,prevEndE,EW);
+    if(end<=entry+4) end=Math.min(An.dur-0.1, entry+Math.max(6,(An.dur-entry)*0.6));
+    plan.push({ti:ti,entry:entry,end:end,mStart:m,xfIn:(prevEndE==null?0:xf),len:Math.max(2,end-entry)});
+    prevEndE=_eWinAtA(An, Math.max(0,end-EW), end);
+    m+=Math.max(2,end-entry); k++;
   }
   window.MPLAN=plan; return plan;
 }
@@ -1062,8 +1047,6 @@ function buildPartition(){
   var MST=Math.max(0,Math.min(window.MSTART||0, Math.max(0,dur-1)));
   var avail=Math.max(1,dur-MST);
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, want=0;
-  /* cadence un peu plus serrée : les photos changent plus près du rythme (moins "long") */
-  emin*=0.86; etgt*=0.84; emax*=0.90;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _nd=_capNeeded(_pp); want += (_nd>0?_nd:M.tgtSec); } }
   window.LOOP_ON=0; window.MULTI=0;
   if(_nP>0 && TRACKS.length>1){ want=Math.min(want,600); window.MULTI=1; var _pl=buildMusicPlan(MST,want); var _g=planBeatGrid(_pl); if(_g.beats&&_g.beats.length){ beats=_g.beats; str=_g.str; } avail=want; bdur=want; window.DUR_FIT=1; window.DUR_NP=_nP; }
