@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — panneau Musiques : liste ordonnee + ajouter-retirer-reordonner (max 4, ordre = enchainement DJ) · BUILD 2026-08-06-C65 -->
+<!-- Studio Magot — FIX transition bloque (onended en MULTI) + bibliotheque musicale en multi-selection (mix DJ) · BUILD 2026-08-06-C66 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C65</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C66</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -780,7 +780,7 @@ var AC=window.AudioContext||window.webkitAudioContext;
 var ctx=null, AUDIOBUF=null, pausedOffset=0;
 var audioEl=null, audioURL="";
 function ensureAudio(){ if(!ctx){ try{ ctx=new AC(); }catch(e){} } }   /* ctx = analyse seulement ; le son sort d'un lecteur audio classique (comme Suno) */
-function setMusicEl(file){ try{ if(audioURL) URL.revokeObjectURL(audioURL); }catch(e){} audioURL=URL.createObjectURL(file); audioEl=new Audio(audioURL); audioEl.preload="auto"; audioEl.onended=function(){ if(window.LOOP_ON && playing){ try{ if(!WA.on){ audioEl.currentTime=window.LOOP_START||0; var _p=audioEl.play(); if(_p&&_p.then)_p.catch(function(){}); } }catch(e){} return; } if(playing){ stopPlay(); resetBtn(); } }; }
+function setMusicEl(file){ try{ if(audioURL) URL.revokeObjectURL(audioURL); }catch(e){} audioURL=URL.createObjectURL(file); audioEl=new Audio(audioURL); audioEl.preload="auto"; audioEl.onended=function(){ if((window.LOOP_ON||window.MULTI) && playing){ try{ if(!WA.on){ audioEl.currentTime=window.LOOP_START||0; var _p=audioEl.play(); if(_p&&_p.then)_p.catch(function(){}); } }catch(e){} return; } if(playing){ stopPlay(); resetBtn(); } }; }
 
 /* ================= Essentia (chargement asynchrone + repli) ================= */
 var essentia=null, ESSENTIA_STATE="loading";
@@ -8635,7 +8635,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
 
 /* ===== Panneau Musiques (liste ordonnée, ajouter/retirer/réordonner) ===== */
 function _mmRefreshAudio(){ if(typeof TRACKS==="undefined") return; if(TRACKS.length){ try{ AUDIOBUF=TRACKS[0].buf; A=TRACKS[0].A; }catch(e){} } else { try{ AUDIOBUF=null; A=null; window.MULTI=0; }catch(e){} } var sm=document.getElementById("srcMus"); if(sm) sm.textContent=(TRACKS.length>1?(TRACKS.length+" musiques · mix DJ"):(TRACKS.length?TRACKS[0].name:"\u2014")); try{ if(typeof PHOTOS!=="undefined"&&PHOTOS.length&&typeof buildPartition==="function") buildPartition(); if(typeof paintStrip==="function") paintStrip(0); }catch(e){} }
-function renderTrackList(){ var list=document.getElementById("mmList"); if(!list) return; if(typeof TRACKS==="undefined"||!TRACKS.length){ list.innerHTML='<div class="mm-empty">Aucune musique. Ajoute-en jusqu\u2019\u00e0 4 \u2014 elles s\u2019encha\u00eenent dans l\u2019ordre (mix DJ).</div>'; return; } var h=""; for(var i=0;i<TRACKS.length;i++){ h+='<div class="mm-row"><span class="mm-num">'+(i+1)+'</span><span class="mm-name">'+esc(TRACKS[i].name||("Musique "+(i+1)))+'</span><span class="mm-ord"><button data-up="'+i+'" '+(i===0?"disabled":"")+'>\u2191</button><button data-dn="'+i+'" '+(i===TRACKS.length-1?"disabled":"")+'>\u2193</button></span><button class="mm-del" data-del="'+i+'">\u2715</button></div>'; }
+function renderTrackList(){ var list=document.getElementById("mlist"); if(!list) return; if(typeof TRACKS==="undefined"||!TRACKS.length){ list.innerHTML='<div class="mm-empty">Aucune musique import\u00e9e. Ajoute-en jusqu\u2019\u00e0 4 \u2014 elles s\u2019encha\u00eenent en mix DJ dans l\u2019ordre.</div>'; return; } var h=""; for(var i=0;i<TRACKS.length;i++){ h+='<div class="mm-row"><span class="mm-num">'+(i+1)+'</span><span class="mm-name">'+esc(TRACKS[i].name||("Musique "+(i+1)))+'</span><span class="mm-ord"><button data-up="'+i+'" '+(i===0?"disabled":"")+'>\u2191</button><button data-dn="'+i+'" '+(i===TRACKS.length-1?"disabled":"")+'>\u2193</button></span><button class="mm-del" data-del="'+i+'">\u2715</button></div>'; }
   list.innerHTML=h;
   Array.prototype.forEach.call(list.querySelectorAll("[data-del]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-del"); TRACKS.splice(i,1); _mmRefreshAudio(); renderTrackList(); }; });
   Array.prototype.forEach.call(list.querySelectorAll("[data-up]"),function(b){ b.onclick=function(){ var i=+b.getAttribute("data-up"); if(i>0){ var t=TRACKS[i]; TRACKS[i]=TRACKS[i-1]; TRACKS[i-1]=t; _mmRefreshAudio(); renderTrackList(); } }; });
@@ -8643,15 +8643,14 @@ function renderTrackList(){ var list=document.getElementById("mmList"); if(!list
 }
 (function(){ try{
   if(!document||!document.body) return;
-  var bd=document.createElement("div"); bd.id="mmBd"; bd.className="mm-bd"; bd.style.display="none";
-  var pn=document.createElement("div"); pn.id="mmPanel"; pn.className="mm-panel"; pn.style.display="none";
-  pn.innerHTML='<div class="mm-head"><b>Musiques</b><small>jusqu\u2019\u00e0 4 \u00b7 elles s\u2019encha\u00eenent en mix DJ</small><button id="mmClose">\u2715</button></div><div id="mmList" class="mm-list"></div><button id="mmAdd" class="mm-add">\uFF0B Ajouter une musique</button>';
-  document.body.appendChild(bd); document.body.appendChild(pn);
-  function open(){ renderTrackList(); bd.style.display="block"; pn.style.display="block"; }
-  function close(){ bd.style.display="none"; pn.style.display="none"; }
-  bd.onclick=close; document.getElementById("mmClose").onclick=close;
-  document.getElementById("mmAdd").onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} var f=document.getElementById("fMusic"); if(f) f.click(); };
-  var pm=document.getElementById("pickMusic"); if(pm){ pm.onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} open(); }; }
+  /* la bibliothèque musicale devient le gestionnaire du mix (multi-sélection) */
+  try{ renderMusic = renderTrackList; }catch(e){}
+  var note=document.querySelector('.sheet-bg[data-bg="music"] .sh-note');
+  if(note) note.innerHTML='Importe tes musiques (jusqu\u2019\u00e0 4). Elles s\u2019encha\u00eenent en <b>mix DJ</b> dans l\u2019ordre de la liste \u2014 le r\u00e9alisateur cale les coupes sur le tempo de chacune. \u2191\u2193 pour r\u00e9ordonner, \u2715 pour retirer.';
+  var body=document.querySelector('.sheet-bg[data-bg="music"] .sh-body');
+  if(body && !document.getElementById("mmImport")){ var btn=document.createElement("button"); btn.id="mmImport"; btn.className="mm-add"; btn.innerHTML="\uFF0B Importer une musique"; btn.onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} var f=document.getElementById("fMusic"); if(f) f.click(); }; body.appendChild(btn); }
+  var pm=document.getElementById("pickMusic"); if(pm){ pm.onclick=function(){ try{ if(typeof ensureAudio==="function") ensureAudio(); }catch(e){} if(typeof openSheet==="function") openSheet("music"); }; }
+  renderTrackList();
 }catch(_pe){} })();
 
 
