@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Mixage DJ a energie appariee entre pistes (entree au point le plus proche, pas de saut ressenti) · BUILD 2026-08-09-C71 -->
+<!-- Studio Magot — Fondu inter-pistes court (evite clash de tempos) + rebuild DJ + BPM piste en cours (tick) · BUILD 2026-08-09-C73 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C71</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C73</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -757,34 +757,53 @@ function computeLoopJoin(bts,dur){
 var TRACKS=[]; window.MULTI=0; window.MPLAN=null;
 function _eOfA(An,t){ if(!An||!An.energy||!An.fps) return 0.5; var i=Math.round(t*An.fps); return An.energy[Math.max(0,Math.min(An.energy.length-1,i))]||0; }
 function _bestBeatA(An,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<An.beats.length;k++){ var t=An.beats[k]; if(t>=a&&t<=b){ var m=(An.metric&&An.metric[k]!=null)?An.metric[k]:0.4; var s=score(t,m,_eOfA(An,t)); if(s>sc){ sc=s; bt=t; } } } return bt; }
-function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; return Math.max(1.2,Math.min(2.8,Math.round(2/P)*P)); }
+function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; var xf=Math.round(1/P)*P; if(!(xf>0)) xf=P; return Math.max(0.45,Math.min(1.3,xf)); }
 function _eWinAtA(An,a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=_eOfA(An,t); n++; } return n?s/n:_eOfA(An,a); }
 function _firstDownbeat(An){ var e=_bestBeatA(An,0,An.dur*0.12,function(t,m){return m*1.0 - t*0.002;}); return (e==null)?((An.beats&&An.beats[0])||0):e; }
 function _lastDownbeat(An){ var e=_bestBeatA(An,An.dur*0.86,Math.min(An.dur-0.1,An.dur*0.98),function(t,m,en){return m*0.6+en*0.4;}); if(e==null){ for(var g=(An.beats?An.beats.length-1:0);g>=0;g--){ if(An.beats[g]<=An.dur-0.1){ e=An.beats[g]; break; } } } return (e==null)?(An.dur*0.95):e; }
 /* entrée appariée : le temps dont l'énergie (sur la fenêtre de fondu) colle le mieux à la fin de la piste précédente -> pas de saut ressenti */
 function _entryMatched(An, targetE, xf){ var bt=_bestBeatA(An, Math.max(0,xf*0.5), An.dur*0.62, function(t,m,en){ var eW=_eWinAtA(An,t,Math.min(An.dur,t+xf)); return -Math.abs(eW-targetE) - 0.10*(t/An.dur) + m*0.06; }); return (bt==null)?_firstDownbeat(An):bt; }
+function _phraseEnd(An, from, bars){ bars=bars||8; var idx=-1; for(var i=0;i<An.beats.length;i++){ if(An.beats[i]>=from-0.001){ idx=i; break; } } if(idx<0) return Math.min(An.dur, from+3); var j=Math.min(An.beats.length-1, idx+bars); return An.beats[j]; }
 function buildMusicPlan(MST,want){
   var plan=[], m=MST, guard=0, N=TRACKS.length, k=0, prevEndE=null;
   if(N<1) return [];
-  while(m<MST+want && guard++<300){
+  while(m<MST+want && guard++<400){
     var ti=k%N, An=TRACKS[ti].A; if(!An||!An.beats||!An.beats.length) break;
-    var xf=_xfOfA(An), end=_lastDownbeat(An);
-    var entry=(prevEndE==null)?_firstDownbeat(An):_entryMatched(An,prevEndE,xf);
-    if(end<=entry+4) end=Math.min(An.dur-0.1, entry+Math.max(6,(An.dur-entry)*0.7));
-    var len=Math.max(2,end-entry);
-    plan.push({ti:ti,entry:entry,end:end,mStart:m,xf:xf,len:len});
-    prevEndE=_eWinAtA(An, Math.max(0,end-xf), end);
-    m+=len; k++;
+    var nx=_xfOfA(An), b0=_firstDownbeat(An), end=_lastDownbeat(An);
+    if(end<=b0+4) end=Math.min(An.dur-0.1, b0+Math.max(6,(An.dur-b0)*0.7));
+    if(prevEndE==null){
+      /* 1re piste : intro naturelle -> fin */
+      plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:0,len:Math.max(2,end-b0)});
+      m+=Math.max(2,end-b0);
+    } else {
+      /* entrée APPARIÉE (haut->haut) : phrase courte au point apparié */
+      var mEntry=_entryMatched(An,prevEndE,nx);
+      var pEnd=_phraseEnd(An,mEntry,8); if(pEnd>end) pEnd=end; if(pEnd<=mEntry+0.5) pEnd=Math.min(end,mEntry+2);
+      plan.push({ti:ti,entry:mEntry,end:pEnd,mStart:m,xfIn:nx,len:Math.max(1,pEnd-mEntry),phrase:true});
+      m+=Math.max(1,pEnd-mEntry);
+      /* REBUILD : on redescend au début et on rebâtit la montée */
+      if(b0 < mEntry-1){
+        plan.push({ti:ti,entry:b0,end:end,mStart:m,xfIn:0.14,len:Math.max(2,end-b0),reset:true});
+        m+=Math.max(2,end-b0);
+      }
+    }
+    prevEndE=_eWinAtA(An, Math.max(0,end-nx), end);
+    k++;
   }
   window.MPLAN=plan; return plan;
 }
 function planBeatGrid(plan){ var beats=[],str=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ beats.push(seg.mStart+(b-seg.entry)); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); } } } return {beats:beats,str:str}; }
 function waStartPlan(mt0){ if(!ctx) return false; try{ if(ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){} _xfCurves(); waStop(); if(!WA.gain){ WA.gain=ctx.createGain(); WA.gain.gain.value=1; WA.gain.connect(ctx.destination); } var plan=window.MPLAN||[]; if(!plan.length) return false; WA.on=true; var t0=ctx.currentTime+0.08, first=null;
-  for(var i=0;i<plan.length;i++){ var seg=plan[i], buf=TRACKS[seg.ti]&&TRACKS[seg.ti].buf; if(!buf) continue; var xf=seg.xf; var segEndM=seg.mStart+seg.len; if(segEndM<=mt0) continue;
-    var fromPos, startM; if(mt0>=seg.mStart){ fromPos=seg.entry+(mt0-seg.mStart); startM=mt0; } else { fromPos=(i===0)?seg.entry:Math.max(0,seg.entry-xf); startM=(i===0)?seg.mStart:(seg.mStart-xf); }
-    var startAt=t0+(startM-mt0); if(startAt<ctx.currentTime+0.02) startAt=ctx.currentTime+0.02; var playLen=seg.end-fromPos; if(playLen<0.2) continue; var endAt=startAt+playLen;
+  for(var i=0;i<plan.length;i++){ var seg=plan[i], buf=TRACKS[seg.ti]&&TRACKS[seg.ti].buf; if(!buf) continue;
+    var xin=seg.xfIn||0, xout=(i<plan.length-1)?(plan[i+1].xfIn||0):0;
+    var segEndM=seg.mStart+seg.len; if(segEndM<=mt0) continue;
+    var fromPos, startM;
+    if(mt0>=seg.mStart){ fromPos=seg.entry+(mt0-seg.mStart); startM=mt0; xin=0; }
+    else { fromPos=(xin>0)?Math.max(0,seg.entry-xin):seg.entry; startM=(xin>0)?(seg.mStart-xin):seg.mStart; }
+    var startAt=t0+(startM-mt0); if(startAt<ctx.currentTime+0.02) startAt=ctx.currentTime+0.02; var playLen=seg.end-fromPos; if(playLen<0.15) continue; var endAt=startAt+playLen;
     var s=ctx.createBufferSource(); s.buffer=buf; var g=ctx.createGain(); s.connect(g); g.connect(WA.gain);
-    try{ if(i===0||mt0>=seg.mStart){ g.gain.setValueAtTime(1,startAt); } else { g.gain.setValueCurveAtTime(_xfIn,startAt,xf); g.gain.setValueAtTime(1,startAt+xf); } if(i<plan.length-1){ var fo=Math.max(startAt+0.01,endAt-xf); g.gain.setValueCurveAtTime(_xfOut,fo,xf); } }catch(e){ try{ g.gain.value=1; }catch(_e){} }
+    try{ if(xin>0){ g.gain.setValueCurveAtTime(_xfIn,startAt,xin); g.gain.setValueAtTime(1,startAt+xin); } else { g.gain.setValueAtTime(1,startAt); }
+      if(xout>0){ var fo=Math.max(startAt+0.01,endAt-xout); g.gain.setValueCurveAtTime(_xfOut,fo,xout); } }catch(e){ try{ g.gain.value=1; }catch(_e){} }
     try{ s.start(startAt,fromPos); s.stop(endAt+0.1); }catch(e){} WA.srcs.push({src:s,end:endAt,start:startAt}); if(first==null) first=startAt; }
   if(!WA.srcs.length){ WA.on=false; return false; } waMt0=mt0; waCtxT0=(first||ctx.currentTime); return true; }
 /* mixe le plan échantillon par échantillon (pour l'export) -> renvoie un AudioBuffer mono/stéréo de durée `dur` */
@@ -794,12 +813,16 @@ function renderPlanToBuffer(dur, sr){
   var oL=out.getChannelData(0), oR=out.getChannelData(1);
   for(var i=0;i<plan.length;i++){ var seg=plan[i], An=TRACKS[seg.ti], buf=An&&An.buf; if(!buf) continue;
     var bsr=buf.sampleRate, L=buf.getChannelData(0), R=(buf.numberOfChannels>1)?buf.getChannelData(1):L;
-    var xf=seg.xf, segStartM=seg.mStart-((i>0)?xf:0), fromPos=(i>0)?Math.max(0,seg.entry-xf):seg.entry;
-    var segLen=seg.end-fromPos; if(segLen<=0) continue;
-    var oi0=Math.max(0,Math.floor(segStartM*sr)), oi1=Math.min(len,Math.ceil((segStartM+segLen)*sr));
-    for(var oi=oi0;oi<oi1;oi++){ var rel=oi/sr-segStartM; if(rel<0) continue; var si=Math.floor((fromPos+rel)*bsr); if(si<0||si>=buf.length) continue;
-      var gain=1; if(i>0 && rel<xf){ gain=Math.sin((rel/xf)*Math.PI/2); }
-      if(i<plan.length-1 && rel>segLen-xf){ gain*=Math.cos(Math.min(1,(rel-(segLen-xf))/xf)*Math.PI/2); }
+    var xin=seg.xfIn||0, xout=(i<plan.length-1)?(plan[i+1].xfIn||0):0;
+    var segStartM=seg.mStart-xin, fromPos=(xin>0)?Math.max(0,seg.entry-xin):seg.entry;
+    var segEndM=seg.mStart+seg.len;
+    if(seg.end-fromPos<=0) continue;
+    var oi0=Math.max(0,Math.floor(segStartM*sr)), oi1=Math.min(len,Math.ceil(segEndM*sr));
+    for(var oi=oi0;oi<oi1;oi++){ var relM=oi/sr-segStartM; if(relM<0) continue; var si=Math.floor((fromPos+relM)*bsr); if(si<0||si>=buf.length) continue;
+      var gain=1;
+      if(xin>0 && relM<xin){ gain=Math.sin((relM/xin)*Math.PI/2); }
+      var ttoEnd=segEndM-(oi/sr);
+      if(xout>0 && ttoEnd<xout){ gain*=Math.sin(Math.max(0,ttoEnd/xout)*Math.PI/2); }
       oL[oi]+=L[si]*gain; oR[oi]+=R[si]*gain;
     }
   }
@@ -8648,7 +8671,8 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
         var ts=qa(".hero .progress-row > span");
         if(ts[0]) ts[0].textContent=mmss(_mcur);
         if(ts[1]) ts[1].textContent=mmss(_mlen);
-        var bpm=Math.round(A.bpmFelt||A.bpm||0);
+        var _dispA=A; if(window.MULTI && typeof TRACKS!=="undefined" && TRACKS.length){ var _pi=(typeof _curPlanTrackIdx==="function")?_curPlanTrackIdx():-1; if(_pi>=0 && TRACKS[_pi]) _dispA=TRACKS[_pi].A||A; }
+        var bpm=Math.round(_dispA.bpmFelt||_dispA.bpm||0);
         if(infos[1]){ var b1=infos[1].querySelector("b"); if(b1) b1.textContent=bpm?(bpm+" BPM"):"\u2014"; }
         if(infos[2]){ var b2=infos[2].querySelector("b"); if(b2) b2.textContent=np?(np+" plans"):"\u2014"; }
         if(infos[3]){ var b3=infos[3].querySelector("b"); if(b3) b3.textContent=dur?durTxt(dur):"\u2014"; }
