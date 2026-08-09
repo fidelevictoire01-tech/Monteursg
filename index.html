@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Systeme general : chaque musique en entier, reboucle seulement si necessaire (fix double lecture) + arret propre en fin · BUILD 2026-08-09-C76 -->
+<!-- Studio Magot — Coupes multi calees sur les VRAIS downbeats de la piste en cours + energie par piste + latence audio compensee · BUILD 2026-08-09-C77 -->
 
 <html lang="fr">
 <head>
@@ -467,7 +467,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C76</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C77</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -759,6 +759,8 @@ function _eOfA(An,t){ if(!An||!An.energy||!An.fps) return 0.5; var i=Math.round(
 function _bestBeatA(An,a,b,score){ var bt=null,sc=-1e9; for(var k=0;k<An.beats.length;k++){ var t=An.beats[k]; if(t>=a&&t<=b){ var m=(An.metric&&An.metric[k]!=null)?An.metric[k]:0.4; var s=score(t,m,_eOfA(An,t)); if(s>sc){ sc=s; bt=t; } } } return bt; }
 function _xfOfA(An){ var d=[]; for(var i=1;i<An.beats.length;i++){ var x=An.beats[i]-An.beats[i-1]; if(x>0.15&&x<2) d.push(x); } d.sort(function(a,b){return a-b;}); var P=d.length?d[d.length>>1]:0.5; var xf=Math.round(1/P)*P; if(!(xf>0)) xf=P; return Math.max(0.45,Math.min(1.3,xf)); }
 function _eWinAtA(An,a,b){ var s=0,n=0; for(var t=a;t<=b;t+=0.15){ s+=_eOfA(An,t); n++; } return n?s/n:_eOfA(An,a); }
+/* énergie à un instant du MONTAGE, en suivant la piste en cours (multi) */
+function _eAt(mt){ if(window.MULTI && window.MPLAN && window.MPLAN.length && typeof TRACKS!=="undefined" && TRACKS.length){ var plan=window.MPLAN; for(var i=plan.length-1;i>=0;i--){ if(mt>=plan[i].mStart-0.001){ var seg=plan[i], An=TRACKS[seg.ti]&&TRACKS[seg.ti].A; if(An) return _eOfA(An, seg.entry+(mt-seg.mStart)); break; } } } return (typeof energyAt==="function")?energyAt(mt):0.5; }
 function _firstDownbeat(An){ var e=_bestBeatA(An,0,An.dur*0.12,function(t,m){return m*1.0 - t*0.002;}); return (e==null)?((An.beats&&An.beats[0])||0):e; }
 function _lastDownbeat(An){ var e=_bestBeatA(An,An.dur*0.86,Math.min(An.dur-0.1,An.dur*0.98),function(t,m,en){return m*0.6+en*0.4;}); if(e==null){ for(var g=(An.beats?An.beats.length-1:0);g>=0;g--){ if(An.beats[g]<=An.dur-0.1){ e=An.beats[g]; break; } } } return (e==null)?(An.dur*0.95):e; }
 /* Système GÉNÉRAL (aucune valeur collée à une musique) : chaque piste joue EN ENTIER
@@ -776,7 +778,7 @@ function buildMusicPlan(MST, want){
   }
   window.MPLAN=plan; return plan;
 }
-function planBeatGrid(plan){ var beats=[],str=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ beats.push(seg.mStart+(b-seg.entry)); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); } } } return {beats:beats,str:str}; }
+function planBeatGrid(plan){ var beats=[],str=[],metric=[]; for(var s=0;s<plan.length;s++){ var seg=plan[s], An=TRACKS[seg.ti].A; for(var k=0;k<An.beats.length;k++){ var b=An.beats[k]; if(b>=seg.entry-0.001&&b<=seg.end+0.001){ beats.push(seg.mStart+(b-seg.entry)); str.push((An.strength&&An.strength[k]!=null)?An.strength[k]:0.5); metric.push((An.metric&&An.metric[k]!=null)?An.metric[k]:0.4); } } } return {beats:beats,str:str,metric:metric}; }
 function waStartPlan(mt0){ if(!ctx) return false; try{ if(ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){} _xfCurves(); waStop(); if(!WA.gain){ WA.gain=ctx.createGain(); WA.gain.gain.value=1; WA.gain.connect(ctx.destination); } var plan=window.MPLAN||[]; if(!plan.length) return false; WA.on=true; var t0=ctx.currentTime+0.08, first=null;
   for(var i=0;i<plan.length;i++){ var seg=plan[i], buf=TRACKS[seg.ti]&&TRACKS[seg.ti].buf; if(!buf) continue;
     var xin=seg.xfIn||0, xout=(i<plan.length-1)?(plan[i+1].xfIn||0):0;
@@ -1042,13 +1044,13 @@ function buildPartition(){
   SEGS=[]; stripDirty=true; if(!A||!A.beats||A.beats.length<2) return;
   if(glReady && TR.ready){ trCompileAll(); atmCompileAll(); }
   trReset(); atmReset();
-  var M=MOODS[MOOD], beats=A.beats, str=A.strength||[], dur=A.dur;
+  var M=MOODS[MOOD], beats=A.beats, str=A.strength||[], dur=A.dur, metricArr=A.metric||[];
   var MST=Math.max(0,Math.min(window.MSTART||0, Math.max(0,dur-1)));
   var avail=Math.max(1,dur-MST);
   var emin=M.minSec, etgt=M.tgtSec, emax=M.maxSec, bdur=avail, _nP=0, want=0;
   for(var _pp=0;_pp<PHOTOS.length;_pp++){ if(PHOTOS[_pp] && !(PHOTOS[_pp].feat&&PHOTOS[_pp].feat.skip)){ _nP++; var _nd=_capNeeded(_pp); want += (_nd>0?_nd:M.tgtSec); } }
   window.LOOP_ON=0; window.MULTI=0;
-  if(_nP>0 && TRACKS.length>1){ want=Math.min(want,600); window.MULTI=1; var _pl=buildMusicPlan(MST,want); var _g=planBeatGrid(_pl); if(_g.beats&&_g.beats.length){ beats=_g.beats; str=_g.str; } avail=want; bdur=want; window.DUR_FIT=1; window.DUR_NP=_nP; }
+  if(_nP>0 && TRACKS.length>1){ want=Math.min(want,600); window.MULTI=1; var _pl=buildMusicPlan(MST,want); var _g=planBeatGrid(_pl); if(_g.beats&&_g.beats.length){ beats=_g.beats; str=_g.str; metricArr=_g.metric||metricArr; } avail=want; bdur=want; window.DUR_FIT=1; window.DUR_NP=_nP; }
   else if(_nP>0){ want=Math.min(want, 600);
     if(want<=avail){ bdur=want; window.DUR_FIT=1; }
     else {
@@ -1071,13 +1073,13 @@ function buildPartition(){
     var lo=lastCut+emin, hi=lastCut+emax, tgt=lastCut+etgt;
     while(bi<beats.length && beats[bi]<lo) bi++;
     if(bi>=beats.length) break;
-    var eLoc=energyAt(lastCut);
+    var eLoc=_eAt(lastCut);
     var wS=(eLoc>0.55)?1.4:0.7, wM=(eLoc>0.55)?0.35:0.9;   /* energique -> couper sur les gros coups ; calme -> sur le "1" */
     var bestK=-1, bestScore=-1;
     for(var k=bi; k<beats.length && beats[k]<=hi; k++){
       var s=(str[k]||0);
       var prox=1-Math.min(1,Math.abs(beats[k]-tgt)/span);
-      var mt=(A.metric&&A.metric[k]!=null)?A.metric[k]:0.4;
+      var mt=(metricArr&&metricArr[k]!=null)?metricArr[k]:0.4;
       var score=s*wS + mt*wM + prox*0.25;
       if(score>bestScore){ bestScore=score; bestK=k; }
     }
@@ -1091,8 +1093,8 @@ function buildPartition(){
   for(var c=0;c<pts.length;c++){
     var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:wEnd);
     if(end-start<0.4) continue;
-    var strong=(pts[c].s>=M.accent) || energyAt(start)>0.55;
-    SEGS.push({start:start,end:end,strong:strong,e:energyAt(start)});
+    var strong=(pts[c].s>=M.accent) || _eAt(start)>0.55;
+    SEGS.push({start:start,end:end,strong:strong,e:_eAt(start)});
   }
   var MOVES=["zoomIn","panLR","zoomOut","panRL","zoomIn","panRL","zoomOut","panLR"];
   var _PORDER=PHOTOS.length?computePhotoOrder():[];
@@ -1100,10 +1102,10 @@ function buildPartition(){
     sg.img=_PORDER.length?_PORDER[idx%_PORDER.length]:-1;
     sg.kbDir=(idx%2===0)?1:-1; sg.slideDir=(idx%2===0)?1:-1;
     sg.move=MOVES[idx%MOVES.length];
-    sg.atmo=atmChoose(idx,sg,MOOD,energyAt(sg.start));
+    sg.atmo=atmChoose(idx,sg,MOOD,_eAt(sg.start));
     if(idx===0){ sg.trans="none"; return; }
     sg._prev=SEGS[idx-1];
-    sg.trans=gtChoose(idx,sg,SEGS[idx-1],PHOTOS,energyAt(sg.start),MOOD);
+    sg.trans=gtChoose(idx,sg,SEGS[idx-1],PHOTOS,_eAt(sg.start),MOOD);
   });
   /* VIDÉO — placement PRO : sur les temps forts, fréquence par mode, bien réparti */
   if(clipVidReady && SEGS.length>=4){
@@ -7602,7 +7604,8 @@ function paintStrip(t){
 }
 
 /* ================= Horloge audio + boucle ================= */
-function visualTime(){ return montageNow() + ((window.LOOP_ON||window.MULTI)?0:LEAD) + curSync(); }
+function _audioLat(){ try{ if(WA.on && ctx){ var l=(ctx.outputLatency!=null)?ctx.outputLatency:(ctx.baseLatency||0); return (l>0?l:0); } }catch(e){} return 0; }
+function visualTime(){ return montageNow() + ((window.LOOP_ON||window.MULTI)?0:LEAD) - _audioLat() + curSync(); }
 function loop(){
   if(!playing) return;
   if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
