@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — NETTETE : rendu HD (apercu 720p, export Full HD 1080p) au lieu de 540p -> fin du flou · BUILD 2026-08-09-C95 -->
+<!-- Studio Magot — Import photos plus rapide : HEIC accepte (evite la conversion JPEG couteuse d-iOS) - EXPERIMENTAL · BUILD 2026-08-09-C96 -->
 
 <html lang="fr">
 <head>
@@ -538,7 +538,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C95</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C96</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -759,7 +759,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <p class="hint">La bande montre les temps (dorés = temps forts) et les points de coupe. La tête de lecture blanche doit croiser une coupe pile quand la photo change. S'il reste un décalage, ajuste le curseur <b>Sync</b> pendant la lecture.</p>
 
   <input type="file" id="fMusic">
-  <input type="file" id="fPhotos" accept="image/*" multiple>
+  <input type="file" id="fPhotos" accept="image/*,.heic,.heif,image/heic,image/heif" multiple>
   <input type="file" id="fVideo" accept="video/*" multiple>
 </div>
 
