@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte : reglages en MENUS DEROULANTS (liberent la place) au lieu de panneaux inline · BUILD 2026-08-09-C99 -->
+<!-- Studio Magot — FIX editeur texte : menus deroulants en calque separe (le backdrop-filter cassait le fixed sur iOS) + pastilles lisibles · BUILD 2026-08-09-C100 -->
 
 <html lang="fr">
 <head>
@@ -443,9 +443,13 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-input:focus{outline:none;border-color:#e5aa34}
 .te-ai-hint{font:600 12px system-ui;color:#d9c9ff;background:rgba(139,87,223,.12);border:1px solid rgba(139,87,223,.3);border-radius:10px;padding:9px 11px;margin-top:8px}
 .te-ddrow{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:12px 0 4px;padding-bottom:3px}
-.te-dd{flex:0 0 auto;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#e8eef7;font:700 13px system-ui;cursor:pointer;white-space:nowrap}
-.te-dd:active{background:rgba(255,255,255,.09)}
-.te-ddpop{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:min(430px,93vw);max-height:56vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#16233a;border:1px solid rgba(255,255,255,.1);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.6);padding:12px 13px;z-index:10}
+.te-dd{-webkit-appearance:none;appearance:none;flex:0 0 auto;padding:10px 15px;border-radius:999px;border:1px solid var(--line);background:#1c2a44;color:#eef3fa;font:700 14px system-ui;cursor:pointer;white-space:nowrap}
+.te-dd:active{background:#26375a}
+.te-ddov{position:fixed;inset:0;z-index:10001;background:rgba(3,7,12,.55);display:flex;align-items:flex-end;justify-content:center;animation:cpin .15s ease}
+.te-ddsheet{width:min(460px,100%);max-height:72vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#16233a;border:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.6);padding:8px 15px 24px}
+.te-ddgrip{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);margin:8px auto 10px}
+.te-swatch{-webkit-appearance:none;appearance:none}
+.te-dditem{-webkit-appearance:none;appearance:none}
 .te-ddtitle{font:700 13px system-ui;color:#9ca8b8;margin-bottom:9px}
 .te-ddlist{display:flex;flex-direction:column;gap:2px}
 .te-dditem{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px 12px;border:0;background:transparent;color:#e8eef7;font:600 16px system-ui;border-radius:10px;cursor:pointer}
@@ -570,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C99</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C100</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8405,19 +8409,19 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     function setAll(prop,val){ if(!window._capApplyAll) return; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]&&!(PHOTOS[z].feat&&PHOTOS[z].feat.skip)) PHOTOS[z][prop]=val; } }
     var LBL={style:"Style de bande (dessin)",anim:"Animation",fill:"Couleur du texte",band:"Couleur du fond",font:"Police",size:"Taille"};
     function openDD(type,anchor){
-      var ex=ov.querySelector(".te-ddpop"); if(ex) ex.remove();
-      var pop=document.createElement("div"); pop.className="te-ddpop";
-      var h='<div class="te-ddtitle">'+LBL[type]+'</div>';
+      var dd=document.createElement("div"); dd.className="te-ddov";
+      var h='<div class="te-ddsheet"><div class="te-ddgrip"></div><div class="te-ddtitle">'+LBL[type]+'</div>';
       if(type==="style"||type==="anim"||type==="font"){ var arr=(type==="style")?STYLES:(type==="anim")?ANIMS:FONTS; var cur=(type==="style")?(p._capStyle||"auto"):(type==="anim")?(p._capAnim||"auto"):(p._capFont||"");
         h+='<div class="te-ddlist">'+arr.map(function(o){ return '<button class="te-dditem'+((o[0]===cur)?" on":"")+'" data-v="'+o[0]+'"'+((type==="font"&&o[0])?' style="font-family:'+o[0].replace(/"/g,"&quot;")+'"':'')+'><span>'+esc(o[1])+'</span>'+((o[0]===cur)?'<span class="te-ck">\u2713</span>':'')+'</button>'; }).join("")+'</div>'; }
       else if(type==="fill"||type==="band"){ var cols=(type==="fill")?TCOLORS:BCOLORS; var cur2=(type==="fill")?(p._capColor||"#f5f7fb"):(p._capBand||"");
         h+='<div class="te-sw">'+cols.map(function(c){ return '<button class="te-swatch'+((c===(cur2||""))?" on":"")+(c===""?" te-none":"")+'" data-c="'+c+'"'+(c?(' style="background:'+c+'"'):'')+'>'+(c===""?"\u2715":"")+'</button>'; }).join("")+'</div>'; }
       else if(type==="size"){ h+='<div class="te-size"><input type="range" id="teSize" min="70" max="160" value="'+Math.round((p._capSize||1)*100)+'"><span class="te-sizev">'+Math.round((p._capSize||1)*100)+'%</span></div>'; }
-      pop.innerHTML=h; var card=ov.querySelector(".te-card"); card.appendChild(pop);
-      Array.prototype.forEach.call(pop.querySelectorAll(".te-dditem"),function(bt){ bt.onclick=function(){ var v=bt.getAttribute("data-v"); if(type==="style"){ p._capStyle=(v==="auto")?null:v; setAll("_capStyle",p._capStyle);} else if(type==="anim"){ p._capAnim=(v==="auto")?null:v; setAll("_capAnim",p._capAnim);} else if(type==="font"){ p._capFont=(v==="")?null:v; setAll("_capFont",p._capFont);} rp(); pop.remove(); }; });
-      Array.prototype.forEach.call(pop.querySelectorAll(".te-swatch"),function(bt){ bt.onclick=function(){ var c=bt.getAttribute("data-c"); if(type==="fill"){ p._capColor=c||null; setAll("_capColor",p._capColor);} else { p._capBand=c||null; setAll("_capBand",p._capBand);} rp(); pop.remove(); }; });
-      var sz=pop.querySelector("#teSize"); if(sz){ var szv=pop.querySelector(".te-sizev"); sz.oninput=function(){ p._capSize=(+sz.value)/100; if(szv) szv.textContent=sz.value+"%"; setAll("_capSize",p._capSize); rp(); }; try{ _paintAllRanges(); }catch(e){} }
-      setTimeout(function(){ var oc=function(e){ if(pop&&!pop.contains(e.target)&&e.target!==anchor){ try{pop.remove();}catch(x){} document.removeEventListener("pointerdown",oc,true); } }; document.addEventListener("pointerdown",oc,true); },20);
+      h+='</div>';
+      dd.innerHTML=h; document.body.appendChild(dd);
+      Array.prototype.forEach.call(dd.querySelectorAll(".te-dditem"),function(bt){ bt.onclick=function(){ var v=bt.getAttribute("data-v"); if(type==="style"){ p._capStyle=(v==="auto")?null:v; setAll("_capStyle",p._capStyle);} else if(type==="anim"){ p._capAnim=(v==="auto")?null:v; setAll("_capAnim",p._capAnim);} else if(type==="font"){ p._capFont=(v==="")?null:v; setAll("_capFont",p._capFont);} rp(); dd.remove(); }; });
+      Array.prototype.forEach.call(dd.querySelectorAll(".te-swatch"),function(bt){ bt.onclick=function(){ var c=bt.getAttribute("data-c"); if(type==="fill"){ p._capColor=c||null; setAll("_capColor",p._capColor);} else { p._capBand=c||null; setAll("_capBand",p._capBand);} rp(); dd.remove(); }; });
+      var sz=dd.querySelector("#teSize"); if(sz){ var szv=dd.querySelector(".te-sizev"); sz.oninput=function(){ p._capSize=(+sz.value)/100; if(szv) szv.textContent=sz.value+"%"; setAll("_capSize",p._capSize); rp(); }; try{ _paintAllRanges(); }catch(e){} }
+      dd.onclick=function(e){ if(e.target===dd) dd.remove(); };
     }
     Array.prototype.forEach.call(ov.querySelectorAll(".te-dd"),function(bt){ bt.onclick=function(e){ e.stopPropagation(); openDD(bt.getAttribute("data-t"), bt); }; });
     rp();
