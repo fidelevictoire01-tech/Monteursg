@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Son clip re-route (MediaElementSource, fallback muet = jamais de blocage) + VITESSE par clip (ralenti/accelere) · BUILD 2026-08-09-C91 -->
+<!-- Studio Magot — Simplification : son des clips RETIRE (clips muets, fin du bug iOS) + sous-titres abandonnes + bouton Vitesse visible · BUILD 2026-08-09-C92 -->
 
 <html lang="fr">
 <head>
@@ -538,7 +538,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C91</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C92</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7732,10 +7732,8 @@ function loop(){
   var inTrans=(sg&&next&&TRd>0&&t>=preStart&&t<next.start);
   var trProg=inTrans?((t-preStart)/TRd):0;
   if(sg && sg.video && sg.vclip!=null && CLIPS[sg.vclip] && CLIPS[sg.vclip].ready){ var _clA=CLIPS[sg.vclip];
-    if(VIDACT!==idx){ VIDACT=idx; for(var _c=0;_c<CLIPS.length;_c++){ if(_c!==sg.vclip){ try{ CLIPS[_c].el.pause(); }catch(e){} } } try{ _clA.el.playbackRate=_clA.speed||1; }catch(e){} try{ _clA.el.currentTime=sg.vstart||0; }catch(e){} try{ if(_clA.sound){ _setClipGain(_clA,_gV(_clA.bal)); } else { _setClipGain(_clA,0); } }catch(e){} var _pv=_clA.el.play(); if(_pv&&_pv.then) _pv.catch(function(){}); }
-    if(_clA.sound){ try{ _setClipGain(_clA,_gV(_clA.bal)); }catch(e){} if(!window._vidDuck){ try{ if(typeof masterVol==="function") masterVol(_gM(_clA.bal)); }catch(e){} window._vidDuck=true; } }
-    else { try{ _setClipGain(_clA,0); }catch(e){} if(window._vidDuck){ try{ if(typeof masterVol==="function") masterVol(1); }catch(e){} window._vidDuck=false; } }
-  } else { if(VIDACT>=0){ VIDACT=-1; for(var _c2=0;_c2<CLIPS.length;_c2++){ try{ CLIPS[_c2].el.pause(); }catch(e){} } } if(window._vidDuck){ try{ if(typeof masterVol==="function") masterVol(1); }catch(e){} window._vidDuck=false; } }
+    if(VIDACT!==idx){ VIDACT=idx; for(var _c=0;_c<CLIPS.length;_c++){ if(_c!==sg.vclip){ try{ CLIPS[_c].el.pause(); }catch(e){} } } try{ _clA.el.muted=true; _clA.el.playbackRate=_clA.speed||1; _clA.el.currentTime=sg.vstart||0; }catch(e){} var _pv=_clA.el.play(); if(_pv&&_pv.then) _pv.catch(function(){}); }
+  } else { if(VIDACT>=0){ VIDACT=-1; for(var _c2=0;_c2<CLIPS.length;_c2++){ try{ CLIPS[_c2].el.pause(); }catch(e){} } } }
   try{ if(typeof SEGS!=="undefined"&&SEGS&&idx>=0){ for(var _pi2=idx+1; _pi2<SEGS.length && (SEGS[_pi2].start-t)<0.7; _pi2++){ var _ps=SEGS[_pi2]; if(_ps.video&&_ps.vclip!=null&&CLIPS[_ps.vclip]&&CLIPS[_ps.vclip].ready){ var _pe=CLIPS[_ps.vclip].el; if(_pe.paused && Math.abs((_pe.currentTime||0)-(_ps.vstart||0))>0.12){ _pe.muted=true; try{ _pe.currentTime=_ps.vstart||0; }catch(_e){} } break; } } } }catch(e){}
   var strongPulse=(sg&&sg.strong&&into<0.10)?(1-into/0.10):0;
   _atmo=sg?(sg.atmo||null):null; _atmoAmt=(ATMO_AMT[MOOD]!=null?ATMO_AMT[MOOD]:0.6);
@@ -7759,7 +7757,7 @@ function startPlay(){
   if(!audioEl){ setState("Musique non chargée."); return; }
   buildPartition();
   try{ if(ctx&&ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){}
-  try{ for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ var _we=CLIPS[_wc].el; try{ _we.preload="auto"; }catch(_e){} _ensureClipAudio(CLIPS[_wc]); _setClipGain(CLIPS[_wc],0); var _wp=_we.play(); if(_wp&&_wp.then){ _wp.then(function(){}).catch(function(){}); } _we.pause(); } } }catch(e){}
+  try{ for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ var _we=CLIPS[_wc].el; try{ _we.muted=true; _we.preload="auto"; }catch(_e){} var _wp=_we.play(); if(_wp&&_wp.then){ _wp.then(function(){}).catch(function(){}); } _we.pause(); } } }catch(e){}
   document.getElementById("empty").style.display="none";
   var _st0=pausedOffset||(window.MSTART_EFF||0);
   if(window.MULTI){ mBase=_perfNow()-_st0; if(waStartPlan(_st0)){ try{ audioEl.muted=true; }catch(e){} } else { window.MULTI=0; try{ audioEl.muted=false; }catch(e){} } }
@@ -8587,8 +8585,7 @@ function renderVNav(){
       +'<div class="cp-vidwrap"><video class="cp-vid" playsinline webkit-playsinline loop></video></div>'
       +'<div class="cp-title">Clip '+(ci+1)+' <small>'+clock(c.dur||0)+'</small></div>'
       +'<div class="cp-trim"><div class="cp-sec">Moment de d\u00e9part <b id="cpTrimT">'+clock(c.trimStart||0)+'</b></div><input type="range" id="cpTrim" min="0" max="'+Math.round((c.dur||1)*100)+'" value="'+Math.round((c.trimStart||0)*100)+'"><div class="vsb-hint">Fais glisser pour choisir le meilleur passage \u2014 c\u2019est de l\u00e0 que le clip d\u00e9marre dans le montage.</div></div>'
-      +'<div class="cp-row"><button class="vtog'+(c.sound?" on":"")+'" id="cpTog"><span class="vtog-dot"></span></button><span class="cp-lab">Son du clip</span></div>'
-      +'<div class="cp-bal" id="cpBalWrap" style="display:'+(c.sound?"block":"none")+'"><div class="vsb-top"><span>Musique</span><span>Vid\u00e9o</span></div><input type="range" id="cpBal" min="0" max="100" value="'+Math.round((c.bal==null?0.6:c.bal)*100)+'"><div class="vsb-hint">\u00c0 fond sur <b>Vid\u00e9o</b> : on n\u2019entend que ce clip. \u00c0 fond sur <b>Musique</b> : clip muet.</div></div>'
+      +'<div class="cp-speed"><div class="cp-sec">Vitesse</div><div class="cp-spd-seg" id="cpSpd"><button data-s="0.5">Ralenti</button><button data-s="1">Normal</button><button data-s="1.5">Rapide</button><button data-s="2">\u00d72</button></div></div>'
       +'<div class="cp-color"><div class="cp-sec">Couleur & teinte</div>'
         +'<div class="cp-presets">'+VPRESETS.map(function(p,pi){ return '<button class="cp-pre'+(pi===(c.preset||0)?" on":"")+'" data-pre="'+pi+'">'+p.n+'</button>'; }).join("")+'</div>'
         +'<div class="cp-adj">'
@@ -8599,11 +8596,8 @@ function renderVNav(){
       +'<div class="cp-actions"><button class="cp-del" id="cpDel">Supprimer</button><button class="cp-done" id="cpDone">Termin\u00e9</button></div>' 
     +'</div>';
     document.body.appendChild(ov);
-    var pv=ov.querySelector(".cp-vid"); var _pg=null,_ps=null;
-    try{ pv.src=c.el._u; pv.style.filter=_cssFilter(c.color); }catch(e){}
-    try{ if(ctx){ _ps=ctx.createMediaElementSource(pv); _pg=ctx.createGain(); _pg.gain.value=c.sound?(c.bal==null?0.6:c.bal):0; _ps.connect(_pg); _pg.connect(ctx.destination); pv.muted=false; } else { pv.muted=!c.sound; } }catch(e){ try{ pv.muted=!c.sound; }catch(_e){} }
-    try{ var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
-    function _prevGain(){ try{ if(_pg){ _pg.gain.value=c.sound?(c.bal==null?0.6:c.bal):0; } else { pv.muted=!c.sound; } }catch(e){} }
+    var pv=ov.querySelector(".cp-vid");
+    try{ pv.src=c.el._u; pv.muted=false; pv.style.filter=_cssFilter(c.color); var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
     function _applyColor(){ try{ pv.style.filter=_cssFilter(c.color); }catch(e){} }
     Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(bt){ bt.onclick=function(){ var pi=+bt.getAttribute("data-pre"); c.preset=pi; c.color={expo:VPRESETS[pi].c.expo,contrast:VPRESETS[pi].c.contrast,sat:VPRESETS[pi].c.sat,temp:VPRESETS[pi].c.temp}; Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(b2){ b2.classList.remove("on"); }); bt.classList.add("on"); var et=ov.querySelector("#cpTemp"),es=ov.querySelector("#cpSat"),ee=ov.querySelector("#cpExpo"); if(et)et.value=Math.round(c.color.temp*100); if(es)es.value=Math.round(c.color.sat*100); if(ee)ee.value=Math.round(c.color.expo*100); _applyColor(); }; });
     var _et=ov.querySelector("#cpTemp"); if(_et) _et.oninput=function(){ c.color.temp=(+_et.value)/100; c.preset=-1; _applyColor(); };
@@ -8617,10 +8611,7 @@ function renderVNav(){
       Array.prototype.forEach.call(bs,function(b){ b.onclick=function(){ c.speed=+b.getAttribute("data-s"); mark(); try{ pv.playbackRate=c.speed; }catch(e){} }; });
       mark();
     })();
-    var tog=ov.querySelector("#cpTog"), bw=ov.querySelector("#cpBalWrap"), bal=ov.querySelector("#cpBal");
-    if(tog) tog.onclick=function(){ c.sound=!c.sound; tog.classList.toggle("on",c.sound); if(bw) bw.style.display=c.sound?"block":"none"; _prevGain(); try{ var q=pv.play(); if(q&&q.then) q.catch(function(){}); }catch(e){} };
-    if(bal) bal.oninput=function(){ c.bal=(+bal.value)/100; _prevGain(); };
-    function close(){ try{ if(_pg) _pg.disconnect(); }catch(e){} try{ if(_ps) _ps.disconnect(); }catch(e){} try{ pv.pause(); pv.removeAttribute("src"); pv.load(); }catch(e){} try{ ov.remove(); }catch(e){} renderVideoSheet(); }
+    function close(){ try{ pv.pause(); pv.removeAttribute("src"); pv.load(); }catch(e){} try{ ov.remove(); }catch(e){} renderVideoSheet(); }
     var dn=ov.querySelector("#cpDone"); if(dn) dn.onclick=close;
     var dl=ov.querySelector("#cpDel"); if(dl) dl.onclick=function(){ close(); removeClip(ci); };
     ov.onclick=function(e){ if(e.target===ov) close(); };
