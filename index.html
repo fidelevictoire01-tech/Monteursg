@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Import photos plus rapide : HEIC accepte (evite la conversion JPEG couteuse d-iOS) - EXPERIMENTAL · BUILD 2026-08-09-C96 -->
+<!-- Studio Magot — EDITEUR TEXTE plein ecran (tap sur le texte) : ecriture + galerie styles + animation + couleurs texte/bandeau + apercu live · BUILD 2026-08-09-C97 -->
 
 <html lang="fr">
 <head>
@@ -431,6 +431,19 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cp-spd-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:6px}
 .cp-spd-seg button{flex:1;border:0;background:transparent;color:#9ca8b8;font:700 13px system-ui;padding:9px 4px;cursor:pointer}
 .cp-spd-seg button.on{background:#e5aa34;color:#1a1206}
+.txtEd .te-card{max-width:420px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.te-prevwrap{width:100%;display:flex;justify-content:center;margin-bottom:10px}
+.te-cv{width:180px;height:320px;border-radius:12px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.te-input{width:100%;box-sizing:border-box;background:#0e1a29;border:1px solid var(--line);border-radius:12px;color:#eaf1fb;font:500 16px system-ui;padding:11px 12px;resize:vertical;min-height:52px}
+.te-input:focus{outline:none;border-color:#e5aa34}
+.te-ai{width:100%;margin:9px 0 4px;display:flex;align-items:center;justify-content:center;gap:7px;background:linear-gradient(180deg,rgba(139,87,223,.22),rgba(139,87,223,.10));border:1px solid rgba(139,87,223,.4);color:#d9c9ff;font:700 14px system-ui;border-radius:12px;padding:11px;cursor:pointer}
+.te-row{display:flex;gap:7px;overflow-x:auto;padding-bottom:5px;-webkit-overflow-scrolling:touch;margin-bottom:2px}
+.te-chip{flex:0 0 auto;padding:8px 13px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#cdd8e6;font:700 13px system-ui;cursor:pointer;white-space:nowrap}
+.te-chip.on{border-color:#e5aa34;background:linear-gradient(180deg,rgba(224,163,62,.18),transparent);color:#f4bd4a}
+.te-sw{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:4px}
+.te-swatch{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0;display:grid;place-items:center;color:#9fb0d0;font-size:12px}
+.te-swatch.on{border-color:#fff;box-shadow:0 0 0 2px #e5aa34}
+.te-swatch.te-none{background:repeating-linear-gradient(45deg,#243247,#243247 4px,#1a2534 4px,#1a2534 8px)}
 .vdens{display:flex;align-items:center;gap:10px;margin:2px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#0e1a29}
 .vdens-lab{font:600 14px system-ui;color:#eaf1fb;flex:1}
 .vdens-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -538,7 +551,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C96</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C97</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1357,7 +1370,7 @@ function _mmtDraw(ctx,opt){
   var TR=Math.max(0.12,Math.min(st.transition,duration*0.42));
   var pin=_mmtClamp(time/TR,0,1), pout=_mmtClamp((duration-time)/TR,0,1), ein=_mmtEoc(pin);
   var alpha=Math.min(ein,_mmtEoc(pout)); if(st.kind==="credits") alpha=1; if(alpha<=0.01) return;
-  var GOLD=_GOLD, WHITE=_WHITE;
+  var GOLD=(opt.band||_GOLD), WHITE=(opt.fill||_WHITE);
   /* TAILLES basées sur le PETIT COTE -> identiques en 9:16, 16:9, 4:5, 1:1 */
   var fs=Math.max(16,Math.round(S*(role==="title"?0.058:0.047)));
   var small=Math.max(11,Math.round(fs*0.52));
@@ -1503,12 +1516,12 @@ function _mmtDraw(ctx,opt){
   _soft(ctx,fs,0.34); _lines(ctx,lines,0,-blockH/2+fs*0.82,lh,fs,"center",WHITE,_STK);
   ctx.restore();
 }
-function drawCaption(ctx,Wd,Hd,text,ox,into,dur,abs,style,anim){
+function drawCaption(ctx,Wd,Hd,text,ox,into,dur,abs,style,anim,fill,band){
   if(!text) return;
   var be=0,bt=0;
   if(typeof A!=="undefined"&&A&&A.beats&&A.beats.length){ var segS=abs-into, segE=segS+dur; for(var bk=0;bk<A.beats.length;bk++){ var bb=A.beats[bk]; if(bb>=segS-0.001 && bb<=segE+0.001){ bt++; if(bb<=abs+0.001) be++; } } }
   ctx.save(); if(ox) ctx.translate(ox,0);
-  _mmtDraw(ctx,{text:text,width:Wd,height:Hd,time:into,duration:dur,mood:(typeof MOOD!=="undefined"?MOOD:"cinema"),style:(style||"auto"),anim:(anim||"auto"),role:"comment",beat:capBeatPulse(abs),beatsElapsed:be,beatsTotal:bt});
+  _mmtDraw(ctx,{text:text,width:Wd,height:Hd,time:into,duration:dur,mood:(typeof MOOD!=="undefined"?MOOD:"cinema"),style:(style||"auto"),anim:(anim||"auto"),role:"comment",beat:capBeatPulse(abs),beatsElapsed:be,beatsTotal:bt,fill:fill,band:band});
   ctx.restore();
 }
 
@@ -1544,7 +1557,7 @@ function drawSegAt(sg,t,ox,smul){
   bctx.save(); bctx.translate(cx+ox+dx, cy+dy);
   bctx.drawImage(img,-wf/2,-hf/2,wf,hf);
   bctx.restore();
-  if(sg && sg.img>=0 && PHOTOS[sg.img] && PHOTOS[sg.img]._cap){ var _cp=(""+PHOTOS[sg.img]._cap).trim(); if(_cp){ try{ var _cs=PHOTOS[sg.img]._capStyle||(typeof window!=="undefined"&&window.CAPPRESET)||"auto"; var _ca=PHOTOS[sg.img]._capAnim||(typeof window!=="undefined"&&window.CAPANIM)||"auto"; drawCaption(bctx,Wd,Hd,_cp,ox,(t-sg.start),(sg.end-sg.start),t,_cs,_ca); }catch(_ce){} } }
+  if(sg && sg.img>=0 && PHOTOS[sg.img] && PHOTOS[sg.img]._cap){ var _cp=(""+PHOTOS[sg.img]._cap).trim(); if(_cp){ try{ var _cs=PHOTOS[sg.img]._capStyle||(typeof window!=="undefined"&&window.CAPPRESET)||"auto"; var _ca=PHOTOS[sg.img]._capAnim||(typeof window!=="undefined"&&window.CAPANIM)||"auto"; drawCaption(bctx,Wd,Hd,_cp,ox,(t-sg.start),(sg.end-sg.start),t,_cs,_ca,PHOTOS[sg.img]._capColor,PHOTOS[sg.img]._capBand); }catch(_ce){} } }
 }
 function renderBaseFrame(t){
   var Wd=base.width,Hd=base.height;
@@ -8348,6 +8361,43 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }
     if(kept.length>=4){ PHOTOS[kept[0]]._capStyle="title"; PHOTOS[kept[0]]._capAnim="zoom"; PHOTOS[kept[kept.length-1]]._capStyle="credits"; PHOTOS[kept[kept.length-1]]._capAnim="fade"; }
   }
+  function _txtPreview(cv,p){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); var src=p.c||p.img; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } var txt=(""+(p._cap||"")).trim(); if(txt && typeof drawCaption==="function"){ drawCaption(ctx,W,H,txt,0,1.3,3.2,1.3,(p._capStyle||"auto"),"none",p._capColor,p._capBand); } }catch(e){} }
+  function openTextEditor(i){
+    var p=PHOTOS[i]; if(!p) return;
+    var STYLES=[["auto","Auto"],["title","Titre"],["cinema","Cin\u00e9ma"],["elegant","\u00c9l\u00e9gant"],["band","Bande info"],["broadcast","Bulletin TV"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["voyage","Voyage"],["doux","Doux"],["dynamique","Dynamique"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"],["flash","Flash or"],["flashv","Flash violet"]];
+    var ANIMS=[["auto","Auto"],["none","Aucune"],["fade","Fondu"],["up","Monter"],["down","Descendre"],["slide","Glisser"],["zoom","Zoom"],["beat","Zoom rythm\u00e9"],["word","Mot \u00e0 mot"],["type","Machine"]];
+    var TCOLORS=["#f5f7fb","#111827","#e5aa34","#f4bd4a","#8b57df","#e0524f","#4f9be0","#3fae6a","#ff8ab5","#00d3c7"];
+    var BCOLORS=["","#e5aa34","#111827","#8b57df","#e0524f","#2b6cb0","#0f172a","#c026d3","#0d7a5f"];
+    function chip(v,lab,cur){ return '<button class="te-chip'+(v===cur?" on":"")+'" data-v="'+v+'">'+esc(lab)+'</button>'; }
+    function sw(c,cur,band){ var on=(band?(c===(cur||"")):(c===cur)); return '<button class="te-swatch'+(on?" on":"")+(c===""?" te-none":"")+'" data-c="'+c+'" style="'+(c?("background:"+c):"")+'">'+(c===""?"\u2715":"")+'</button>'; }
+    var applyAll=!!window._capApplyAll;
+    var ov=document.createElement("div"); ov.className="clipPrev txtEd";
+    ov.innerHTML='<div class="cp-card te-card">'
+      +'<div class="te-prevwrap"><canvas class="te-cv" width="360" height="640"></canvas></div>'
+      +'<textarea class="te-input" id="teInput" rows="2" placeholder="\u00c9cris ton texte devant la photo\u2026">'+esc(p._cap||"")+'</textarea>'
+      +'<button class="te-ai" id="teAI"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Fid\u00e8le : aide-moi \u00e0 \u00e9crire</button>'
+      +'<div class="cp-sec">Style de bandeau</div><div class="te-row" id="teStyle">'+STYLES.map(function(o){return chip(o[0],o[1],p._capStyle||"auto");}).join("")+'</div>'
+      +'<div class="cp-sec">Animation</div><div class="te-row" id="teAnim">'+ANIMS.map(function(o){return chip(o[0],o[1],p._capAnim||"auto");}).join("")+'</div>'
+      +'<div class="cp-sec">Couleur du texte</div><div class="te-sw" id="teFill">'+TCOLORS.map(function(c){return sw(c,p._capColor||"#f5f7fb",false);}).join("")+'</div>'
+      +'<div class="cp-sec">Couleur du bandeau</div><div class="te-sw" id="teBand">'+BCOLORS.map(function(c){return sw(c,p._capBand||"",true);}).join("")+'</div>'
+      +'<div class="cp-row"><button class="vtog'+(applyAll?" on":"")+'" id="teAll"><span class="vtog-dot"></span></button><span class="cp-lab">Appliquer le style \u00e0 toutes les photos</span></div>'
+      +'<div class="cp-actions"><button class="cp-done" id="teDone">Termin\u00e9</button></div>'
+    +'</div>';
+    document.body.appendChild(ov);
+    var cv=ov.querySelector(".te-cv"); function rp(){ _txtPreview(cv,p); }
+    rp();
+    function setAll(prop,val){ if(!window._capApplyAll) return; var K=(typeof computePhotoOrder==="function")?null:null; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]&&!(PHOTOS[z].feat&&PHOTOS[z].feat.skip)){ PHOTOS[z][prop]=val; } } }
+    var ta=ov.querySelector("#teInput"); if(ta) ta.oninput=function(){ p._cap=ta.value; rp(); };
+    Array.prototype.forEach.call(ov.querySelectorAll("#teStyle .te-chip"),function(b){ b.onclick=function(){ var v=b.getAttribute("data-v"); p._capStyle=(v==="auto")?null:v; setAll("_capStyle",p._capStyle); Array.prototype.forEach.call(ov.querySelectorAll("#teStyle .te-chip"),function(x){x.classList.toggle("on",x===b);}); rp(); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll("#teAnim .te-chip"),function(b){ b.onclick=function(){ var v=b.getAttribute("data-v"); p._capAnim=(v==="auto")?null:v; setAll("_capAnim",p._capAnim); Array.prototype.forEach.call(ov.querySelectorAll("#teAnim .te-chip"),function(x){x.classList.toggle("on",x===b);}); rp(); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll("#teFill .te-swatch"),function(b){ b.onclick=function(){ p._capColor=b.getAttribute("data-c")||null; setAll("_capColor",p._capColor); Array.prototype.forEach.call(ov.querySelectorAll("#teFill .te-swatch"),function(x){x.classList.toggle("on",x===b);}); rp(); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll("#teBand .te-swatch"),function(b){ b.onclick=function(){ var c=b.getAttribute("data-c"); p._capBand=c||null; setAll("_capBand",p._capBand); Array.prototype.forEach.call(ov.querySelectorAll("#teBand .te-swatch"),function(x){x.classList.toggle("on",x===b);}); rp(); }; });
+    var all=ov.querySelector("#teAll"); if(all) all.onclick=function(){ window._capApplyAll=!window._capApplyAll; all.classList.toggle("on",window._capApplyAll); if(window._capApplyAll){ setAll("_capStyle",p._capStyle); setAll("_capAnim",p._capAnim); setAll("_capColor",p._capColor); setAll("_capBand",p._capBand); } };
+    var ai=ov.querySelector("#teAI"); if(ai) ai.onclick=function(){ ai.textContent="Connexion IA \u00e0 venir \u2014 tu pourras donner un titre, Fid\u00e8le d\u00e9veloppera."; ai.disabled=true; setTimeout(function(){ try{ ai.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Fid\u00e8le : aide-moi \u00e0 \u00e9crire'; ai.disabled=false; }catch(e){} },2600); };
+    function done(){ try{ ov.remove(); }catch(e){} try{ if(typeof renderPGrid==="function") renderPGrid(); }catch(e){} try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
+    var dn=ov.querySelector("#teDone"); if(dn) dn.onclick=done;
+    ov.onclick=function(e){ if(e.target===ov) done(); };
+  }
   function openStyleMenu(i, anchorEl){
     var p=PHOTOS[i]; if(!p) return;
     var cur=p._capStyle||"auto";
@@ -8440,7 +8490,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     document.removeEventListener("pointercancel",pgUp,true);
     var g=$("pGrid"); if(g) g.classList.remove("dragging");
     if(d.el) d.el.classList.remove("drag");
-    if(d.on) commitOrder(); else if(d.id!=null) openStyleMenu(d.id, d.el&&d.el.querySelector?d.el.querySelector(".pr-drag"):null);
+    if(d.on) commitOrder(); else if(d.id!=null) openTextEditor(d.id);
   }
   function bindRow(el){
     if(el.classList.contains("off")){
@@ -8454,7 +8504,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }
     var th=el.querySelector(".pr-thumb"); if(th) th.onclick=function(){ tapExclude(+el.getAttribute("data-i")); };
     var cap=el.querySelector(".pr-cap");
-    if(cap){ cap.oninput=function(){ var p=PHOTOS[+el.getAttribute("data-i")]; if(p) p._cap=cap.value; }; cap.onpointerdown=function(e){ e.stopPropagation(); }; }
+    if(cap){ cap.readOnly=true; cap.onpointerdown=function(e){ e.stopPropagation(); }; cap.onclick=function(e){ e.stopPropagation(); openTextEditor(+el.getAttribute("data-i")); }; }
   }
   function prow(i,num,skip){
     var p=PHOTOS[i]; var u=photoURL(p);
