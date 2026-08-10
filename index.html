@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX iOS majeur : son des clips via Web Audio (volume reglable + horloge ne se fige plus) lecture ET apercu · BUILD 2026-08-09-C87 -->
+<!-- Studio Magot — Video : densite des clips (Peu/Normal/Beaucoup) + trim (choisir le moment de depart du clip) · BUILD 2026-08-09-C88 -->
 
 <html lang="fr">
 <head>
@@ -427,6 +427,14 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cp-adj label{display:flex;align-items:center;gap:11px;font:600 13px system-ui;color:#c3cede}
 .cp-adj label span{flex:0 0 84px}
 .cp-adj input[type=range]{flex:1;accent-color:#e5aa34}
+.vdens{display:flex;align-items:center;gap:10px;margin:2px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#0e1a29}
+.vdens-lab{font:600 14px system-ui;color:#eaf1fb;flex:1}
+.vdens-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.vdens-seg button{border:0;background:transparent;color:#9ca8b8;font:700 13px system-ui;padding:8px 12px;cursor:pointer}
+.vdens-seg button.on{background:#e5aa34;color:#1a1206}
+.cp-trim{margin:2px 2px 4px}
+.cp-trim input[type=range]{width:100%;accent-color:#e5aa34;margin-top:4px}
+.cp-trim .cp-sec b{color:#f4bd4a}
 .vchip small{font:600 9.5px ui-monospace,monospace;color:var(--muted)}
 .vchip.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,rgba(224,163,62,.14),transparent)}
 .pcell.ph{opacity:.3;filter:grayscale(.4)}
@@ -523,7 +531,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C87</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C88</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -875,7 +883,7 @@ function renderPlanToBuffer(dur, sr){
 function analyzeBufferInto(buf, cb){ try{ essentiaReady.then(function(ok){ if(ok){ setTimeout(function(){ try{ toMono44(buf,function(sig,sr){ var An; try{ An=analyzeEssentia(sig,sr,buf.duration); }catch(e){ An=analyzeCustom(buf); } cb(An); }); }catch(e){ cb(analyzeCustom(buf)); } }, 20); } else { setTimeout(function(){ cb(analyzeCustom(buf)); }, 20); } }); }catch(e){ try{ cb(analyzeCustom(buf)); }catch(e2){ cb(null); } } }
 
 var CLIPS=[], clipVidReady=false, VIDACT=-1;
-window.VIDSOUND=false; window.VIDBAL=0.6; window.VEXCL=[]; /* son des vidéos OFF par défaut ; équilibre musique<->vidéo (0=musique .. 1=vidéo) */
+window.VIDSOUND=false; window.VIDBAL=0.6; window.VEXCL=[]; window.VIDDENS=1; /* son des vidéos OFF par défaut ; équilibre musique<->vidéo (0=musique .. 1=vidéo) */
 function _gV(b){ b=Math.max(0,Math.min(1,(b==null?0.6:b))); return Math.sin(b*Math.PI/2); }
 function _gM(b){ b=Math.max(0,Math.min(1,(b==null?0.6:b))); return Math.cos(b*Math.PI/2); }
 function _vidGain(){ return _gV(window.VIDBAL); }
@@ -1198,7 +1206,7 @@ function buildPartition(){
   /* VIDÉO — placement PRO : sur les temps forts, fréquence par mode, bien réparti */
   if(clipVidReady && SEGS.length>=4){
     var _gap=({cinema:7,doux:8,dynamique:4,voyage:5})[MOOD]||6;
-    var _target=Math.max(1, Math.round(SEGS.length/_gap));
+    var _target=Math.max(1, Math.round(SEGS.length/_gap*(window.VIDDENS||1)));
     var _lastV=-99;
     for(var _k=1;_k<=_target;_k++){
       var _ideal=Math.round(_k*SEGS.length/(_target+1));   /* position idéale, régulièrement espacée */
@@ -1218,7 +1226,7 @@ function buildPartition(){
     if(_rc.length){
       var _byClip={}, _n=0;
       for(var _s3=0;_s3<SEGS.length;_s3++){ if(SEGS[_s3].video){ var _ci=_rc[_n%_rc.length]; SEGS[_s3].vclip=_ci; (_byClip[_ci]=_byClip[_ci]||[]).push(_s3); _n++; } }
-      for(var _ck in _byClip){ var _arr=_byClip[_ck], _d=CLIPS[_ck].dur||1; for(var _j=0;_j<_arr.length;_j++){ SEGS[_arr[_j]].vstart=Math.max(0,Math.min(_d-0.35,_d*(_j+0.5)/_arr.length)); } }
+      for(var _ck in _byClip){ var _arr=_byClip[_ck], _d=CLIPS[_ck].dur||1, _ts=CLIPS[_ck].trimStart; for(var _j=0;_j<_arr.length;_j++){ SEGS[_arr[_j]].vstart=(_ts!=null)?Math.max(0,Math.min(_d-0.35,_ts+_j*0.7)):Math.max(0,Math.min(_d-0.35,_d*(_j+0.5)/_arr.length)); } }
     }
     for(var _mv=SEGS.length-2; _mv>=0; _mv--){ if(SEGS[_mv].video && SEGS[_mv+1] && !SEGS[_mv+1].video){ SEGS[_mv].end=SEGS[_mv+1].end; SEGS.splice(_mv+1,1); } }
   }
@@ -7839,7 +7847,7 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
     var v=document.createElement("video"); v.muted=true; v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
     v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1";
     var u=URL.createObjectURL(fl); v.src=u; v._u=u;
-    var clip={el:v, dur:0, ready:false, file:fl, thumb:null, sound:false, bal:0.6, color:{expo:0,contrast:0,sat:0,temp:0}, preset:0}; CLIPS.push(clip); document.body.appendChild(v); v.load();
+    var clip={el:v, dur:0, ready:false, file:fl, thumb:null, sound:false, bal:0.6, color:{expo:0,contrast:0,sat:0,temp:0}, preset:0, trimStart:null}; CLIPS.push(clip); document.body.appendChild(v); v.load();
     v.onloadedmetadata=function(){ clip.dur=v.duration||0; clip.ready=(clip.dur>0.5); clipVidReady=CLIPS.some(function(c){return c.ready;}); if(clip.ready && typeof genThumb==="function") genThumb(clip); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); paintStrip(playing?visualTime():0); } var _nr=CLIPS.filter(function(c){return c.ready;}).length; setState(_nr+" clip(s) vidéo — intercalés dans le montage."); };
     v.onerror=function(){ clip.ready=false; clipVidReady=CLIPS.some(function(c){return c.ready;}); };
   });
@@ -8554,6 +8562,7 @@ function renderVNav(){
     ov.innerHTML='<div class="cp-card" role="dialog">'
       +'<div class="cp-vidwrap"><video class="cp-vid" playsinline webkit-playsinline loop></video></div>'
       +'<div class="cp-title">Clip '+(ci+1)+' <small>'+clock(c.dur||0)+'</small></div>'
+      +'<div class="cp-trim"><div class="cp-sec">Moment de d\u00e9part <b id="cpTrimT">'+clock(c.trimStart||0)+'</b></div><input type="range" id="cpTrim" min="0" max="'+Math.round((c.dur||1)*100)+'" value="'+Math.round((c.trimStart||0)*100)+'"><div class="vsb-hint">Fais glisser pour choisir le meilleur passage \u2014 c\u2019est de l\u00e0 que le clip d\u00e9marre dans le montage.</div></div>'
       +'<div class="cp-row"><button class="vtog'+(c.sound?" on":"")+'" id="cpTog"><span class="vtog-dot"></span></button><span class="cp-lab">Son du clip</span></div>'
       +'<div class="cp-bal" id="cpBalWrap" style="display:'+(c.sound?"block":"none")+'"><div class="vsb-top"><span>Musique</span><span>Vid\u00e9o</span></div><input type="range" id="cpBal" min="0" max="100" value="'+Math.round((c.bal==null?0.6:c.bal)*100)+'"><div class="vsb-hint">\u00c0 fond sur <b>Vid\u00e9o</b> : on n\u2019entend que ce clip. \u00c0 fond sur <b>Musique</b> : clip muet.</div></div>'
       +'<div class="cp-color"><div class="cp-sec">Couleur & teinte</div>'
@@ -8575,6 +8584,8 @@ function renderVNav(){
     var _et=ov.querySelector("#cpTemp"); if(_et) _et.oninput=function(){ c.color.temp=(+_et.value)/100; c.preset=-1; _applyColor(); };
     var _es=ov.querySelector("#cpSat"); if(_es) _es.oninput=function(){ c.color.sat=(+_es.value)/100; c.preset=-1; _applyColor(); };
     var _ee=ov.querySelector("#cpExpo"); if(_ee) _ee.oninput=function(){ c.color.expo=(+_ee.value)/100; c.preset=-1; _applyColor(); };
+    var _tr=ov.querySelector("#cpTrim"), _trT=ov.querySelector("#cpTrimT");
+    if(_tr) _tr.oninput=function(){ c.trimStart=(+_tr.value)/100; if(_trT) _trT.textContent=clock(c.trimStart); try{ pv.currentTime=Math.max(0,Math.min((c.dur||1)-0.05,c.trimStart)); }catch(e){} };
     var tog=ov.querySelector("#cpTog"), bw=ov.querySelector("#cpBalWrap"), bal=ov.querySelector("#cpBal");
     if(tog) tog.onclick=function(){ c.sound=!c.sound; tog.classList.toggle("on",c.sound); if(bw) bw.style.display=c.sound?"block":"none"; try{ if(_pg){ _pg.gain.value=c.sound?Math.sin((c.bal==null?0.6:c.bal)*Math.PI/2):0; } else { pv.muted=!c.sound; } var q=pv.play(); if(q&&q.then) q.catch(function(){}); }catch(e){} };
     if(bal) bal.oninput=function(){ c.bal=(+bal.value)/100; try{ if(_pg){ _pg.gain.value=c.sound?Math.sin(c.bal*Math.PI/2):0; } else { pv.muted=(!c.sound); } }catch(e){} };
@@ -8621,6 +8632,7 @@ function renderVNav(){
        +'</div>'
      +'</div>'
      +'<div id="vClips" class="vclips"></div>'
+     +'<div class="vdens"><span class="vdens-lab">Nombre de clips</span><div class="vdens-seg" id="vDens"><button data-d="0.6">Peu</button><button data-d="1">Normal</button><button data-d="1.6">Beaucoup</button></div></div>'
      +'<div id="vNav" class="vnav"></div>';
     var vib=$("vImport"); if(vib) vib.onclick=function(){ watchVideoImport(); var p=$("pickVideo"); if(p) p.click(); };
     (function(){
@@ -8630,6 +8642,11 @@ function renderVNav(){
       if(tog) tog.onclick=function(){ window.VIDSOUND=!window.VIDSOUND; refl(); if(typeof CLIPS!=="undefined"&&CLIPS) CLIPS.forEach(function(c){ c.sound=window.VIDSOUND; }); try{ if(typeof _applyVidAudio==="function") _applyVidAudio(true); }catch(e){} renderVClips(); };
       if(bal) bal.oninput=function(){ window.VIDBAL=(+bal.value)/100; if(typeof CLIPS!=="undefined"&&CLIPS) CLIPS.forEach(function(c){ c.bal=window.VIDBAL; }); try{ if(typeof _applyVidAudio==="function") _applyVidAudio(false); }catch(e){} };
       refl();
+    })();
+    (function(){ var seg=$("vDens"); if(!seg) return; var bs=seg.querySelectorAll("button");
+      function mark(){ Array.prototype.forEach.call(bs,function(b){ b.classList.toggle("on", Math.abs((+b.getAttribute("data-d"))-(window.VIDDENS||1))<0.01); }); }
+      Array.prototype.forEach.call(bs,function(b){ b.onclick=function(){ window.VIDDENS=+b.getAttribute("data-d"); mark(); if(typeof A!=="undefined"&&A&&PHOTOS.length){ try{ buildPartition(); updateBadge(); paintStrip((typeof playing!=="undefined"&&playing)?visualTime():0); }catch(e){} } renderVideoSheet(); }; });
+      mark();
     })();
     renderVideoSheet();
   }
