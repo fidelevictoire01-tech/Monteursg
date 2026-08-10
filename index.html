@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Son PAR-CLIP + apercu plein ecran facon iPhone (tap sur un clip) avec reglages son/equilibre du clip · BUILD 2026-08-09-C84 -->
+<!-- Studio Magot — Correction couleur PAR-CLIP (presets + chaleur/saturation/lumiere) via shader WebGL, lecture ET export · BUILD 2026-08-09-C85 -->
 
 <html lang="fr">
 <head>
@@ -418,6 +418,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cp-actions{display:flex;gap:9px;margin-top:14px}
 .cp-del{flex:0 0 auto;padding:12px 15px;border-radius:13px;border:1px solid rgba(255,90,90,.3);background:rgba(255,80,80,.08);color:#ff8a8a;font:700 14px system-ui;cursor:pointer}
 .cp-done{flex:1;padding:12px;border-radius:13px;border:0;background:linear-gradient(180deg,#f4bd4a,#e5aa34);color:#1a1206;font:800 15px system-ui;cursor:pointer}
+.cp-color{margin:12px 2px 2px;padding-top:11px;border-top:1px solid rgba(255,255,255,.07)}
+.cp-sec{font:700 13px system-ui;color:#9ca8b8;margin-bottom:8px}
+.cp-presets{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.cp-pre{flex:0 0 auto;padding:8px 13px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:#cdd8e6;font:700 13px system-ui;cursor:pointer}
+.cp-pre.on{border-color:#e5aa34;background:linear-gradient(180deg,rgba(224,163,62,.18),transparent);color:#f4bd4a}
+.cp-adj{margin-top:11px;display:flex;flex-direction:column;gap:9px}
+.cp-adj label{display:flex;align-items:center;gap:11px;font:600 13px system-ui;color:#c3cede}
+.cp-adj label span{flex:0 0 84px}
+.cp-adj input[type=range]{flex:1;accent-color:#e5aa34}
 .vchip small{font:600 9.5px ui-monospace,monospace;color:var(--muted)}
 .vchip.on{border-color:var(--gold);color:var(--gold2);background:linear-gradient(180deg,rgba(224,163,62,.14),transparent)}
 .pcell.ph{opacity:.3;filter:grayscale(.4)}
@@ -514,7 +523,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C84</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C85</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7629,8 +7638,9 @@ function drawGL(time,pulse,srcTex){
   var ut=gl.getUniformLocation(glProg,"uTex"); if(ut) gl.uniform1i(ut,0);
   gl.uniform1f(glU.uTime,time); if(glU.uResolution) gl.uniform2f(glU.uResolution,base.width,base.height);
   gl.uniform1f(glU.uGrain,G.grain); gl.uniform1f(glU.uVig,G.vig);
-  gl.uniform1f(glU.uExpo,G.expo); gl.uniform1f(glU.uContrast,G.contrast); gl.uniform1f(glU.uSat,G.sat);
-  gl.uniform1f(glU.uTemp,G.temp); gl.uniform1f(glU.uLeak,G.leak); gl.uniform1f(glU.uPulse,pulse||0);
+  var _cg=null; if(typeof SEGS!=="undefined"&&SEGS.length&&typeof CLIPS!=="undefined"){ for(var _si=0;_si<SEGS.length;_si++){ if(time>=SEGS[_si].start&&time<SEGS[_si].end){ if(SEGS[_si].video&&SEGS[_si].vclip!=null&&CLIPS[SEGS[_si].vclip]&&CLIPS[SEGS[_si].vclip].color) _cg=CLIPS[SEGS[_si].vclip].color; break; } } }
+  gl.uniform1f(glU.uExpo,G.expo+(_cg?_cg.expo:0)); gl.uniform1f(glU.uContrast,G.contrast+(_cg?_cg.contrast:0)); gl.uniform1f(glU.uSat,G.sat+(_cg?_cg.sat:0));
+  gl.uniform1f(glU.uTemp,G.temp+(_cg?_cg.temp:0)); gl.uniform1f(glU.uLeak,G.leak); gl.uniform1f(glU.uPulse,pulse||0);
   gl.uniform1f(glU.uChromatic,F.chromatic||0); gl.uniform1f(glU.uBloom,F.bloom||0); gl.uniform1f(glU.uHalation,F.halation||0);
   gl.uniform1f(glU.uAnamorphic,F.anamorphic||0); gl.uniform1f(glU.uDust,F.dust||0); gl.uniform1f(glU.uScanlines,F.scanlines||0);
   gl.uniform1f(glU.uShutter,F.shutter||0); gl.uniform1f(glU.uLensFlare,F.lensFlare||0);
@@ -7823,7 +7833,7 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
     var v=document.createElement("video"); v.muted=true; v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
     v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1";
     var u=URL.createObjectURL(fl); v.src=u; v._u=u;
-    var clip={el:v, dur:0, ready:false, file:fl, thumb:null, sound:false, bal:0.6}; CLIPS.push(clip); document.body.appendChild(v); v.load();
+    var clip={el:v, dur:0, ready:false, file:fl, thumb:null, sound:false, bal:0.6, color:{expo:0,contrast:0,sat:0,temp:0}, preset:0}; CLIPS.push(clip); document.body.appendChild(v); v.load();
     v.onloadedmetadata=function(){ clip.dur=v.duration||0; clip.ready=(clip.dur>0.5); clipVidReady=CLIPS.some(function(c){return c.ready;}); if(clip.ready && typeof genThumb==="function") genThumb(clip); if(A&&PHOTOS.length){ buildPartition(); updateBadge(); paintStrip(playing?visualTime():0); } var _nr=CLIPS.filter(function(c){return c.ready;}).length; setState(_nr+" clip(s) vidéo — intercalés dans le montage."); };
     v.onerror=function(){ clip.ready=false; clipVidReady=CLIPS.some(function(c){return c.ready;}); };
   });
@@ -8527,6 +8537,8 @@ function renderVNav(){
   function removeClip(ci){ if(typeof CLIPS==="undefined"||!CLIPS[ci]) return; try{ CLIPS[ci].el.pause(); }catch(e){} try{ if(CLIPS[ci].el._u) URL.revokeObjectURL(CLIPS[ci].el._u); }catch(e){} try{ CLIPS[ci].el.remove(); }catch(e){} CLIPS.splice(ci,1); clipVidReady=CLIPS.some(function(c){return c.ready;}); if(typeof A!=="undefined"&&A&&PHOTOS.length){ try{ buildPartition(); updateBadge(); paintStrip((typeof playing!=="undefined"&&playing)?visualTime():0); }catch(e){} } _vSel=0; renderVideoSheet(); }
   function removeMorceau(segStart){ if(!window.VEXCL) window.VEXCL=[]; var key=Math.round(segStart*10); if(window.VEXCL.indexOf(key)<0) window.VEXCL.push(key); if(typeof A!=="undefined"&&A&&PHOTOS.length){ try{ buildPartition(); updateBadge(); paintStrip((typeof playing!=="undefined"&&playing)?visualTime():0); }catch(e){} } if(_vSel>0) _vSel--; renderVideoSheet(); }
   function previewClip(ci){ var c=(typeof CLIPS!=="undefined")?CLIPS[ci]:null; if(!c||!c.ready||!c.el) return; try{ if(typeof playing!=="undefined"&&playing){ var pbtn=$("play"); if(pbtn) pbtn.click(); } }catch(e){} for(var i=0;i<CLIPS.length;i++){ if(i!==ci){ try{ CLIPS[i].el.pause(); }catch(e){} } } try{ c.el.currentTime=Math.max(0,Math.min((c.dur||2)-3,(c.dur||2)*0.2)); c.el.muted=false; c.el.volume=1; var p=c.el.play(); if(p&&p.then) p.catch(function(){}); }catch(e){} setState("Aper\u00e7u du clip "+(ci+1)+"\u2026"); if(window._prevT) clearTimeout(window._prevT); window._prevT=setTimeout(function(){ try{ c.el.pause(); c.el.muted=true; }catch(e){} },4000); }
+  var VPRESETS=[{n:"Aucun",c:{expo:0,contrast:0,sat:0,temp:0}},{n:"Chaud",c:{expo:0.02,contrast:0.03,sat:0.06,temp:0.30}},{n:"Froid",c:{expo:0.02,contrast:0.05,sat:0.03,temp:-0.30}},{n:"Vif",c:{expo:0.02,contrast:0.12,sat:0.35,temp:0.03}},{n:"Doux",c:{expo:0.05,contrast:-0.08,sat:-0.08,temp:0.05}},{n:"N&B",c:{expo:0.03,contrast:0.10,sat:-1.0,temp:0}},{n:"Vintage",c:{expo:-0.02,contrast:0.06,sat:-0.15,temp:0.22}}];
+  function _cssFilter(cc){ if(!cc) return "none"; var br=(1+cc.expo).toFixed(3), co=(1+cc.contrast).toFixed(3), sa=Math.max(0,1+cc.sat).toFixed(3); var f="brightness("+br+") contrast("+co+") saturate("+sa+")"; if(cc.temp>0.01) f+=" sepia("+Math.min(0.6,cc.temp*1.1).toFixed(2)+")"; else if(cc.temp<-0.01) f+=" hue-rotate("+Math.round(cc.temp*40)+"deg)"; return f; }
   function openClipPreview(ci){
     var c=(typeof CLIPS!=="undefined")?CLIPS[ci]:null; if(!c||!c.ready||!c.el) return;
     try{ if(typeof playing!=="undefined"&&playing){ var pb=$("play"); if(pb) pb.click(); } }catch(e){}
@@ -8537,10 +8549,22 @@ function renderVNav(){
       +'<div class="cp-title">Clip '+(ci+1)+' <small>'+clock(c.dur||0)+'</small></div>'
       +'<div class="cp-row"><button class="vtog'+(c.sound?" on":"")+'" id="cpTog"><span class="vtog-dot"></span></button><span class="cp-lab">Son du clip</span></div>'
       +'<div class="cp-bal" id="cpBalWrap" style="display:'+(c.sound?"block":"none")+'"><div class="vsb-top"><span>Musique</span><span>Vid\u00e9o</span></div><input type="range" id="cpBal" min="0" max="100" value="'+Math.round((c.bal==null?0.6:c.bal)*100)+'"><div class="vsb-hint">\u00c0 fond sur <b>Vid\u00e9o</b> : on n\u2019entend que ce clip. \u00c0 fond sur <b>Musique</b> : clip muet.</div></div>'
-      +'<div class="cp-actions"><button class="cp-del" id="cpDel">Supprimer</button><button class="cp-done" id="cpDone">Termin\u00e9</button></div>'
+      +'<div class="cp-color"><div class="cp-sec">Couleur & teinte</div>'
+        +'<div class="cp-presets">'+VPRESETS.map(function(p,pi){ return '<button class="cp-pre'+(pi===(c.preset||0)?" on":"")+'" data-pre="'+pi+'">'+p.n+'</button>'; }).join("")+'</div>'
+        +'<div class="cp-adj">'
+          +'<label><span>Chaleur</span><input type="range" id="cpTemp" min="-40" max="40" value="'+Math.round((c.color.temp||0)*100)+'"></label>'
+          +'<label><span>Saturation</span><input type="range" id="cpSat" min="-100" max="60" value="'+Math.round((c.color.sat||0)*100)+'"></label>'
+          +'<label><span>Lumi\u00e8re</span><input type="range" id="cpExpo" min="-20" max="20" value="'+Math.round((c.color.expo||0)*100)+'"></label>'
+        +'</div></div>'
+      +'<div class="cp-actions"><button class="cp-del" id="cpDel">Supprimer</button><button class="cp-done" id="cpDone">Termin\u00e9</button></div>' 
     +'</div>';
     document.body.appendChild(ov);
-    var pv=ov.querySelector(".cp-vid"); try{ pv.src=c.el._u; pv.muted=!c.sound; pv.volume=1; var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
+    var pv=ov.querySelector(".cp-vid"); try{ pv.src=c.el._u; pv.muted=!c.sound; pv.volume=1; pv.style.filter=_cssFilter(c.color); var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
+    function _applyColor(){ try{ pv.style.filter=_cssFilter(c.color); }catch(e){} }
+    Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(bt){ bt.onclick=function(){ var pi=+bt.getAttribute("data-pre"); c.preset=pi; c.color={expo:VPRESETS[pi].c.expo,contrast:VPRESETS[pi].c.contrast,sat:VPRESETS[pi].c.sat,temp:VPRESETS[pi].c.temp}; Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(b2){ b2.classList.remove("on"); }); bt.classList.add("on"); var et=ov.querySelector("#cpTemp"),es=ov.querySelector("#cpSat"),ee=ov.querySelector("#cpExpo"); if(et)et.value=Math.round(c.color.temp*100); if(es)es.value=Math.round(c.color.sat*100); if(ee)ee.value=Math.round(c.color.expo*100); _applyColor(); }; });
+    var _et=ov.querySelector("#cpTemp"); if(_et) _et.oninput=function(){ c.color.temp=(+_et.value)/100; c.preset=-1; _applyColor(); };
+    var _es=ov.querySelector("#cpSat"); if(_es) _es.oninput=function(){ c.color.sat=(+_es.value)/100; c.preset=-1; _applyColor(); };
+    var _ee=ov.querySelector("#cpExpo"); if(_ee) _ee.oninput=function(){ c.color.expo=(+_ee.value)/100; c.preset=-1; _applyColor(); };
     var tog=ov.querySelector("#cpTog"), bw=ov.querySelector("#cpBalWrap"), bal=ov.querySelector("#cpBal");
     if(tog) tog.onclick=function(){ c.sound=!c.sound; tog.classList.toggle("on",c.sound); if(bw) bw.style.display=c.sound?"block":"none"; try{ pv.muted=!c.sound; if(c.sound){ var q=pv.play(); if(q&&q.then) q.catch(function(){}); } }catch(e){} };
     if(bal) bal.oninput=function(){ c.bal=(+bal.value)/100; };
