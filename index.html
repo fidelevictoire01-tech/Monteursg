@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX editeur texte : menus deroulants en calque separe (le backdrop-filter cassait le fixed sur iOS) + pastilles lisibles · BUILD 2026-08-09-C100 -->
+<!-- Studio Magot — FIX editeur texte : le HTML des pastilles n-avait jamais ete remplace (C99 rate) -> pastilles te-dd + menus operationnels · BUILD 2026-08-09-C101 -->
 
 <html lang="fr">
 <head>
@@ -574,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C100</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C101</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8400,8 +8400,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       +'<div class="te-prevwrap"><canvas class="te-cv" width="360" height="640"></canvas></div>'
       +'<textarea class="te-input" id="teInput" rows="2" placeholder="\u00c9cris ton texte devant la photo\u2026">'+esc(p._cap||"")+'</textarea>'
       +'<div class="te-ai-hint" id="teAIhint" style="display:none"></div>'
-      +'<div class="te-tabs" id="teTabs"><button class="te-tab on" data-t="style">Style</button><button class="te-tab" data-t="anim">Animation</button><button class="te-tab" data-t="fill">Texte</button><button class="te-tab" data-t="band">Fond</button><button class="te-tab" data-t="font">Police</button><button class="te-tab" data-t="size">Taille</button></div>'
-      +'<div class="te-panel" id="tePanel"></div>'
+      +'<div class="te-ddrow"><button class="te-dd" data-t="style">Style \u25BE</button><button class="te-dd" data-t="anim">Animation \u25BE</button><button class="te-dd" data-t="fill">Texte \u25BE</button><button class="te-dd" data-t="band">Fond \u25BE</button><button class="te-dd" data-t="font">Police \u25BE</button><button class="te-dd" data-t="size">Taille \u25BE</button></div>'
       +'<div class="cp-row te-applyrow"><button class="vtog'+(applyAll?" on":"")+'" id="teAll"><span class="vtog-dot"></span></button><span class="cp-lab">Appliquer \u00e0 toutes les photos</span></div>'
     +'</div>';
     document.body.appendChild(ov);
