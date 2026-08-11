@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte facon WORD : menus deroulants natifs (Style/Anim/Police) + case Taille (chiffre) + 1 pastille couleur (A) ; police robuste · BUILD 2026-08-09-C110 -->
+<!-- Studio Magot — Peaufinage editeur texte : Taille en points (pt) + bloc appliquer FIN + icone IA baguette magique (Suno) + cadre photo soigne · BUILD 2026-08-09-C111 -->
 
 <html lang="fr">
 <head>
@@ -440,7 +440,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-tool{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:50%;border:0;background:#3a2f6e;color:#c9bdf5;display:grid;place-items:center;cursor:pointer}
 .te-doneb{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:50%;border:0;background:linear-gradient(180deg,#f4bd4a,#e5aa34);color:#1a1206;display:grid;place-items:center;cursor:pointer}
 .te-prevwrap{width:100%;display:flex;justify-content:center;margin-bottom:11px}
-.te-cv{width:auto;height:min(24vh,190px);max-width:100%;border-radius:14px;background:#000;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.te-cv{width:auto;height:min(23vh,180px);max-width:100%;border-radius:14px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.08)}
 .te-inputwrap{position:relative;margin-bottom:12px}
 .te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#eaf1fb;font:500 clamp(14px,4vw,16px) system-ui;padding:12px 13px 20px;resize:none;min-height:46px}
 .te-input:focus{outline:none;border-color:#8b7bf0}
@@ -456,7 +456,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-cbtn input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
 .te-cbtn:after{content:"";position:absolute;left:8px;right:8px;bottom:6px;height:4px;border-radius:2px;background:currentColor}
 .te-aihint{font:600 14px system-ui;color:#d9c9ff;line-height:1.5}
-.te-apply{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:14px;background:linear-gradient(180deg,rgba(139,87,223,.12),rgba(13,22,38,.5));border:1px solid rgba(139,87,223,.22)}
+.te-apply2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:4px 2px}
+.te-apply2-tt{font:700 clamp(13px,3.7vw,15px) system-ui;color:#dbe4f0}
 .te-apply-ic{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:12px;flex:0 0 auto;display:grid;place-items:center;color:#c9bdf5;background:linear-gradient(158deg,#5a4aa8,#33245f)}
 .te-apply-tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .te-apply-tt b{font:800 clamp(14px,4vw,16px) system-ui;color:#f2f6fc}
@@ -570,7 +571,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C110</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C111</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8394,15 +8395,15 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     function opts(arr,cur){ return arr.map(function(o){ return '<option value="'+esc(o[0])+'"'+((o[0]===cur)?' selected':'')+'>'+esc(o[1])+'</option>'; }).join(""); }
     var ov=document.createElement("div"); ov.className="clipPrev txtEd";
     ov.innerHTML='<div class="cp-card te-card">'
-      +'<div class="te-head"><span class="te-title">Texte</span><div class="te-tools"><button class="te-tool" id="teAI" aria-label="IA"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></button><button class="te-doneb" id="teDone" aria-label="Termin\u00e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></button></div></div>'
+      +'<div class="te-head"><span class="te-title">Texte</span><div class="te-tools"><button class="te-tool" id="teAI" aria-label="Fid\u00e8le : g\u00e9n\u00e9rer"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 21.5l-2-2 11-11 2 2-11 11zM17.6 5.1l1.1-1.1 1.4 1.4-1.1 1.1 1.1 1.1-1.4 1.4-1.1-1.1-1.1 1.1-1.4-1.4 1.1-1.1-1.1-1.1 1.4-1.4z"/><circle cx="20.5" cy="12" r="1.1"/><circle cx="12.5" cy="3.5" r="1.1"/></svg></button><button class="te-doneb" id="teDone" aria-label="Termin\u00e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></button></div></div>'
       +'<div class="te-prevwrap"><canvas class="te-cv" width="360" height="640"></canvas></div>'
       +'<div class="te-inputwrap"><textarea class="te-input" id="teInput" maxlength="'+MAXLEN+'" rows="2" placeholder="\u00c9cris ton texte\u2026">'+esc(p._cap||"")+'</textarea><span class="te-count" id="teCount">'+(""+(p._cap||"")).length+'/'+MAXLEN+'</span></div>'
       +'<div class="te-bar"><select class="te-sel" id="teStyle">'+opts(STYLES,p._capStyle||"auto")+'</select><select class="te-sel" id="teAnim">'+opts(ANIMS,p._capAnim||"auto")+'</select></div>'
       +'<div class="te-bar"><select class="te-sel te-selfont" id="teFont">'+opts(FONTS,p._capFont||"")+'</select>'
-        +'<div class="te-numwrap"><input class="te-num" id="teSize" type="number" inputmode="numeric" min="50" max="220" step="5" value="'+Math.round((p._capSize||1)*100)+'"><span class="te-numsuf">%</span></div>'
+        +'<div class="te-numwrap"><input class="te-num" id="teSize" type="number" inputmode="numeric" min="12" max="64" step="1" value="'+Math.round((p._capSize||1)*24)+'"><span class="te-numsuf">pt</span></div>'
         +'<label class="te-cbtn" title="Couleur du texte"><span class="te-cA">A</span><input type="color" id="teColor" value="'+(p._capColor||"#f5f7fb")+'"></label>'
       +'</div>'
-      +'<div class="te-apply"><span class="te-apply-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 5-9 5-9-5 9-5zm0 8.2L21 16l-9 5-9-5 9-4.8z"/></svg></span><span class="te-apply-tt"><b>Appliquer \u00e0 toutes les photos</b><small>Le m\u00eame style sera appliqu\u00e9 \u00e0 toutes les images</small></span><button class="vtog'+(applyAll?" on":"")+'" id="teAll"><span class="vtog-dot"></span></button></div>'
+      +'<div class="te-apply2"><span class="te-apply2-tt">Appliquer \u00e0 toutes les photos</span><button class="vtog'+(applyAll?" on":"")+'" id="teAll"><span class="vtog-dot"></span></button></div>'
     +'</div>';
     document.body.appendChild(ov);
     var cv=ov.querySelector(".te-cv"); function rp(){ _txtPreview(cv,p); }
@@ -8410,12 +8411,12 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var st=ov.querySelector("#teStyle"); if(st) st.onchange=function(){ p._capStyle=(st.value==="auto")?null:st.value; setAll("_capStyle",p._capStyle); rp(); };
     var an=ov.querySelector("#teAnim"); if(an) an.onchange=function(){ p._capAnim=(an.value==="auto")?null:an.value; setAll("_capAnim",p._capAnim); rp(); };
     var fo=ov.querySelector("#teFont"); if(fo) fo.onchange=function(){ p._capFont=(fo.value==="")?null:fo.value; setAll("_capFont",p._capFont); _loadCapFont(fo.value,rp); rp(); };
-    var sz=ov.querySelector("#teSize"); if(sz) sz.oninput=function(){ var v=Math.max(50,Math.min(220,(+sz.value||100))); p._capSize=v/100; setAll("_capSize",p._capSize); rp(); };
+    var sz=ov.querySelector("#teSize"); if(sz) sz.oninput=function(){ var v=Math.max(12,Math.min(64,(+sz.value||24))); p._capSize=v/24; setAll("_capSize",p._capSize); rp(); };
     var caEl=ov.querySelector(".te-cA");
     var co=ov.querySelector("#teColor"); if(co){ var cbtn=ov.querySelector('.te-cbtn'); function _paintA(v){ if(caEl) caEl.style.color=v; if(cbtn) cbtn.style.color=v; } _paintA(p._capColor||'#f5f7fb'); co.oninput=function(){ p._capColor=co.value; setAll('_capColor',p._capColor); _paintA(co.value); rp(); }; }
     var ta=ov.querySelector("#teInput"), cnt=ov.querySelector("#teCount"); if(ta) ta.oninput=function(){ p._cap=ta.value; if(cnt) cnt.textContent=ta.value.length+"/"+MAXLEN; rp(); };
     var all=ov.querySelector("#teAll"); if(all) all.onclick=function(){ window._capApplyAll=!window._capApplyAll; all.classList.toggle("on",window._capApplyAll); if(window._capApplyAll){ setAll("_capStyle",p._capStyle); setAll("_capAnim",p._capAnim); setAll("_capColor",p._capColor); setAll("_capFont",p._capFont); setAll("_capSize",p._capSize); } };
-    var ai=ov.querySelector("#teAI"); if(ai) ai.onclick=function(){ setState && setState("Fid\u00e8le (aide \u00e0 l'\u00e9criture) : connexion IA \u00e0 venir."); };
+    var ai=ov.querySelector("#teAI"); if(ai) ai.onclick=function(){ try{ if(typeof setState==="function") setState("Fid\u00e8le r\u00e9g\u00e9n\u00e9rera ton texte ici (bient\u00f4t)."); }catch(e){} };
     function done(){ try{ ov.remove(); }catch(e){} try{ if(typeof renderPGrid==="function") renderPGrid(); }catch(e){} try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
     var dn=ov.querySelector("#teDone"); if(dn) dn.onclick=done;
     ov.onclick=function(e){ if(e.target===ov) done(); };
