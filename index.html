@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte PREMIUM (mockup GPT) : grille 6 boutons a icones + menu inline + compteur + belles polices (Playfair, Lora, Caveat...) · BUILD 2026-08-09-C102 -->
+<!-- Studio Magot — Editeur texte : apercu reduit en vignette + marges resserrees -> tout tient SANS SCROLL · BUILD 2026-08-09-C103 -->
 
 <html lang="fr">
 <head>
@@ -431,26 +431,26 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cp-spd-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:6px}
 .cp-spd-seg button{flex:1;border:0;background:transparent;color:#9ca8b8;font:700 13px system-ui;padding:9px 4px;cursor:pointer}
 .cp-spd-seg button.on{background:#e5aa34;color:#1a1206}
-.txtEd .te-card{max-width:460px;max-height:94vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 18px;background:linear-gradient(180deg,#111a2e,#0c1424)}
-.te-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.txtEd .te-card{max-width:460px;max-height:96vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 15px 14px;background:linear-gradient(180deg,#111a2e,#0c1424)}
+.te-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .te-title{font:800 24px system-ui;color:#fff}
 .te-tools{display:flex;align-items:center;gap:10px}
 .te-tool{width:46px;height:46px;border-radius:50%;border:0;background:#3a2f6e;color:#c9bdf5;display:grid;place-items:center;cursor:pointer}
 .te-doneb{width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(180deg,#f4bd4a,#e5aa34);color:#1a1206;display:grid;place-items:center;cursor:pointer}
-.te-prevwrap{width:100%;display:flex;justify-content:center;margin-bottom:14px}
-.te-cv{width:100%;max-width:420px;aspect-ratio:auto;height:auto;border-radius:16px;background:#000;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.te-inputwrap{position:relative;margin-bottom:16px}
-.te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:16px;color:#eaf1fb;font:500 18px system-ui;padding:16px 16px 26px;resize:none;min-height:70px}
+.te-prevwrap{width:100%;display:flex;justify-content:center;margin-bottom:11px}
+.te-cv{width:auto;height:min(24vh,190px);max-width:100%;border-radius:14px;background:#000;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+.te-inputwrap{position:relative;margin-bottom:12px}
+.te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#eaf1fb;font:500 17px system-ui;padding:13px 14px 22px;resize:none;min-height:52px}
 .te-input:focus{outline:none;border-color:#8b7bf0}
 .te-count{position:absolute;right:14px;bottom:10px;font:600 13px system-ui;color:#7f8ba0}
 .te-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
-.te-gb{-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:7px;justify-content:center;padding:16px 8px;border-radius:15px;border:1px solid rgba(255,255,255,.09);background:#131f36;color:#eaf1fb;font:700 15px system-ui;cursor:pointer}
+.te-gb{-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:6px;justify-content:center;padding:13px 6px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:#131f36;color:#eaf1fb;font:700 14px system-ui;cursor:pointer}
 .te-gb.on{border-color:#8b7bf0;background:#1a2547;box-shadow:0 0 0 1px #8b7bf0}
 .te-gi{display:grid;place-items:center;color:#8b7bf0;width:22px;height:22px;flex:0 0 auto}
 .te-txic{font:800 19px Georgia,serif;color:#8b7bf0;line-height:1}
 .te-gl{white-space:nowrap}
 .te-gc{color:#8b98b3;font-size:11px;margin-left:1px}
-.te-inpanel{margin-top:12px;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+.te-inpanel{margin-top:10px;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .te-pt{font:700 15px system-ui;color:#cdd8e6;margin-bottom:11px}
 .te-optgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .te-fontgrid{grid-template-columns:1fr 1fr}
@@ -464,7 +464,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-size input[type=range]{flex:1}
 .te-sizev{font:700 15px ui-monospace,monospace;color:#f4bd4a;min-width:48px;text-align:right}
 .te-aihint{font:600 14px system-ui;color:#d9c9ff;line-height:1.5}
-.te-apply{display:flex;align-items:center;gap:13px;margin-top:16px;padding:14px;border-radius:16px;background:linear-gradient(180deg,rgba(139,87,223,.12),rgba(13,22,38,.5));border:1px solid rgba(139,87,223,.22)}
+.te-apply{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:14px;background:linear-gradient(180deg,rgba(139,87,223,.12),rgba(13,22,38,.5));border:1px solid rgba(139,87,223,.22)}
 .te-apply-ic{width:44px;height:44px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;color:#c9bdf5;background:linear-gradient(158deg,#5a4aa8,#33245f)}
 .te-apply-tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .te-apply-tt b{font:800 16px system-ui;color:#f2f6fc}
@@ -577,7 +577,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C102</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C103</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
