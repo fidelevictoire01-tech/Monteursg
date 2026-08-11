@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Design 01 : texte passe a la ligne (2 lignes max, comme un document) au lieu d-etre coupe ; bandeau s-adapte · BUILD 2026-08-09-C117 -->
+<!-- Studio Magot — Design 01 rendu plus premium (proche GPT) : bord dore biseaute, rond degrade, separateur incline, accents dores en angle, titre+accroche · BUILD 2026-08-09-C119 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C117</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C119</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1447,34 +1447,41 @@ function _mmtDraw(ctx,opt){
   /* ---------- BROADCAST : chyron, hauteur fixe (petit côté) ---------- */
   if(st.kind==="lower01"){
     var loc=(opt.loc||"").trim(), dat=(opt.date||"").trim();
-    var iconR=fs*0.8, gap=fs*0.5, pad=fs*0.7, locfs=Math.round(fs*0.5), rBlockW=0;
-    if(loc||dat){ ctx.font="700 "+locfs+"px "+FF; rBlockW=Math.max(loc?ctx.measureText("\u25CF "+loc).width:0, dat?ctx.measureText("\u25A3 "+dat).width:0)+fs*0.6; }
-    var barW=Math.round(W*0.92), barX=Math.round((W-barW)/2), rad=Math.round(fs*0.28);
-    var txStart=barX+pad+iconR*2+gap;
-    var textAreaW=Math.max(fs*3,(barX+barW-pad)-txStart-(rBlockW?rBlockW+fs*0.5:0));
-    ctx.font=st.weight+" "+fs+"px "+FF;
-    var wl=_mmtWrap(ctx,text,textAreaW,2); var lineH=fs*1.18, textH=wl.length*lineH;
-    var barH=Math.round(Math.max(fs*2.2, textH+fs*0.95));
-    var cyy=bottom-barH*0.5, barY=cyy-barH/2;
+    var _parts=String(text).split("\n").map(function(x){return x.trim();}).filter(Boolean);
+    var hasTag=_parts.length>=2;
+    var iconR=fs*0.8, gap=fs*0.55, pad=fs*0.8, slant=Math.round(fs*0.5);
+    var titlefs=fs, tagfs=Math.round(fs*0.55), locfs=Math.round(fs*0.46), rBlockW=0;
+    if(loc||dat){ ctx.font="700 "+locfs+"px "+FF; rBlockW=Math.max(loc?ctx.measureText(loc).width:0, dat?ctx.measureText(dat).width:0)+fs*1.3; }
+    var maxTextW=Math.max(fs*3, W*0.95-(pad*2+iconR*2+gap+slant)-(rBlockW?rBlockW+fs*0.7:0));
+    ctx.font="800 "+titlefs+"px "+FF;
+    var tlines, tagline=""; if(hasTag){ tlines=_mmtWrap(ctx,_parts[0],maxTextW,1); tagline=_parts.slice(1).join(" "); } else { tlines=_mmtWrap(ctx,text,maxTextW,2); }
+    var longest=0; ctx.font="800 "+titlefs+"px "+FF; for(var _i=0;_i<tlines.length;_i++) longest=Math.max(longest,ctx.measureText(tlines[_i]).width);
+    if(tagline){ ctx.font="italic 600 "+tagfs+"px "+FF; longest=Math.max(longest,ctx.measureText(tagline.toUpperCase()).width); }
+    var barW=Math.round(Math.min(W*0.95, pad*2+iconR*2+gap+slant+longest+(rBlockW?rBlockW+fs*0.7:0)));
+    var lineH=titlefs*1.14;
+    var barH=Math.round(Math.max(fs*2.3, (tagline? (titlefs*1.05+tagfs*1.25) : tlines.length*lineH) + fs*0.9));
+    var barX=Math.round((W-barW)/2), cyy=bottom-barH*0.5, barY=cyy-barH/2, rad=Math.round(fs*0.26);
     var gp=_mmtEoc(pin), off=(1-gp)*(W*0.1);
     ctx.save(); ctx.globalAlpha=alpha; ctx.translate(-off,0);
-    var bg=ctx.createLinearGradient(barX,0,barX+barW,0); bg.addColorStop(0,"rgba(10,12,18,.94)"); bg.addColorStop(.5,"rgba(18,22,32,.9)"); bg.addColorStop(1,"rgba(10,12,18,.94)");
+    var bg=ctx.createLinearGradient(barX,0,barX+barW,0); bg.addColorStop(0,"rgba(9,11,17,.95)"); bg.addColorStop(.5,"rgba(17,21,31,.92)"); bg.addColorStop(1,"rgba(9,11,17,.95)");
     _rr(ctx,barX,barY,barW,barH,rad); ctx.fillStyle=bg; ctx.fill();
-    var eg=ctx.createLinearGradient(barX,0,barX+barW,0); eg.addColorStop(0,"#8a6318"); eg.addColorStop(.5,"#f4bd4a"); eg.addColorStop(1,"#8a6318");
-    ctx.fillStyle=eg; ctx.fillRect(barX+rad,barY,barW-rad*2,Math.max(2,fs*0.045)); ctx.fillRect(barX+rad,barY+barH-Math.max(2,fs*0.045),barW-rad*2,Math.max(2,fs*0.045));
-    var swp=((time*0.42)%1.5)-0.25, sx=barX+swp*barW;
-    ctx.save(); _rr(ctx,barX,barY,barW,barH,rad); ctx.clip(); var sg=ctx.createLinearGradient(sx-fs*1.2,0,sx+fs*1.2,0); sg.addColorStop(0,"rgba(244,189,74,0)"); sg.addColorStop(.5,"rgba(244,189,74,.15)"); sg.addColorStop(1,"rgba(244,189,74,0)"); ctx.fillStyle=sg; ctx.fillRect(sx-fs*1.2,barY,fs*2.4,barH); ctx.restore();
-    var icx=barX+pad+iconR, icy=cyy;
-    ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.08); ctx.strokeStyle="#e5aa34"; ctx.stroke();
-    ctx.fillStyle="#f4bd4a"; ctx.beginPath(); ctx.moveTo(icx-iconR*0.24,icy-iconR*0.4); ctx.lineTo(icx-iconR*0.24,icy+iconR*0.4); ctx.lineTo(icx+iconR*0.44,icy); ctx.closePath(); ctx.fill();
-    ctx.fillStyle="#f6f8fc"; ctx.textAlign="left"; ctx.font=st.weight+" "+fs+"px "+FF;
-    var ty=cyy-textH/2+fs*0.86;
-    for(var li=0;li<wl.length;li++){ ctx.fillText(wl[li],txStart,ty); ty+=lineH; }
-    if(loc||dat){ var rx=barX+barW-rBlockW-pad*0.3, dvx=rx-fs*0.5;
-      ctx.fillStyle="rgba(244,189,74,.45)"; ctx.fillRect(dvx,barY+barH*0.24,Math.max(1,fs*0.035),barH*0.52);
-      ctx.font="700 "+locfs+"px "+FF; ctx.fillStyle="#f4bd4a";
-      if(loc) ctx.fillText("\u25CF "+loc, rx, (loc&&dat)?cyy-fs*0.28:cyy+fs*0.16);
-      if(dat) ctx.fillText("\u25A3 "+dat, rx, (loc&&dat)?cyy+fs*0.5:cyy+fs*0.16);
+    ctx.save(); _rr(ctx,barX,barY,barW,barH,rad); ctx.clip();
+    var glow=ctx.createRadialGradient(barX+barH*0.55,barY+barH*0.3,0,barX+barH*0.55,barY+barH*0.3,barH*1.5); glow.addColorStop(0,"rgba(244,189,74,.15)"); glow.addColorStop(1,"rgba(244,189,74,0)"); ctx.fillStyle=glow; ctx.fillRect(barX,barY,barW,barH);
+    var swp=((time*0.42)%1.6)-0.3, sx=barX+swp*barW; var sg=ctx.createLinearGradient(sx-fs*1.2,0,sx+fs*1.2,0); sg.addColorStop(0,"rgba(244,189,74,0)"); sg.addColorStop(.5,"rgba(244,189,74,.13)"); sg.addColorStop(1,"rgba(244,189,74,0)"); ctx.fillStyle=sg; ctx.fillRect(sx-fs*1.2,barY,fs*2.4,barH);
+    var ae=barX+barW; ctx.fillStyle="rgba(244,189,74,.85)"; _para(ctx,ae-fs*0.55,barY,fs*0.16,barH,slant); ctx.fill(); ctx.fillStyle="rgba(244,189,74,.4)"; _para(ctx,ae-fs*1.0,barY,fs*0.11,barH,slant); ctx.fill();
+    ctx.restore();
+    var eg=ctx.createLinearGradient(barX,0,barX+barW,0); eg.addColorStop(0,"#7a5715"); eg.addColorStop(.5,"#f4bd4a"); eg.addColorStop(1,"#7a5715"); ctx.fillStyle=eg; ctx.fillRect(barX+rad,barY,barW-rad*2,Math.max(2,fs*0.04)); ctx.fillRect(barX+rad,barY+barH-Math.max(2,fs*0.04),barW-rad*2,Math.max(2,fs*0.04));
+    var icx=barX+pad+iconR, icy=cyy; var ig=ctx.createLinearGradient(icx-iconR,icy-iconR,icx+iconR,icy+iconR); ig.addColorStop(0,"#f6c855"); ig.addColorStop(1,"#c8901f");
+    ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.09); ctx.strokeStyle=ig; ctx.stroke();
+    ctx.fillStyle="#f4bd4a"; ctx.beginPath(); ctx.moveTo(icx-iconR*0.22,icy-iconR*0.4); ctx.lineTo(icx-iconR*0.22,icy+iconR*0.4); ctx.lineTo(icx+iconR*0.46,icy); ctx.closePath(); ctx.fill();
+    var sepx=icx+iconR+gap*0.5; ctx.fillStyle="rgba(244,189,74,.5)"; _para(ctx,sepx,barY+barH*0.22,Math.max(2,fs*0.05),barH*0.56,slant*0.5); ctx.fill();
+    var txStart=sepx+gap+slant*0.4; ctx.textAlign="left";
+    if(tagline){ ctx.font="800 "+titlefs+"px "+FF; ctx.fillStyle="#f6f8fc"; ctx.fillText(tlines[0],txStart,cyy-tagfs*0.32); ctx.font="italic 600 "+tagfs+"px "+FF; ctx.fillStyle="#f4bd4a"; ctx.fillText(tagline.toUpperCase(),txStart,cyy+titlefs*0.52); }
+    else { ctx.font="800 "+titlefs+"px "+FF; ctx.fillStyle="#f6f8fc"; var ty=cyy-((tlines.length-1)*lineH)/2+titlefs*0.34; for(var _j=0;_j<tlines.length;_j++){ ctx.fillText(tlines[_j],txStart,ty); ty+=lineH; } }
+    if(loc||dat){ var rx=barX+barW-rBlockW-pad*0.5, dvx=rx-fs*0.55; ctx.fillStyle="rgba(244,189,74,.4)"; ctx.fillRect(dvx,barY+barH*0.22,Math.max(1,fs*0.03),barH*0.56);
+      ctx.font="700 "+locfs+"px "+FF; ctx.fillStyle="#f4bd4a"; ctx.textAlign="left";
+      if(loc) ctx.fillText("\u25CF "+loc, rx, (loc&&dat)?cyy-locfs*0.5:cyy+locfs*0.35);
+      if(dat) ctx.fillText("\u25A3 "+dat, rx, (loc&&dat)?cyy+locfs*0.9:cyy+locfs*0.35);
     }
     ctx.restore(); return;
   }
