@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — RETOUCHE PHOTO (comme la video) : editeur presets + Chaleur/Saturation/Lumiere/Contraste par photo, lecture + export · BUILD 2026-08-09-C106 -->
+<!-- Studio Magot — Apercu retouche image entiere (plus de crop) + limite video 5->10 + prerendu photo reduit pour gros imports (memoire) · BUILD 2026-08-09-C107 -->
 
 <html lang="fr">
 <head>
@@ -578,7 +578,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C106</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C107</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7918,7 +7918,7 @@ function finishAnalyze(){
 document.getElementById("pickVideo").onclick=function(){ document.getElementById("fVideo").click(); };
 document.getElementById("fVideo").onchange=function(e){ var files=Array.prototype.slice.call(e.target.files||[]); e.target.value=""; if(!files.length) return;
   files.forEach(function(fl){
-    if(CLIPS.length>=5) return;                       /* limite iOS : peu de décodeurs simultanés */
+    if(CLIPS.length>=10){ if(typeof setState==="function") setState("Maximum 10 clips vidéo (limite iOS des décodeurs)."); return; }
     var v=document.createElement("video"); v.muted=true; v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
     v.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1";
     var u=URL.createObjectURL(fl); v.src=u; v._u=u;
@@ -7931,7 +7931,7 @@ document.getElementById("fPhotos").onchange=function(e){
   var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
   e.target.value="";
   var total=files.length, done=0, idx=0, CONC=4;
-  var pmax=(total>120)?1080:((total>60)?1280:1440);
+  var pmax=(total>400)?512:((total>250)?640:((total>150)?820:((total>80)?1080:1440)));
   setState("Réception de "+total+" photos… traitement 0/"+total);
   var after=function(){ if(A) buildPartition(); updateBadge(); var _ns=countSkipped(); setState(PHOTOS.length+" photos chargées"+(_ns>0?(" · "+_ns+" écartée(s)"):"")); if(A&&PHOTOS.length) paintStrip(playing?visualTime():0); embedPhotos(); };
   function addThumb(c){ var el=document.getElementById("thumbs"); if(!el||!c) return; var tw=108, th=Math.max(1,Math.round(tw*(c.height||1)/(c.width||1))); var tc=document.createElement("canvas"); tc.width=tw; tc.height=th; try{ tc.getContext("2d").drawImage(c,0,0,tw,th); }catch(e){} tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4)"; el.appendChild(tc); return tc; }
@@ -8470,7 +8470,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     +'</div>';
     document.body.appendChild(ov);
     var cv=ov.querySelector(".prg-cv");
-    function draw(){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); var src=p.c||p.img; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } cv.style.filter=_cssFilter(work); }catch(e){} }
+    function draw(){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); var src=p.c||p.img; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.min(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } cv.style.filter=_cssFilter(work); }catch(e){} }
     draw();
     function setAll(){ if(!window._gradeApplyAll) return; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]) PHOTOS[z]._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; } }
     function apply(){ p._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; setAll(); draw(); try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
