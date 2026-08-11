@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte : Couleur=texte via VRAI selecteur de teinte (natif) au lieu de palettes de pastilles ; Fond=selecteur aussi · BUILD 2026-08-09-C109 -->
+<!-- Studio Magot — Editeur texte facon WORD : menus deroulants natifs (Style/Anim/Police) + case Taille (chiffre) + 1 pastille couleur (A) ; police robuste · BUILD 2026-08-09-C110 -->
 
 <html lang="fr">
 <head>
@@ -445,31 +445,16 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#eaf1fb;font:500 clamp(14px,4vw,16px) system-ui;padding:12px 13px 20px;resize:none;min-height:46px}
 .te-input:focus{outline:none;border-color:#8b7bf0}
 .te-count{position:absolute;right:14px;bottom:10px;font:600 13px system-ui;color:#7f8ba0}
-.te-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(6px,1.8vw,10px)}
-.te-gb{-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:clamp(3px,1.2vw,6px);justify-content:center;padding:clamp(9px,2.6vw,12px) 4px;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#131f36;color:#eaf1fb;font:700 clamp(11.5px,3.3vw,14px) system-ui;cursor:pointer}
-.te-gb.on{border-color:#8b7bf0;background:#1a2547;box-shadow:0 0 0 1px #8b7bf0}
-.te-gi{display:grid;place-items:center;color:#8b7bf0;width:clamp(17px,4.6vw,20px);height:clamp(17px,4.6vw,20px);flex:0 0 auto}
-.te-txic{font:800 clamp(15px,4.4vw,18px) Georgia,serif;color:#8b7bf0;line-height:1}
-.te-gl{white-space:nowrap}
-.te-gc{color:#8b98b3;font-size:10px;margin-left:0}
-.te-inpanel{margin-top:10px;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
-.te-pt{font:700 15px system-ui;color:#cdd8e6;margin-bottom:11px}
-.te-optrow{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.te-opt{-webkit-appearance:none;appearance:none;flex:0 0 auto;padding:clamp(8px,2.4vw,10px) clamp(12px,3.6vw,16px);border-radius:11px;border:1px solid rgba(255,255,255,.09);background:#16233d;color:#e8eef7;font:600 clamp(13px,3.6vw,15px) system-ui;cursor:pointer;white-space:nowrap}
-.te-fopt{font-size:clamp(15px,4.2vw,17px);min-width:clamp(80px,22vw,96px);text-align:center}
-.te-opt.on{border-color:#e5aa34;color:#f4bd4a;background:rgba(224,163,62,.1)}
-.te-cpick{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.te-colorin{-webkit-appearance:none;appearance:none;width:56px;height:46px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:none;padding:0;cursor:pointer;flex:0 0 auto}
-.te-colorin::-webkit-color-swatch-wrapper{padding:4px}
-.te-colorin::-webkit-color-swatch{border:none;border-radius:9px}
-.te-cplbl{font:600 clamp(11px,3.2vw,13px) system-ui;color:#9ca8b8;flex:1;min-width:120px}
-.te-sw{display:flex;gap:11px;flex-wrap:wrap}
-.te-swatch{-webkit-appearance:none;appearance:none;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0;display:grid;place-items:center;color:#9fb0d0;font-size:13px}
-.te-swatch.on{border-color:#fff;box-shadow:0 0 0 2px #e5aa34}
-.te-swatch.te-none{background:repeating-linear-gradient(45deg,#243247,#243247 4px,#1a2534 4px,#1a2534 8px)}
-.te-size{display:flex;align-items:center;gap:12px;padding:4px 2px}
-.te-size input[type=range]{flex:1}
-.te-sizev{font:700 15px ui-monospace,monospace;color:#f4bd4a;min-width:48px;text-align:right}
+.te-bar{display:flex;align-items:center;gap:clamp(7px,2vw,10px);margin-top:11px}
+.te-sel{-webkit-appearance:none;appearance:none;flex:1;min-width:0;padding:clamp(10px,2.8vw,13px) 30px clamp(10px,2.8vw,13px) 13px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#131f36 url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b98b3' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 11px center;color:#eaf1fb;font:600 clamp(13px,3.7vw,15px) system-ui;cursor:pointer;text-overflow:ellipsis}
+.te-selfont{flex:1.4}
+.te-numwrap{position:relative;flex:0 0 auto;width:clamp(74px,20vw,92px)}
+.te-num{-webkit-appearance:none;appearance:none;width:100%;box-sizing:border-box;padding:clamp(10px,2.8vw,13px) 24px clamp(10px,2.8vw,13px) 12px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#131f36;color:#eaf1fb;font:700 clamp(14px,3.8vw,16px) ui-monospace,monospace;text-align:center}
+.te-numsuf{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#8b98b3;font:700 12px system-ui;pointer-events:none}
+.te-cbtn{position:relative;flex:0 0 auto;width:clamp(46px,12vw,54px);height:clamp(44px,11.5vw,50px);border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#131f36;display:grid;place-items:center;cursor:pointer;overflow:hidden}
+.te-cA{font:800 clamp(19px,5.4vw,23px) Georgia,serif;color:#f5f7fb;line-height:1;pointer-events:none;z-index:1}
+.te-cbtn input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
+.te-cbtn:after{content:"";position:absolute;left:8px;right:8px;bottom:6px;height:4px;border-radius:2px;background:currentColor}
 .te-aihint{font:600 14px system-ui;color:#d9c9ff;line-height:1.5}
 .te-apply{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:14px;background:linear-gradient(180deg,rgba(139,87,223,.12),rgba(13,22,38,.5));border:1px solid rgba(139,87,223,.22)}
 .te-apply-ic{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:12px;flex:0 0 auto;display:grid;place-items:center;color:#c9bdf5;background:linear-gradient(158deg,#5a4aa8,#33245f)}
@@ -585,7 +570,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C109</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C110</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8399,57 +8384,38 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   function _txtPreview(cv,p){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); var src=p.c||p.img; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } var txt=(""+(p._cap||"")).trim(); if(txt && typeof drawCaption==="function"){ drawCaption(ctx,W,H,txt,0,1.3,3.2,1.3,(p._capStyle||"auto"),"none",p._capColor,p._capBand,p._capFont,p._capSize); } }catch(e){} }
   function _capPrimaryFam(ff){ if(!ff) return ""; return ff.split(",")[0].trim(); }
-  function _loadCapFont(ff,cb){ try{ var pr=_capPrimaryFam(ff); if(!pr||!document.fonts||!document.fonts.load){ if(cb)cb(); return; } document.fonts.load('700 40px '+pr).then(function(){ if(cb)cb(); }).catch(function(){ if(cb)cb(); }); }catch(e){ if(cb)cb(); } }
+  function _loadCapFont(ff,cb){ try{ var pr=_capPrimaryFam(ff); if(!pr||!document.fonts||!document.fonts.load){ if(cb)cb(); return; } Promise.all([document.fonts.load('400 40px '+pr),document.fonts.load('700 40px '+pr)]).then(function(){ if(cb)cb(); setTimeout(function(){ if(cb)cb(); },220); }).catch(function(){ if(cb)cb(); }); }catch(e){ if(cb)cb(); } }
   function openTextEditor(i){
     var p=PHOTOS[i]; if(!p) return;
-    var STYLES=[["auto","Auto"],["title","Titre"],["cinema","Cin\u00e9ma"],["elegant","\u00c9l\u00e9gant"],["band","Bande info"],["broadcast","Bulletin TV"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["voyage","Voyage"],["doux","Doux"],["dynamique","Dynamique"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"],["flash","Flash or"],["flashv","Flash violet"]];
-    var ANIMS=[["auto","Auto"],["none","Aucune"],["fade","Fondu"],["up","Monter"],["down","Descendre"],["slide","Glisser"],["zoom","Zoom"],["beat","Zoom rythm\u00e9"],["word","Mot \u00e0 mot"],["type","Machine"]];
-    var TCOLORS=["#f5f7fb","#111827","#e5aa34","#f4bd4a","#8b57df","#e0524f","#4f9be0","#3fae6a","#ff8ab5","#00d3c7"];
-    var BCOLORS=["","#e5aa34","#111827","#8b57df","#e0524f","#2b6cb0","#0f172a","#c026d3","#0d7a5f"];
-    var FONTS=[["","Syst\u00e8me"],['"Times New Roman",Times,serif',"Times"],['"Poppins",system-ui,sans-serif',"Poppins"],['"Playfair Display",Georgia,serif',"Playfair"],['"Montserrat",system-ui,sans-serif',"Montserrat"],['"Raleway",system-ui,sans-serif',"Raleway"],['"DM Serif Display",Georgia,serif',"DM Serif"],['"Lora",Georgia,serif',"Lora"],['"Caveat","Snell Roundhand",cursive',"Caveat"]];
+    var STYLES=[["auto","Style : Auto"],["title","Titre"],["cinema","Cin\u00e9ma"],["elegant","\u00c9l\u00e9gant"],["band","Bande info"],["broadcast","Bulletin TV"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["voyage","Voyage"],["doux","Doux"],["dynamique","Dynamique"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"],["flash","Flash or"],["flashv","Flash violet"]];
+    var ANIMS=[["auto","Anim : Auto"],["none","Aucune"],["fade","Fondu"],["up","Monter"],["down","Descendre"],["slide","Glisser"],["zoom","Zoom"],["beat","Zoom rythm\u00e9"],["word","Mot \u00e0 mot"],["type","Machine"]];
+    var FONTS=[["","Police : Syst\u00e8me"],['"Times New Roman",Times,serif',"Times New Roman"],['"Poppins",system-ui,sans-serif',"Poppins"],['"Playfair Display",Georgia,serif',"Playfair Display"],['"Montserrat",system-ui,sans-serif',"Montserrat"],['"Raleway",system-ui,sans-serif',"Raleway"],['"DM Serif Display",Georgia,serif',"DM Serif"],['"Lora",Georgia,serif',"Lora"],['"Caveat","Snell Roundhand",cursive',"Caveat"]];
     var MAXLEN=120, applyAll=!!window._capApplyAll;
-    var IC={style:'<span class="te-txic">A</span>',anim:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.5L19 9l-4.5 2.5L12 17l-2.5-5.5L5 9l5.2-1.5z"/></svg>',font:'<span class="te-txic" style="font-size:14px">Aa</span>',size:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><text x="2" y="19" font-size="15" font-weight="800">T</text><text x="12" y="19" font-size="10" font-weight="800">T</text></svg>',fill:'<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="9" r="1.4" fill="#16233a"/><circle cx="15" cy="8" r="1.4" fill="#16233a"/><circle cx="16.5" cy="13" r="1.4" fill="#16233a"/></svg>',band:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="2"/></svg>'};
-    var BTNS=[["style","Style"],["anim","Animation"],["font","Police"],["size","Taille"],["fill","Couleur"],["band","Fond"]];
-    var LBL={style:"Style de bande",anim:"Animation",fill:"Couleur du texte",band:"Couleur du fond",font:"Police",size:"Taille"};
+    function opts(arr,cur){ return arr.map(function(o){ return '<option value="'+esc(o[0])+'"'+((o[0]===cur)?' selected':'')+'>'+esc(o[1])+'</option>'; }).join(""); }
     var ov=document.createElement("div"); ov.className="clipPrev txtEd";
     ov.innerHTML='<div class="cp-card te-card">'
       +'<div class="te-head"><span class="te-title">Texte</span><div class="te-tools"><button class="te-tool" id="teAI" aria-label="IA"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></button><button class="te-doneb" id="teDone" aria-label="Termin\u00e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></button></div></div>'
       +'<div class="te-prevwrap"><canvas class="te-cv" width="360" height="640"></canvas></div>'
       +'<div class="te-inputwrap"><textarea class="te-input" id="teInput" maxlength="'+MAXLEN+'" rows="2" placeholder="\u00c9cris ton texte\u2026">'+esc(p._cap||"")+'</textarea><span class="te-count" id="teCount">'+(""+(p._cap||"")).length+'/'+MAXLEN+'</span></div>'
-      +'<div class="te-grid" id="teGrid">'+BTNS.map(function(o){ return '<button class="te-gb" data-t="'+o[0]+'"><span class="te-gi">'+IC[o[0]]+'</span><span class="te-gl">'+o[1]+'</span><span class="te-gc">\u25BE</span></button>'; }).join("")+'</div>'
-      +'<div class="te-inpanel" id="teInpanel" style="display:none"></div>'
+      +'<div class="te-bar"><select class="te-sel" id="teStyle">'+opts(STYLES,p._capStyle||"auto")+'</select><select class="te-sel" id="teAnim">'+opts(ANIMS,p._capAnim||"auto")+'</select></div>'
+      +'<div class="te-bar"><select class="te-sel te-selfont" id="teFont">'+opts(FONTS,p._capFont||"")+'</select>'
+        +'<div class="te-numwrap"><input class="te-num" id="teSize" type="number" inputmode="numeric" min="50" max="220" step="5" value="'+Math.round((p._capSize||1)*100)+'"><span class="te-numsuf">%</span></div>'
+        +'<label class="te-cbtn" title="Couleur du texte"><span class="te-cA">A</span><input type="color" id="teColor" value="'+(p._capColor||"#f5f7fb")+'"></label>'
+      +'</div>'
       +'<div class="te-apply"><span class="te-apply-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 5-9 5-9-5 9-5zm0 8.2L21 16l-9 5-9-5 9-4.8z"/></svg></span><span class="te-apply-tt"><b>Appliquer \u00e0 toutes les photos</b><small>Le m\u00eame style sera appliqu\u00e9 \u00e0 toutes les images</small></span><button class="vtog'+(applyAll?" on":"")+'" id="teAll"><span class="vtog-dot"></span></button></div>'
     +'</div>';
     document.body.appendChild(ov);
     var cv=ov.querySelector(".te-cv"); function rp(){ _txtPreview(cv,p); }
     function setAll(prop,val){ if(!window._capApplyAll) return; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]&&!(PHOTOS[z].feat&&PHOTOS[z].feat.skip)) PHOTOS[z][prop]=val; } }
-    var panel=ov.querySelector("#teInpanel"), grid=ov.querySelector("#teGrid"), curTab=null;
-    function panelHTML(t){
-      if(t==="style"||t==="anim"){ var arr=(t==="style")?STYLES:ANIMS, cur=(t==="style")?(p._capStyle||"auto"):(p._capAnim||"auto");
-        return '<div class="te-pt">'+LBL[t]+'</div><div class="te-optrow">'+arr.map(function(o){ return '<button class="te-opt'+((o[0]===cur)?" on":"")+'" data-v="'+o[0]+'">'+esc(o[1])+((o[0]===cur)?' \u2713':'')+'</button>'; }).join("")+'</div>'; }
-      if(t==="font"){ var cf=(p._capFont||"");
-        return '<div class="te-pt">'+LBL[t]+'</div><div class="te-optrow">'+FONTS.map(function(o){ return '<button class="te-opt te-fopt'+((o[0]===cf)?" on":"")+'" data-v="'+o[0]+'" style="font-family:'+(o[0]||"-apple-system,system-ui,sans-serif").replace(/"/g,"&quot;")+'">'+esc(o[1])+((o[0]===cf)?' \u2713':'')+'</button>'; }).join("")+'</div>'; }
-      if(t==="fill"){ var cf=(p._capColor||"#f5f7fb"); return '<div class="te-pt">Couleur du texte</div><div class="te-cpick"><input type="color" class="te-colorin" id="teCin" value="'+cf+'"><span class="te-cplbl">Touche le carr\u00e9 et glisse pour choisir la teinte</span></div>'; }
-      if(t==="band"){ var cb=(p._capBand||"#111827"); return '<div class="te-pt">Couleur du fond</div><div class="te-cpick"><input type="color" class="te-colorin" id="teCin" value="'+cb+'"><button class="te-opt" id="teCnone">Sans fond</button></div>'; }
-      if(t==="size"){ return '<div class="te-pt">'+LBL[t]+'</div><div class="te-size"><input type="range" id="teSize" min="70" max="160" value="'+Math.round((p._capSize||1)*100)+'"><span class="te-sizev">'+Math.round((p._capSize||1)*100)+'%</span></div>'; }
-      return "";
-    }
-    function wirePanel(t){
-      Array.prototype.forEach.call(panel.querySelectorAll(".te-opt"),function(bt){ bt.onclick=function(){ var v=bt.getAttribute("data-v");
-        if(t==="style"){ p._capStyle=(v==="auto")?null:v; setAll("_capStyle",p._capStyle); }
-        else if(t==="anim"){ p._capAnim=(v==="auto")?null:v; setAll("_capAnim",p._capAnim); }
-        else if(t==="font"){ p._capFont=(v==="")?null:v; setAll("_capFont",p._capFont); _loadCapFont(v,rp); }
-        Array.prototype.forEach.call(panel.querySelectorAll(".te-opt"),function(x){x.classList.toggle("on",x===bt);}); rp(); }; });
-      var cin=panel.querySelector("#teCin"); if(cin){ cin.oninput=function(){ if(t==="fill"){ p._capColor=cin.value; setAll("_capColor",p._capColor); } else { p._capBand=cin.value; setAll("_capBand",p._capBand); } rp(); }; }
-      var cnone=panel.querySelector("#teCnone"); if(cnone){ cnone.onclick=function(){ p._capBand=null; setAll("_capBand",null); rp(); }; }
-      var sz=panel.querySelector("#teSize"); if(sz){ var szv=panel.querySelector(".te-sizev"); sz.oninput=function(){ p._capSize=(+sz.value)/100; if(szv) szv.textContent=sz.value+"%"; setAll("_capSize",p._capSize); rp(); }; try{ _paintAllRanges(); }catch(e){} }
-    }
-    function openPanel(t){ if(curTab===t){ panel.style.display="none"; curTab=null; markBtns(); return; } curTab=t; panel.innerHTML=panelHTML(t); panel.style.display="block"; wirePanel(t); markBtns(); }
-    function markBtns(){ Array.prototype.forEach.call(grid.querySelectorAll(".te-gb"),function(b){ var on=(b.getAttribute("data-t")===curTab); b.classList.toggle("on",on); var c=b.querySelector(".te-gc"); if(c) c.textContent=on?"\u25B4":"\u25BE"; }); }
-    Array.prototype.forEach.call(grid.querySelectorAll(".te-gb"),function(b){ b.onclick=function(){ openPanel(b.getAttribute("data-t")); }; });
+    var st=ov.querySelector("#teStyle"); if(st) st.onchange=function(){ p._capStyle=(st.value==="auto")?null:st.value; setAll("_capStyle",p._capStyle); rp(); };
+    var an=ov.querySelector("#teAnim"); if(an) an.onchange=function(){ p._capAnim=(an.value==="auto")?null:an.value; setAll("_capAnim",p._capAnim); rp(); };
+    var fo=ov.querySelector("#teFont"); if(fo) fo.onchange=function(){ p._capFont=(fo.value==="")?null:fo.value; setAll("_capFont",p._capFont); _loadCapFont(fo.value,rp); rp(); };
+    var sz=ov.querySelector("#teSize"); if(sz) sz.oninput=function(){ var v=Math.max(50,Math.min(220,(+sz.value||100))); p._capSize=v/100; setAll("_capSize",p._capSize); rp(); };
+    var caEl=ov.querySelector(".te-cA");
+    var co=ov.querySelector("#teColor"); if(co){ var cbtn=ov.querySelector('.te-cbtn'); function _paintA(v){ if(caEl) caEl.style.color=v; if(cbtn) cbtn.style.color=v; } _paintA(p._capColor||'#f5f7fb'); co.oninput=function(){ p._capColor=co.value; setAll('_capColor',p._capColor); _paintA(co.value); rp(); }; }
     var ta=ov.querySelector("#teInput"), cnt=ov.querySelector("#teCount"); if(ta) ta.oninput=function(){ p._cap=ta.value; if(cnt) cnt.textContent=ta.value.length+"/"+MAXLEN; rp(); };
-    var all=ov.querySelector("#teAll"); if(all) all.onclick=function(){ window._capApplyAll=!window._capApplyAll; all.classList.toggle("on",window._capApplyAll); if(window._capApplyAll){ setAll("_capStyle",p._capStyle); setAll("_capAnim",p._capAnim); setAll("_capColor",p._capColor); setAll("_capBand",p._capBand); setAll("_capFont",p._capFont); setAll("_capSize",p._capSize); } };
-    var ai=ov.querySelector("#teAI"); if(ai) ai.onclick=function(){ if(panel){ curTab="ai"; panel.innerHTML='<div class="te-pt">Fid\u00e8le</div><div class="te-aihint">Aide \u00e0 l\'\u00e9criture \u2014 connexion IA \u00e0 venir (tu donneras un titre, Fid\u00e8le d\u00e9veloppera).</div>'; panel.style.display="block"; markBtns(); } };
+    var all=ov.querySelector("#teAll"); if(all) all.onclick=function(){ window._capApplyAll=!window._capApplyAll; all.classList.toggle("on",window._capApplyAll); if(window._capApplyAll){ setAll("_capStyle",p._capStyle); setAll("_capAnim",p._capAnim); setAll("_capColor",p._capColor); setAll("_capFont",p._capFont); setAll("_capSize",p._capSize); } };
+    var ai=ov.querySelector("#teAI"); if(ai) ai.onclick=function(){ setState && setState("Fid\u00e8le (aide \u00e0 l'\u00e9criture) : connexion IA \u00e0 venir."); };
     function done(){ try{ ov.remove(); }catch(e){} try{ if(typeof renderPGrid==="function") renderPGrid(); }catch(e){} try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
     var dn=ov.querySelector("#teDone"); if(dn) dn.onclick=done;
     ov.onclick=function(e){ if(e.target===ov) done(); };
