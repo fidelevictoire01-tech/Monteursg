@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte ADAPTATIF (clamp) : boutons plus petits, tailles qui s-adaptent a l-ecran (iPhone ET Android) · BUILD 2026-08-09-C105 -->
+<!-- Studio Magot — RETOUCHE PHOTO (comme la video) : editeur presets + Chaleur/Saturation/Lumiere/Contraste par photo, lecture + export · BUILD 2026-08-09-C106 -->
 
 <html lang="fr">
 <head>
@@ -507,7 +507,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .ptl-list{display:block;padding:2px 0 12px}
 .ptl-rail{position:relative}
 .ptl-rail::before{content:"";position:absolute;left:15px;top:28px;bottom:28px;width:2px;background:linear-gradient(rgba(224,163,62,.45),rgba(224,163,62,.12));border-radius:2px}
-.prow{position:relative;display:grid;grid-template-columns:30px 58px 1fr 34px;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.05)}
+.prow{position:relative;display:grid;grid-template-columns:30px 58px 1fr 32px 30px;align-items:center;gap:9px;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.05)}
+.pr-fx{width:32px;height:38px;background:none;border:0;color:#8b7bf0;cursor:pointer;display:grid;place-items:center}
 .prow.drag{background:rgba(224,163,62,.10);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.55);z-index:5;border-bottom-color:transparent}
 .pr-num{width:30px;height:30px;border-radius:50%;background:var(--gold);color:#1c1305;font:800 13px system-ui;display:grid;place-items:center;position:relative;z-index:2;box-shadow:0 0 0 4px #0b1322}
 .pr-thumb{position:relative;width:58px;height:46px;border-radius:8px;overflow:hidden;background:#0e1a30;cursor:pointer}
@@ -577,7 +578,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C105</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C106</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7712,7 +7713,7 @@ function drawGL(time,pulse,srcTex){
   var ut=gl.getUniformLocation(glProg,"uTex"); if(ut) gl.uniform1i(ut,0);
   gl.uniform1f(glU.uTime,time); if(glU.uResolution) gl.uniform2f(glU.uResolution,base.width,base.height);
   gl.uniform1f(glU.uGrain,G.grain); gl.uniform1f(glU.uVig,G.vig);
-  var _cg=null; if(typeof SEGS!=="undefined"&&SEGS.length&&typeof CLIPS!=="undefined"){ for(var _si=0;_si<SEGS.length;_si++){ if(time>=SEGS[_si].start&&time<SEGS[_si].end){ if(SEGS[_si].video&&SEGS[_si].vclip!=null){ _cg=SEGS[_si].vcolor||(CLIPS[SEGS[_si].vclip]&&CLIPS[SEGS[_si].vclip].color); } break; } } }
+  var _cg=null; if(typeof SEGS!=="undefined"&&SEGS.length&&typeof CLIPS!=="undefined"){ for(var _si=0;_si<SEGS.length;_si++){ if(time>=SEGS[_si].start&&time<SEGS[_si].end){ if(SEGS[_si].video&&SEGS[_si].vclip!=null){ _cg=SEGS[_si].vcolor||(CLIPS[SEGS[_si].vclip]&&CLIPS[SEGS[_si].vclip].color); } else if(SEGS[_si].img>=0 && typeof PHOTOS!=='undefined' && PHOTOS[SEGS[_si].img]){ _cg=PHOTOS[SEGS[_si].img]._grade; } break; } } }
   gl.uniform1f(glU.uExpo,G.expo+(_cg?_cg.expo:0)); gl.uniform1f(glU.uContrast,G.contrast+(_cg?_cg.contrast:0)); gl.uniform1f(glU.uSat,G.sat+(_cg?_cg.sat:0));
   gl.uniform1f(glU.uTemp,G.temp+(_cg?_cg.temp:0)); gl.uniform1f(glU.uLeak,G.leak); gl.uniform1f(glU.uPulse,pulse||0);
   gl.uniform1f(glU.uChromatic,F.chromatic||0); gl.uniform1f(glU.uBloom,F.bloom||0); gl.uniform1f(glU.uHalation,F.halation||0);
@@ -8447,6 +8448,43 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     if(p._capFont) _loadCapFont(p._capFont,rp);
     rp();
   }
+  function openPhotoRetouch(i){
+    var p=PHOTOS[i]; if(!p) return;
+    if(!p._grade) p._grade={expo:0,contrast:0,sat:0,temp:0};
+    var work={expo:p._grade.expo||0,contrast:p._grade.contrast||0,sat:p._grade.sat||0,temp:p._grade.temp||0};
+    var applyAll=!!window._gradeApplyAll;
+    var ov=document.createElement("div"); ov.className="clipPrev";
+    ov.innerHTML='<div class="cp-card">'
+      +'<div class="cp-vidwrap"><canvas class="prg-cv" width="360" height="640"></canvas></div>'
+      +'<div class="cp-title">Retouche <small>Photo '+(i+1)+'</small></div>'
+      +'<div class="cp-color"><div class="cp-sec">Ambiance</div>'
+        +'<div class="cp-presets" id="prgPre">'+VPRESETS.map(function(pp,pi){ return '<button class="cp-pre" data-pre="'+pi+'">'+esc(pp.n)+'</button>'; }).join("")+'</div>'
+        +'<div class="cp-adj">'
+          +'<label><span>Chaleur</span><input type="range" id="prgTemp" min="-40" max="40" value="'+Math.round(work.temp*100)+'"></label>'
+          +'<label><span>Saturation</span><input type="range" id="prgSat" min="-100" max="60" value="'+Math.round(work.sat*100)+'"></label>'
+          +'<label><span>Lumi\u00e8re</span><input type="range" id="prgExpo" min="-25" max="25" value="'+Math.round(work.expo*100)+'"></label>'
+          +'<label><span>Contraste</span><input type="range" id="prgCon" min="-30" max="40" value="'+Math.round(work.contrast*100)+'"></label>'
+        +'</div></div>'
+      +'<div class="cp-row"><button class="vtog'+(applyAll?" on":"")+'" id="prgAll"><span class="vtog-dot"></span></button><span class="cp-lab">Appliquer \u00e0 toutes les photos</span></div>'
+      +'<div class="cp-actions"><button class="cp-done" id="prgDone">Termin\u00e9</button></div>'
+    +'</div>';
+    document.body.appendChild(ov);
+    var cv=ov.querySelector(".prg-cv");
+    function draw(){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); var src=p.c||p.img; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } cv.style.filter=_cssFilter(work); }catch(e){} }
+    draw();
+    function setAll(){ if(!window._gradeApplyAll) return; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]) PHOTOS[z]._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; } }
+    function apply(){ p._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; setAll(); draw(); try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
+    Array.prototype.forEach.call(ov.querySelectorAll("#prgPre .cp-pre"),function(b){ b.onclick=function(){ var c=VPRESETS[+b.getAttribute("data-pre")].c; work.expo=c.expo;work.contrast=c.contrast;work.sat=c.sat;work.temp=c.temp; var et=ov.querySelector("#prgTemp"),es=ov.querySelector("#prgSat"),ee=ov.querySelector("#prgExpo"),ec=ov.querySelector("#prgCon"); if(et)et.value=Math.round(work.temp*100); if(es)es.value=Math.round(work.sat*100); if(ee)ee.value=Math.round(work.expo*100); if(ec)ec.value=Math.round(work.contrast*100); apply(); try{ _paintAllRanges(); }catch(e){} }; });
+    var _t=ov.querySelector("#prgTemp"); if(_t)_t.oninput=function(){ work.temp=(+_t.value)/100; apply(); };
+    var _s=ov.querySelector("#prgSat"); if(_s)_s.oninput=function(){ work.sat=(+_s.value)/100; apply(); };
+    var _e=ov.querySelector("#prgExpo"); if(_e)_e.oninput=function(){ work.expo=(+_e.value)/100; apply(); };
+    var _c=ov.querySelector("#prgCon"); if(_c)_c.oninput=function(){ work.contrast=(+_c.value)/100; apply(); };
+    var all=ov.querySelector("#prgAll"); if(all)all.onclick=function(){ window._gradeApplyAll=!window._gradeApplyAll; all.classList.toggle("on",window._gradeApplyAll); if(window._gradeApplyAll){ setAll(); apply(); } };
+    function done(){ try{ ov.remove(); }catch(e){} try{ if(typeof renderPGrid==="function") renderPGrid(); }catch(e){} try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
+    var dn=ov.querySelector("#prgDone"); if(dn)dn.onclick=done;
+    ov.onclick=function(e){ if(e.target===ov) done(); };
+    try{ _paintAllRanges(); }catch(e){}
+  }
   function openStyleMenu(i, anchorEl){
     var p=PHOTOS[i]; if(!p) return;
     var cur=p._capStyle||"auto";
@@ -8552,6 +8590,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       h.onpointerdown=function(e){ if(_drag) pgUp(e); _drag={ el:el, id:+el.getAttribute("data-i"), sx:e.clientX, sy:e.clientY, on:false }; document.addEventListener("pointermove",pgMove,true); document.addEventListener("pointerup",pgUp,true); document.addEventListener("pointercancel",pgUp,true); if(e.cancelable) e.preventDefault(); };
     }
     var th=el.querySelector(".pr-thumb"); if(th) th.onclick=function(){ tapExclude(+el.getAttribute("data-i")); };
+    var fx=el.querySelector(".pr-fx"); if(fx) fx.onclick=function(e){ e.stopPropagation(); openPhotoRetouch(+el.getAttribute("data-i")); };
     var cap=el.querySelector(".pr-cap");
     if(cap){ cap.readOnly=true; cap.onpointerdown=function(e){ e.stopPropagation(); }; cap.onclick=function(e){ e.stopPropagation(); openTextEditor(+el.getAttribute("data-i")); }; }
   }
@@ -8567,7 +8606,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
         +'<input class="pr-cap" type="text" value="'+esc(capOf(p))+'" placeholder="Ajouter un texte\u2026">'
         +'<div class="pr-meta">'+(dtxt?'<span class="pr-dur">'+dtxt+'</span>':'')+(tag?(dtxt?' \u00b7 ':'')+'<span class="pr-tag">'+esc(tag)+'</span>':'')+(p&&p._capStyle?' \u00b7 <span class="pr-style">'+esc(styleLabel(p._capStyle))+'</span>':'')+'</div>'
       +'</div>'
-      +'<button class="pr-drag" aria-label="D\u00e9placer">\u2261</button>'
+      +'<button class="pr-fx" aria-label="Retouche"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.4" fill="#0e1a30"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.4" fill="#0e1a30"/></svg></button>'+'<button class="pr-drag" aria-label="D\u00e9placer">\u2261</button>'
     +'</div>';
   }
   function renderPGrid(){
