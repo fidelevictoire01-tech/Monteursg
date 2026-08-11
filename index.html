@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — DESSIN DE BANDE 01 (bandeau or voyage) : rond play + titre + accroche + bord dore + reflet anime medium ; lieu/date prets pour auto-remplissage · BUILD 2026-08-09-C115 -->
+<!-- Studio Magot — Design 01 : texte passe a la ligne (2 lignes max, comme un document) au lieu d-etre coupe ; bandeau s-adapte · BUILD 2026-08-09-C117 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C115</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C117</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1446,32 +1446,30 @@ function _mmtDraw(ctx,opt){
   }
   /* ---------- BROADCAST : chyron, hauteur fixe (petit côté) ---------- */
   if(st.kind==="lower01"){
-    var _p=String(text).split("\n"); var _title=(_p[0]||text).trim(); var _tag=(_p.slice(1).join(" ")).trim();
     var loc=(opt.loc||"").trim(), dat=(opt.date||"").trim();
-    ctx.textAlign="left"; ctx.font=st.weight+" "+fs+"px "+FF; var tw=ctx.measureText(_title).width;
-    var tagfs=Math.round(fs*0.6), tagw=0; if(_tag){ ctx.font="italic 600 "+tagfs+"px "+FF; tagw=ctx.measureText(_tag).width; }
-    var iconR=fs*0.84, gap=fs*0.55, pad=fs*0.7;
-    var midW=iconR*2+gap+Math.max(tw,tagw);
-    var rBlockW=0, locfs=Math.round(fs*0.5); if(loc||dat){ ctx.font="700 "+locfs+"px "+FF; rBlockW=Math.max(loc?ctx.measureText("\u25CF "+loc).width:0, dat?ctx.measureText("\u25A3 "+dat).width:0)+fs*0.9; }
-    var barH=Math.round(fs*2.4);
-    var barW=Math.min(W*0.95, pad+midW+(rBlockW?rBlockW+fs*0.5:0)+pad);
-    var barX=(W-barW)/2, cyy=bottom-barH*0.5, barY=cyy-barH/2, rad=Math.round(fs*0.3);
-    var gp=_mmtEoc(pin), off=(1-gp)*(W*0.12);
+    var iconR=fs*0.8, gap=fs*0.5, pad=fs*0.7, locfs=Math.round(fs*0.5), rBlockW=0;
+    if(loc||dat){ ctx.font="700 "+locfs+"px "+FF; rBlockW=Math.max(loc?ctx.measureText("\u25CF "+loc).width:0, dat?ctx.measureText("\u25A3 "+dat).width:0)+fs*0.6; }
+    var barW=Math.round(W*0.92), barX=Math.round((W-barW)/2), rad=Math.round(fs*0.28);
+    var txStart=barX+pad+iconR*2+gap;
+    var textAreaW=Math.max(fs*3,(barX+barW-pad)-txStart-(rBlockW?rBlockW+fs*0.5:0));
+    ctx.font=st.weight+" "+fs+"px "+FF;
+    var wl=_mmtWrap(ctx,text,textAreaW,2); var lineH=fs*1.18, textH=wl.length*lineH;
+    var barH=Math.round(Math.max(fs*2.2, textH+fs*0.95));
+    var cyy=bottom-barH*0.5, barY=cyy-barH/2;
+    var gp=_mmtEoc(pin), off=(1-gp)*(W*0.1);
     ctx.save(); ctx.globalAlpha=alpha; ctx.translate(-off,0);
     var bg=ctx.createLinearGradient(barX,0,barX+barW,0); bg.addColorStop(0,"rgba(10,12,18,.94)"); bg.addColorStop(.5,"rgba(18,22,32,.9)"); bg.addColorStop(1,"rgba(10,12,18,.94)");
     _rr(ctx,barX,barY,barW,barH,rad); ctx.fillStyle=bg; ctx.fill();
     var eg=ctx.createLinearGradient(barX,0,barX+barW,0); eg.addColorStop(0,"#8a6318"); eg.addColorStop(.5,"#f4bd4a"); eg.addColorStop(1,"#8a6318");
     ctx.fillStyle=eg; ctx.fillRect(barX+rad,barY,barW-rad*2,Math.max(2,fs*0.045)); ctx.fillRect(barX+rad,barY+barH-Math.max(2,fs*0.045),barW-rad*2,Math.max(2,fs*0.045));
     var swp=((time*0.42)%1.5)-0.25, sx=barX+swp*barW;
-    ctx.save(); _rr(ctx,barX,barY,barW,barH,rad); ctx.clip();
-    var sg=ctx.createLinearGradient(sx-fs*1.2,0,sx+fs*1.2,0); sg.addColorStop(0,"rgba(244,189,74,0)"); sg.addColorStop(.5,"rgba(244,189,74,.16)"); sg.addColorStop(1,"rgba(244,189,74,0)");
-    ctx.fillStyle=sg; ctx.fillRect(sx-fs*1.2,barY,fs*2.4,barH); ctx.restore();
+    ctx.save(); _rr(ctx,barX,barY,barW,barH,rad); ctx.clip(); var sg=ctx.createLinearGradient(sx-fs*1.2,0,sx+fs*1.2,0); sg.addColorStop(0,"rgba(244,189,74,0)"); sg.addColorStop(.5,"rgba(244,189,74,.15)"); sg.addColorStop(1,"rgba(244,189,74,0)"); ctx.fillStyle=sg; ctx.fillRect(sx-fs*1.2,barY,fs*2.4,barH); ctx.restore();
     var icx=barX+pad+iconR, icy=cyy;
-    ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.085); ctx.strokeStyle="#e5aa34"; ctx.stroke();
-    ctx.fillStyle="#f4bd4a"; ctx.beginPath(); ctx.moveTo(icx-iconR*0.24,icy-iconR*0.42); ctx.lineTo(icx-iconR*0.24,icy+iconR*0.42); ctx.lineTo(icx+iconR*0.46,icy); ctx.closePath(); ctx.fill();
-    var tx=icx+iconR+gap;
-    if(_tag){ ctx.font=st.weight+" "+fs+"px "+FF; ctx.fillStyle="#f6f8fc"; ctx.fillText(_title,tx,cyy-fs*0.02); ctx.font="italic 600 "+tagfs+"px "+FF; ctx.fillStyle="#f4bd4a"; ctx.fillText(_tag,tx,cyy+fs*0.64); }
-    else { ctx.font=st.weight+" "+fs+"px "+FF; ctx.fillStyle="#f6f8fc"; ctx.textBaseline="middle"; ctx.fillText(_title,tx,cyy); ctx.textBaseline="alphabetic"; }
+    ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.08); ctx.strokeStyle="#e5aa34"; ctx.stroke();
+    ctx.fillStyle="#f4bd4a"; ctx.beginPath(); ctx.moveTo(icx-iconR*0.24,icy-iconR*0.4); ctx.lineTo(icx-iconR*0.24,icy+iconR*0.4); ctx.lineTo(icx+iconR*0.44,icy); ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#f6f8fc"; ctx.textAlign="left"; ctx.font=st.weight+" "+fs+"px "+FF;
+    var ty=cyy-textH/2+fs*0.86;
+    for(var li=0;li<wl.length;li++){ ctx.fillText(wl[li],txStart,ty); ty+=lineH; }
     if(loc||dat){ var rx=barX+barW-rBlockW-pad*0.3, dvx=rx-fs*0.5;
       ctx.fillStyle="rgba(244,189,74,.45)"; ctx.fillRect(dvx,barY+barH*0.24,Math.max(1,fs*0.035),barH*0.52);
       ctx.font="700 "+locfs+"px "+FF; ctx.fillStyle="#f4bd4a";
