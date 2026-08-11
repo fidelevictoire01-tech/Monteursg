@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Editeur texte : options en bande horizontale compacte (facon CapCut) -> menu court, plus pro, plus de scroll · BUILD 2026-08-09-C104 -->
+<!-- Studio Magot — Editeur texte ADAPTATIF (clamp) : boutons plus petits, tailles qui s-adaptent a l-ecran (iPhone ET Android) · BUILD 2026-08-09-C105 -->
 
 <html lang="fr">
 <head>
@@ -433,28 +433,28 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .cp-spd-seg button.on{background:#e5aa34;color:#1a1206}
 .txtEd .te-card{max-width:460px;max-height:96vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 15px 14px;background:linear-gradient(180deg,#111a2e,#0c1424)}
 .te-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.te-title{font:800 24px system-ui;color:#fff}
+.te-title{font:800 clamp(19px,5.2vw,24px) system-ui;color:#fff}
 .te-tools{display:flex;align-items:center;gap:10px}
-.te-tool{width:46px;height:46px;border-radius:50%;border:0;background:#3a2f6e;color:#c9bdf5;display:grid;place-items:center;cursor:pointer}
-.te-doneb{width:46px;height:46px;border-radius:50%;border:0;background:linear-gradient(180deg,#f4bd4a,#e5aa34);color:#1a1206;display:grid;place-items:center;cursor:pointer}
+.te-tool{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:50%;border:0;background:#3a2f6e;color:#c9bdf5;display:grid;place-items:center;cursor:pointer}
+.te-doneb{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:50%;border:0;background:linear-gradient(180deg,#f4bd4a,#e5aa34);color:#1a1206;display:grid;place-items:center;cursor:pointer}
 .te-prevwrap{width:100%;display:flex;justify-content:center;margin-bottom:11px}
 .te-cv{width:auto;height:min(24vh,190px);max-width:100%;border-radius:14px;background:#000;box-shadow:0 6px 18px rgba(0,0,0,.5)}
 .te-inputwrap{position:relative;margin-bottom:12px}
-.te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#eaf1fb;font:500 17px system-ui;padding:13px 14px 22px;resize:none;min-height:52px}
+.te-input{width:100%;box-sizing:border-box;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;color:#eaf1fb;font:500 clamp(14px,4vw,16px) system-ui;padding:12px 13px 20px;resize:none;min-height:46px}
 .te-input:focus{outline:none;border-color:#8b7bf0}
 .te-count{position:absolute;right:14px;bottom:10px;font:600 13px system-ui;color:#7f8ba0}
-.te-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
-.te-gb{-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:6px;justify-content:center;padding:13px 6px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:#131f36;color:#eaf1fb;font:700 14px system-ui;cursor:pointer}
+.te-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:clamp(6px,1.8vw,10px)}
+.te-gb{-webkit-appearance:none;appearance:none;display:flex;align-items:center;gap:clamp(3px,1.2vw,6px);justify-content:center;padding:clamp(9px,2.6vw,12px) 4px;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#131f36;color:#eaf1fb;font:700 clamp(11.5px,3.3vw,14px) system-ui;cursor:pointer}
 .te-gb.on{border-color:#8b7bf0;background:#1a2547;box-shadow:0 0 0 1px #8b7bf0}
-.te-gi{display:grid;place-items:center;color:#8b7bf0;width:22px;height:22px;flex:0 0 auto}
-.te-txic{font:800 19px Georgia,serif;color:#8b7bf0;line-height:1}
+.te-gi{display:grid;place-items:center;color:#8b7bf0;width:clamp(17px,4.6vw,20px);height:clamp(17px,4.6vw,20px);flex:0 0 auto}
+.te-txic{font:800 clamp(15px,4.4vw,18px) Georgia,serif;color:#8b7bf0;line-height:1}
 .te-gl{white-space:nowrap}
-.te-gc{color:#8b98b3;font-size:11px;margin-left:1px}
+.te-gc{color:#8b98b3;font-size:10px;margin-left:0}
 .te-inpanel{margin-top:10px;background:#0d1626;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
 .te-pt{font:700 15px system-ui;color:#cdd8e6;margin-bottom:11px}
 .te-optrow{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.te-opt{-webkit-appearance:none;appearance:none;flex:0 0 auto;padding:11px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.09);background:#16233d;color:#e8eef7;font:600 15px system-ui;cursor:pointer;white-space:nowrap}
-.te-fopt{font-size:17px;min-width:96px;text-align:center}
+.te-opt{-webkit-appearance:none;appearance:none;flex:0 0 auto;padding:clamp(8px,2.4vw,10px) clamp(12px,3.6vw,16px);border-radius:11px;border:1px solid rgba(255,255,255,.09);background:#16233d;color:#e8eef7;font:600 clamp(13px,3.6vw,15px) system-ui;cursor:pointer;white-space:nowrap}
+.te-fopt{font-size:clamp(15px,4.2vw,17px);min-width:clamp(80px,22vw,96px);text-align:center}
 .te-opt.on{border-color:#e5aa34;color:#f4bd4a;background:rgba(224,163,62,.1)}
 .te-sw{display:flex;gap:11px;flex-wrap:wrap}
 .te-swatch{-webkit-appearance:none;appearance:none;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;padding:0;display:grid;place-items:center;color:#9fb0d0;font-size:13px}
@@ -465,10 +465,10 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .te-sizev{font:700 15px ui-monospace,monospace;color:#f4bd4a;min-width:48px;text-align:right}
 .te-aihint{font:600 14px system-ui;color:#d9c9ff;line-height:1.5}
 .te-apply{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px;border-radius:14px;background:linear-gradient(180deg,rgba(139,87,223,.12),rgba(13,22,38,.5));border:1px solid rgba(139,87,223,.22)}
-.te-apply-ic{width:44px;height:44px;border-radius:12px;flex:0 0 auto;display:grid;place-items:center;color:#c9bdf5;background:linear-gradient(158deg,#5a4aa8,#33245f)}
+.te-apply-ic{width:clamp(38px,10vw,44px);height:clamp(38px,10vw,44px);border-radius:12px;flex:0 0 auto;display:grid;place-items:center;color:#c9bdf5;background:linear-gradient(158deg,#5a4aa8,#33245f)}
 .te-apply-tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.te-apply-tt b{font:800 16px system-ui;color:#f2f6fc}
-.te-apply-tt small{font:500 12.5px system-ui;color:#9ca8b8}
+.te-apply-tt b{font:800 clamp(14px,4vw,16px) system-ui;color:#f2f6fc}
+.te-apply-tt small{font:500 clamp(11px,3.2vw,12.5px) system-ui;color:#9ca8b8}
 .vdens{display:flex;align-items:center;gap:10px;margin:2px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#0e1a29}
 .vdens-lab{font:600 14px system-ui;color:#eaf1fb;flex:1}
 .vdens-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -577,7 +577,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C104</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C105</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
