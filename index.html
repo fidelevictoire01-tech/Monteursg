@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Design 02 affine (bande pellicule a gauche) + noms propres de collection (Odyssee Or, Cine Bleu) au lieu de -Signature Magot- · BUILD 2026-08-09-C121 -->
+<!-- Studio Magot — Designs 03 (Neon Violet, camera) + 04 (Sommet Or, badge 4K) + 05 (Studio Rouge, aperture) ajoutes · BUILD 2026-08-09-C122 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C121</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C122</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1339,6 +1339,9 @@ var _MMT_STYLES={
   cinema:{anim:"slideUp",kind:"cinema",weight:650,transition:0.60},
   voyageor:{anim:"slideUp",kind:"lower01",weight:800,transition:0.50,accent:"#f4bd4a",accent2:"#c8901f",accrgb:"244,189,74",icon:"play"},
   voyagebleu:{anim:"slideUp",kind:"lower01",weight:800,transition:0.50,accent:"#4ea8e6",accent2:"#2570b0",accrgb:"78,168,230",icon:"clap",filmstrip:true},
+  voyageviolet:{anim:"slideUp",kind:"lower01",weight:800,transition:0.50,accent:"#9b6dff",accent2:"#6d3fd0",accrgb:"155,109,255",icon:"camera"},
+  voyagesommet:{anim:"slideUp",kind:"lower01",weight:800,transition:0.50,accent:"#f4bd4a",accent2:"#c8901f",accrgb:"244,189,74",icon:"4k"},
+  voyagerouge:{anim:"slideUp",kind:"lower01",weight:800,transition:0.50,accent:"#e0524f",accent2:"#b02b28",accrgb:"224,82,79",icon:"aperture"},
   doux:{anim:"fade",kind:"elegant",weight:600,transition:0.74},
   voyage:{anim:"slideUp",kind:"travel",weight:680,transition:0.60},
   dynamique:{anim:"pop",kind:"box",weight:760,transition:0.46},
@@ -1475,8 +1478,11 @@ function _mmtDraw(ctx,opt){
     ctx.restore();
     var eg=ctx.createLinearGradient(barX,0,barX+barW,0); eg.addColorStop(0,AC2); eg.addColorStop(.5,AC); eg.addColorStop(1,AC2); ctx.fillStyle=eg; ctx.fillRect(barX+rad,barY,barW-rad*2,Math.max(2,fs*0.04)); ctx.fillRect(barX+rad,barY+barH-Math.max(2,fs*0.04),barW-rad*2,Math.max(2,fs*0.04));
     var icx=barX+pad+lstrip+iconR, icy=cyy; var ig=ctx.createLinearGradient(icx-iconR,icy-iconR,icx+iconR,icy+iconR); ig.addColorStop(0,AC); ig.addColorStop(1,AC2);
-    ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.09); ctx.strokeStyle=ig; ctx.stroke();
-    if(ICON==="clap"){ ctx.save(); ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw=iconR*1.15, chh=iconR*1.15, cx0=icx-cw/2, cy0=icy-chh/2+chh*0.2; ctx.strokeRect(cx0,cy0+chh*0.28,cw,chh*0.62); ctx.fillStyle=AC; ctx.save(); ctx.translate(cx0,cy0); ctx.rotate(-0.14); ctx.fillRect(0,0,cw,chh*0.26); ctx.restore(); ctx.strokeStyle="#0b111c"; ctx.lineWidth=Math.max(1,fs*0.04); for(var _s=0;_s<3;_s++){ var _sx=cx0+cw*0.18*(_s+1); ctx.beginPath(); ctx.moveTo(_sx,cy0+ (_s%2?0.02:0)); ctx.lineTo(_sx-cw*0.1,cy0+chh*0.24); ctx.stroke(); } ctx.restore(); }
+    if(ICON!=="4k"){ ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.09); ctx.strokeStyle=ig; ctx.stroke(); }
+    if(ICON==="camera"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw2=iconR*1.15, ch2=iconR*0.85, cx2=icx-cw2/2, cy2=icy-ch2/2+ch2*0.12; _rr(ctx,cx2,cy2,cw2,ch2,fs*0.08); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx2+cw2*0.32,cy2); ctx.lineTo(cx2+cw2*0.42,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.6,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.7,cy2); ctx.stroke(); ctx.beginPath(); ctx.arc(icx,icy+ch2*0.06,iconR*0.34,0,Math.PI*2); ctx.stroke(); }
+    else if(ICON==="4k"){ var bw=iconR*1.7, bh2=iconR*1.35; _rr(ctx,icx-bw/2,icy-bh2/2,bw,bh2,fs*0.13); var bgg=ctx.createLinearGradient(icx-bw/2,icy-bh2/2,icx+bw/2,icy+bh2/2); bgg.addColorStop(0,AC); bgg.addColorStop(1,AC2); ctx.fillStyle=bgg; ctx.fill(); ctx.fillStyle="#0b111c"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 "+Math.round(iconR*0.82)+"px "+FF; ctx.fillText("4K",icx,icy); ctx.textAlign="left"; ctx.textBaseline="alphabetic"; }
+    else if(ICON==="aperture"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); ctx.beginPath(); ctx.arc(icx,icy,iconR*0.6,0,Math.PI*2); ctx.stroke(); for(var _ab=0;_ab<6;_ab++){ var _ang=_ab*Math.PI/3+0.35; ctx.beginPath(); ctx.moveTo(icx+Math.cos(_ang)*iconR*0.6,icy+Math.sin(_ang)*iconR*0.6); ctx.lineTo(icx+Math.cos(_ang+1.05)*iconR*0.2,icy+Math.sin(_ang+1.05)*iconR*0.2); ctx.stroke(); } }
+    else if(ICON==="clap"){ ctx.save(); ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw=iconR*1.15, chh=iconR*1.15, cx0=icx-cw/2, cy0=icy-chh/2+chh*0.2; ctx.strokeRect(cx0,cy0+chh*0.28,cw,chh*0.62); ctx.fillStyle=AC; ctx.save(); ctx.translate(cx0,cy0); ctx.rotate(-0.14); ctx.fillRect(0,0,cw,chh*0.26); ctx.restore(); ctx.strokeStyle="#0b111c"; ctx.lineWidth=Math.max(1,fs*0.04); for(var _s=0;_s<3;_s++){ var _sx=cx0+cw*0.18*(_s+1); ctx.beginPath(); ctx.moveTo(_sx,cy0+ (_s%2?0.02:0)); ctx.lineTo(_sx-cw*0.1,cy0+chh*0.24); ctx.stroke(); } ctx.restore(); }
     else { ctx.fillStyle=AC; ctx.beginPath(); ctx.moveTo(icx-iconR*0.22,icy-iconR*0.4); ctx.lineTo(icx-iconR*0.22,icy+iconR*0.4); ctx.lineTo(icx+iconR*0.46,icy); ctx.closePath(); ctx.fill(); }
     var sepx=icx+iconR+gap*0.5; ctx.fillStyle="rgba("+ARGB+",.5)"; _para(ctx,sepx,barY+barH*0.22,Math.max(2,fs*0.05),barH*0.56,slant*0.5); ctx.fill();
     var txStart=sepx+gap+slant*0.4; ctx.textAlign="left";
@@ -8436,7 +8442,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function _loadCapFont(ff,cb){ try{ var pr=_capPrimaryFam(ff); if(!pr||!document.fonts||!document.fonts.load){ if(cb)cb(); return; } Promise.all([document.fonts.load('400 40px '+pr),document.fonts.load('700 40px '+pr)]).then(function(){ if(cb)cb(); setTimeout(function(){ if(cb)cb(); },220); }).catch(function(){ if(cb)cb(); }); }catch(e){ if(cb)cb(); } }
   function openTextEditor(i){
     var p=PHOTOS[i]; if(!p) return;
-    var STYLES=[["auto","Style : Auto"],["title","Titre"],["voyageor","Odyss\u00e9e Or"],["voyagebleu","Cin\u00e9 Bleu"],["cinema","Cin\u00e9ma"],["elegant","\u00c9l\u00e9gant"],["band","Bande info"],["broadcast","Bulletin TV"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["voyage","Voyage"],["doux","Doux"],["dynamique","Dynamique"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"],["flash","Flash or"],["flashv","Flash violet"]];
+    var STYLES=[["auto","Style : Auto"],["title","Titre"],["voyageor","Odyss\u00e9e Or"],["voyagebleu","Cin\u00e9 Bleu"],["voyageviolet","N\u00e9on Violet"],["voyagesommet","Sommet Or"],["voyagerouge","Studio Rouge"],["cinema","Cin\u00e9ma"],["elegant","\u00c9l\u00e9gant"],["band","Bande info"],["broadcast","Bulletin TV"],["documentary","Documentaire"],["subtitle","Sous-titre"],["box","Encadr\u00e9"],["line","Ligne"],["voyage","Voyage"],["doux","Doux"],["dynamique","Dynamique"],["karaoke","Mot par mot"],["credits","G\u00e9n\u00e9rique"],["flash","Flash or"],["flashv","Flash violet"]];
     var ANIMS=[["auto","Anim : Auto"],["none","Aucune"],["fade","Fondu"],["up","Monter"],["down","Descendre"],["slide","Glisser"],["zoom","Zoom"],["beat","Zoom rythm\u00e9"],["word","Mot \u00e0 mot"],["type","Machine"]];
     var FONTS=[["","Police : Syst\u00e8me"],['"Times New Roman",Times,serif',"Times New Roman"],['"Poppins",system-ui,sans-serif',"Poppins"],['"Playfair Display",Georgia,serif',"Playfair Display"],['"Montserrat",system-ui,sans-serif',"Montserrat"],['"Raleway",system-ui,sans-serif',"Raleway"],['"DM Serif Display",Georgia,serif',"DM Serif"],['"Lora",Georgia,serif',"Lora"],['"Caveat","Snell Roundhand",cursive',"Caveat"]];
     var POSIT=[["bottom","Position : Bas"],["mid","Milieu"],["top","Haut"]];
