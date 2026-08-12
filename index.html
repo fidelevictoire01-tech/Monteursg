@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Fluidite zoom : conversion JPEG a l-import -> re-decodage HORS-FIL (createImageBitmap) pendant la lecture -> plus de blocage du fil principal · BUILD 2026-08-09-C135 -->
+<!-- Studio Magot — LAZY Phase 3 (export) : l-export attend le decodage HD de chaque photo avant de l-encoder -> export net sur long montage · BUILD 2026-08-09-C136 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C135</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C136</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1301,6 +1301,7 @@ var _decLRU=[], _DEC_MAX=14;
 function _touchDec(i){ if(typeof PHOTOS==="undefined"||!PHOTOS[i]) return; var k=_decLRU.indexOf(i); if(k>=0) _decLRU.splice(k,1); _decLRU.push(i); while(_decLRU.length>_DEC_MAX){ var old=_decLRU.shift(); if(old!==i && PHOTOS[old] && PHOTOS[old]._file){ PHOTOS[old].c=null; PHOTOS[old].img=null; PHOTOS[old]._durl=null; } } }
 function _ensureDecodedP(p,cb){ if(!p){ if(cb)cb(null); return; } if(p.c){ if(cb)cb(p.c); return; } if(!p._jpgBlob && !p._file){ if(cb)cb(null); return; } if(p._decoding){ if(cb)(p._decCbs=p._decCbs||[]).push(cb); return; } p._decoding=true; window._decInFlight=(window._decInFlight||0)+1; p._decCbs=cb?[cb]:[]; _decodeFromSrc(p,function(c){ p._decoding=false; window._decInFlight=Math.max(0,(window._decInFlight||1)-1); if(c){ p.c=c; p.img=c; var ix=(typeof PHOTOS!=="undefined")?PHOTOS.indexOf(p):-1; if(ix>=0)_touchDec(ix); } var cbs=p._decCbs||[]; p._decCbs=null; for(var z=0;z<cbs.length;z++){ try{ cbs[z](c); }catch(e){} } }); }
 function ensurePhotoDecoded(i,cb){ if(typeof PHOTOS==="undefined"||!PHOTOS[i]){ if(cb)cb(null); return; } _ensureDecodedP(PHOTOS[i],cb); }
+function ensurePhotoDecodedAsync(i){ return new Promise(function(res){ try{ ensurePhotoDecoded(i,function(c){ res(c); }); }catch(e){ res(null); } }); }
 function prerender(img,maxD){ try{ maxD=maxD||1280; var w=img.width||0,h=img.height||0; if(!w||!h) return null; var sc=Math.min(1,maxD/Math.max(w,h,1)); var cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc)); var c=document.createElement("canvas"); c.width=cw; c.height=ch; var cx=c.getContext("2d"); if(!cx) return null; cx.drawImage(img,0,0,cw,ch); return c; }catch(e){ return null; } }
 function photoFeat(img){
   try{
@@ -8100,6 +8101,7 @@ async function exportFast(){
         var _cl=CLIPS[_sg.vclip], _vt=(_sg.vstart||0)+(_t-_sg.start)*(_sg.vspeed||_cl.speed||1); _vt=Math.max(0,Math.min((_cl.dur||0.1)-0.05,_vt));
         await seekClip(_cl.el, _vt);
       }
+      if(_sg && !_sg.video && _sg.img>=0 && PHOTOS[_sg.img] && !PHOTOS[_sg.img].c){ try{ await ensurePhotoDecodedAsync(_sg.img); }catch(e){} }
       renderMontageAt(_t);
       var frame=new VideoFrame(glReady?gl.canvas:base,{timestamp:Math.round(fnum*1000000/FPS), duration:Math.round(1000000/FPS)});
       venc.encode(frame,{keyFrame:(fnum%FPS===0)}); frame.close();
