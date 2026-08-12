@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — EXPORT : frein bloquant sur l-encodeur (attend que la file se vide) = anti-plantage memoire + debit 6->5 Mbps. Fond de tache = natif seulement. · BUILD 2026-08-09-C144 -->
+<!-- Studio Magot — FIX export qui ne demarrait pas : exigeait des PHOTOS -> refus silencieux sur montage video-only. Autorise video-only + messages d-echec VISIBLES (overlay). · BUILD 2026-08-09-C145 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C144</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C145</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8050,6 +8050,7 @@ function renderMontageAt(t){
     drawGL(t,strongPulse,TR.fbo.tex);
   } else { var r=renderBaseFrame(t); if(glReady) drawGL(t,r.strongPulse); }
 }
+function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
 async function _mixVideoAudioExport(L, R, sr){
@@ -8074,8 +8075,8 @@ async function _mixVideoAudioExport(L, R, sr){
   }
 }
 async function exportFast(){
-  if(!A||!SEGS.length||!PHOTOS.length){ setState("Charge une musique et des photos d'abord."); return; }
-  if(typeof VideoEncoder==="undefined"||typeof Mp4Muxer==="undefined"){ setState("Export rapide non supporté sur cet appareil."); return; }
+  if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
+  if(typeof VideoEncoder==="undefined"||typeof Mp4Muxer==="undefined"){ _expMsg("Export non supporté sur ce navigateur (essaie Safari à jour)."); return; }
   stopPlay(); EXPORTING=true; expShow(0);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
