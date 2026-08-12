@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Fluidite video : pre-chargement ameliore (3 clips, fenetre 2.8s) + demarrage du prochain clip juste avant la coupe -> moins de saccade au switch · BUILD 2026-08-09-C140 -->
+<!-- Studio Magot — Apercu editeur clip en 9:16 (comme le montage) + cadrage applique (cover/contain) pour valider le vrai rendu. Saccade video = mur iOS (reduite, pas eliminee). · BUILD 2026-08-09-C141 -->
 
 <html lang="fr">
 <head>
@@ -408,7 +408,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .clipPrev{position:fixed;inset:0;z-index:9999;background:rgba(4,8,14,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:18px;animation:cpin .18s ease}
 @keyframes cpin{from{opacity:0}to{opacity:1}}
 .cp-card{width:100%;max-width:460px;background:linear-gradient(180deg,#111a2e,#0c1424);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:16px 16px 16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.cp-vidwrap{width:100%;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.cp-vidwrap{width:auto;aspect-ratio:9/16;max-height:42vh;max-width:min(58vw,230px);margin:0 auto 6px;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 .cp-vid{width:100%;height:100%;object-fit:cover;display:block}
 .cp-title{font:800 clamp(18px,5vw,22px) system-ui;color:#fff;margin:12px 2px 12px;display:flex;align-items:baseline;gap:9px}
 .cp-title small{font:600 clamp(11px,3.2vw,13px) ui-monospace,monospace;color:#8b98b3}
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C140</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C141</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8809,7 +8809,8 @@ function renderVNav(){
     +'</div>';
     document.body.appendChild(ov);
     var pv=ov.querySelector(".cp-vid");
-    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; try{ paintStrip(playing?visualTime():0); }catch(e){} };
+    function _applyFitPrev(){ try{ if(pv) pv.style.objectFit=((c._fit||"fit")==="fill")?"cover":"contain"; }catch(e){} } _applyFitPrev();
+    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; _applyFitPrev(); try{ paintStrip(playing?visualTime():0); }catch(e){} };
     try{ pv.src=c.el._u; pv.muted=false; pv.style.filter=_cssFilter(c.color); var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
     function _applyColor(){ try{ pv.style.filter=_cssFilter(c.color); }catch(e){} }
     Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(bt){ bt.onclick=function(){ var pi=+bt.getAttribute("data-pre"); c.preset=pi; c.color={expo:VPRESETS[pi].c.expo,contrast:VPRESETS[pi].c.contrast,sat:VPRESETS[pi].c.sat,temp:VPRESETS[pi].c.temp}; Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(b2){ b2.classList.remove("on"); }); bt.classList.add("on"); var et=ov.querySelector("#cpTemp"),es=ov.querySelector("#cpSat"),ee=ov.querySelector("#cpExpo"); if(et)et.value=Math.round(c.color.temp*100); if(es)es.value=Math.round(c.color.sat*100); if(ee)ee.value=Math.round(c.color.expo*100); _applyColor(); }; });
@@ -8854,7 +8855,8 @@ function renderVNav(){
     +'</div>';
     document.body.appendChild(ov);
     var pv=ov.querySelector(".cp-vid");
-    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; try{ paintStrip(playing?visualTime():0); }catch(e){} }; try{ pv.src=clip.el._u; pv.muted=true; pv.playbackRate=work.speed; pv.style.filter=_cssFilter(work.color); pv.currentTime=seg.vstart||0; var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
+    function _applyFitPrev(){ try{ if(pv) pv.style.objectFit=((c._fit||"fit")==="fill")?"cover":"contain"; }catch(e){} } _applyFitPrev();
+    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; _applyFitPrev(); try{ paintStrip(playing?visualTime():0); }catch(e){} }; try{ pv.src=clip.el._u; pv.muted=true; pv.playbackRate=work.speed; pv.style.filter=_cssFilter(work.color); pv.currentTime=seg.vstart||0; var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
     function _ac(){ try{ pv.style.filter=_cssFilter(work.color); }catch(e){} }
     Array.prototype.forEach.call(ov.querySelectorAll("#meSpd button"),function(b){ b.classList.toggle("on",Math.abs((+b.getAttribute("data-s"))-work.speed)<0.01); b.onclick=function(){ work.speed=+b.getAttribute("data-s"); Array.prototype.forEach.call(ov.querySelectorAll("#meSpd button"),function(x){x.classList.toggle("on",Math.abs((+x.getAttribute("data-s"))-work.speed)<0.01);}); try{ pv.playbackRate=work.speed; }catch(e){} }; });
     Array.prototype.forEach.call(ov.querySelectorAll("#mePre button"),function(b){ b.onclick=function(){ var p=VPRESETS[+b.getAttribute("data-pre")].c; work.color={expo:p.expo,contrast:p.contrast,sat:p.sat,temp:p.temp}; var et=ov.querySelector("#meTemp"),es=ov.querySelector("#meSat"),ee=ov.querySelector("#meExpo"); if(et)et.value=Math.round(work.color.temp*100); if(es)es.value=Math.round(work.color.sat*100); if(ee)ee.value=Math.round(work.color.expo*100); _ac(); try{ _paintAllRanges(); }catch(e){} }; });
