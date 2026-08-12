@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Designs 03 (Neon Violet, camera) + 04 (Sommet Or, badge 4K) + 05 (Studio Rouge, aperture) ajoutes · BUILD 2026-08-09-C122 -->
+<!-- Studio Magot — Bandeaux : animation choisie appliquee + icones ANIMEES (camera flash, clap qui claque, badge MAGOT reflet, aperture contra-rotative) · BUILD 2026-08-09-C123 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C122</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C123</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1454,20 +1454,21 @@ function _mmtDraw(ctx,opt){
     var loc=(opt.loc||"").trim(), dat=(opt.date||"").trim();
     var _parts=String(text).split("\n").map(function(x){return x.trim();}).filter(Boolean);
     var hasTag=_parts.length>=2;
-    var iconR=fs*0.8, gap=fs*0.55, pad=fs*0.8, slant=Math.round(fs*0.5), lstrip=(st.filmstrip?fs*0.75:0);
+    var iconR=fs*0.8, gap=fs*0.55, pad=fs*0.8, slant=Math.round(fs*0.5), lstrip=(st.filmstrip?fs*0.75:0), iconW=(st.icon==="4k"?iconR*2.7:iconR*2);
     var titlefs=fs, tagfs=Math.round(fs*0.55), locfs=Math.round(fs*0.46), rBlockW=0;
     if(loc||dat){ ctx.font="700 "+locfs+"px "+FF; rBlockW=Math.max(loc?ctx.measureText(loc).width:0, dat?ctx.measureText(dat).width:0)+fs*1.3; }
-    var maxTextW=Math.max(fs*3, W*0.95-(pad*2+lstrip+iconR*2+gap+slant)-(rBlockW?rBlockW+fs*0.7:0));
+    var maxTextW=Math.max(fs*3, W*0.95-(pad*2+lstrip+iconW+gap+slant)-(rBlockW?rBlockW+fs*0.7:0));
     ctx.font="800 "+titlefs+"px "+FF;
     var tlines, tagline=""; if(hasTag){ tlines=_mmtWrap(ctx,_parts[0],maxTextW,1); tagline=_parts.slice(1).join(" "); } else { tlines=_mmtWrap(ctx,text,maxTextW,2); }
     var longest=0; ctx.font="800 "+titlefs+"px "+FF; for(var _i=0;_i<tlines.length;_i++) longest=Math.max(longest,ctx.measureText(tlines[_i]).width);
     if(tagline){ ctx.font="italic 600 "+tagfs+"px "+FF; longest=Math.max(longest,ctx.measureText(tagline.toUpperCase()).width); }
-    var barW=Math.round(Math.min(W*0.95, pad*2+lstrip+iconR*2+gap+slant+longest+(rBlockW?rBlockW+fs*0.7:0)));
+    var barW=Math.round(Math.min(W*0.95, pad*2+lstrip+iconW+gap+slant+longest+(rBlockW?rBlockW+fs*0.7:0)));
     var lineH=titlefs*1.14;
     var barH=Math.round(Math.max(fs*2.3, (tagline? (titlefs*1.05+tagfs*1.25) : tlines.length*lineH) + fs*0.9));
     var barX=Math.round((W-barW)/2), cyy=bottom-barH*0.5, barY=cyy-barH/2, rad=Math.round(fs*0.26);
-    var gp=_mmtEoc(pin), off=(1-gp)*(W*0.1);
-    ctx.save(); ctx.globalAlpha=alpha; ctx.translate(-off,0);
+    var an=(opt.anim && opt.anim!=="auto")?opt.anim:(st.anim==="slideUp"?"up":(st.anim==="pop"?"zoom":(st.anim==="fade"?"fade":st.anim)));
+    var _dx=0,_dy=0,_scl=1; if(an==="up")_dy=(1-ein)*fs*1.5; else if(an==="down")_dy=-(1-ein)*fs*1.5; else if(an==="slide")_dx=-(1-ein)*W*0.14; else if(an==="zoom")_scl=0.88+0.12*ein; else if(an==="beat")_scl=1+beat*0.1;
+    ctx.save(); ctx.globalAlpha=alpha; var _bcx=barX+barW/2; ctx.translate(_bcx,cyy); ctx.scale(_scl,_scl); ctx.translate(-_bcx+_dx,-cyy+_dy);
     var bg=ctx.createLinearGradient(barX,0,barX+barW,0); bg.addColorStop(0,"rgba(9,11,17,.95)"); bg.addColorStop(.5,"rgba(15,19,29,.92)"); bg.addColorStop(1,"rgba(9,11,17,.95)");
     _rr(ctx,barX,barY,barW,barH,rad); ctx.fillStyle=bg; ctx.fill();
     ctx.save(); _rr(ctx,barX,barY,barW,barH,rad); ctx.clip();
@@ -1477,14 +1478,14 @@ function _mmtDraw(ctx,opt){
     var ae=barX+barW; ctx.fillStyle="rgba("+ARGB+",.85)"; _para(ctx,ae-fs*0.55,barY,fs*0.16,barH,slant); ctx.fill(); ctx.fillStyle="rgba("+ARGB+",.4)"; _para(ctx,ae-fs*1.0,barY,fs*0.11,barH,slant); ctx.fill();
     ctx.restore();
     var eg=ctx.createLinearGradient(barX,0,barX+barW,0); eg.addColorStop(0,AC2); eg.addColorStop(.5,AC); eg.addColorStop(1,AC2); ctx.fillStyle=eg; ctx.fillRect(barX+rad,barY,barW-rad*2,Math.max(2,fs*0.04)); ctx.fillRect(barX+rad,barY+barH-Math.max(2,fs*0.04),barW-rad*2,Math.max(2,fs*0.04));
-    var icx=barX+pad+lstrip+iconR, icy=cyy; var ig=ctx.createLinearGradient(icx-iconR,icy-iconR,icx+iconR,icy+iconR); ig.addColorStop(0,AC); ig.addColorStop(1,AC2);
+    var icx=barX+pad+lstrip+iconW/2, icy=cyy; var ig=ctx.createLinearGradient(icx-iconR,icy-iconR,icx+iconR,icy+iconR); ig.addColorStop(0,AC); ig.addColorStop(1,AC2);
     if(ICON!=="4k"){ ctx.beginPath(); ctx.arc(icx,icy,iconR,0,Math.PI*2); ctx.lineWidth=Math.max(2,fs*0.09); ctx.strokeStyle=ig; ctx.stroke(); }
-    if(ICON==="camera"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw2=iconR*1.15, ch2=iconR*0.85, cx2=icx-cw2/2, cy2=icy-ch2/2+ch2*0.12; _rr(ctx,cx2,cy2,cw2,ch2,fs*0.08); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx2+cw2*0.32,cy2); ctx.lineTo(cx2+cw2*0.42,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.6,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.7,cy2); ctx.stroke(); ctx.beginPath(); ctx.arc(icx,icy+ch2*0.06,iconR*0.34,0,Math.PI*2); ctx.stroke(); }
-    else if(ICON==="4k"){ var bw=iconR*1.7, bh2=iconR*1.35; _rr(ctx,icx-bw/2,icy-bh2/2,bw,bh2,fs*0.13); var bgg=ctx.createLinearGradient(icx-bw/2,icy-bh2/2,icx+bw/2,icy+bh2/2); bgg.addColorStop(0,AC); bgg.addColorStop(1,AC2); ctx.fillStyle=bgg; ctx.fill(); ctx.fillStyle="#0b111c"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 "+Math.round(iconR*0.82)+"px "+FF; ctx.fillText("4K",icx,icy); ctx.textAlign="left"; ctx.textBaseline="alphabetic"; }
-    else if(ICON==="aperture"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); ctx.beginPath(); ctx.arc(icx,icy,iconR*0.6,0,Math.PI*2); ctx.stroke(); for(var _ab=0;_ab<6;_ab++){ var _ang=_ab*Math.PI/3+0.35; ctx.beginPath(); ctx.moveTo(icx+Math.cos(_ang)*iconR*0.6,icy+Math.sin(_ang)*iconR*0.6); ctx.lineTo(icx+Math.cos(_ang+1.05)*iconR*0.2,icy+Math.sin(_ang+1.05)*iconR*0.2); ctx.stroke(); } }
-    else if(ICON==="clap"){ ctx.save(); ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw=iconR*1.15, chh=iconR*1.15, cx0=icx-cw/2, cy0=icy-chh/2+chh*0.2; ctx.strokeRect(cx0,cy0+chh*0.28,cw,chh*0.62); ctx.fillStyle=AC; ctx.save(); ctx.translate(cx0,cy0); ctx.rotate(-0.14); ctx.fillRect(0,0,cw,chh*0.26); ctx.restore(); ctx.strokeStyle="#0b111c"; ctx.lineWidth=Math.max(1,fs*0.04); for(var _s=0;_s<3;_s++){ var _sx=cx0+cw*0.18*(_s+1); ctx.beginPath(); ctx.moveTo(_sx,cy0+ (_s%2?0.02:0)); ctx.lineTo(_sx-cw*0.1,cy0+chh*0.24); ctx.stroke(); } ctx.restore(); }
+    if(ICON==="camera"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw2=iconR*1.15, ch2=iconR*0.85, cx2=icx-cw2/2, cy2=icy-ch2/2+ch2*0.12; _rr(ctx,cx2,cy2,cw2,ch2,fs*0.08); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx2+cw2*0.32,cy2); ctx.lineTo(cx2+cw2*0.42,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.6,cy2-ch2*0.28); ctx.lineTo(cx2+cw2*0.7,cy2); ctx.stroke(); ctx.beginPath(); ctx.arc(icx,icy+ch2*0.06,iconR*0.34,0,Math.PI*2); ctx.stroke(); var _flash=Math.max(0,1-((time*1.2)%1.7)*6); if(_flash>0){ ctx.save(); ctx.globalAlpha=Math.min(1,_flash)*0.85; ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(icx,icy+ch2*0.06,iconR*0.33,0,Math.PI*2); ctx.fill(); ctx.restore(); } }
+    else if(ICON==="4k"){ var bw=iconR*2.35, bh2=iconR*1.12, _bx=icx-bw/2, _by=icy-bh2/2; _rr(ctx,_bx,_by,bw,bh2,fs*0.12); var bgg=ctx.createLinearGradient(_bx,_by,_bx+bw,_by+bh2); bgg.addColorStop(0,AC); bgg.addColorStop(1,AC2); ctx.fillStyle=bgg; ctx.fill(); ctx.fillStyle="#0b111c"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 "+Math.round(iconR*0.58)+"px "+FF; ctx.fillText("MAGOT",icx,icy); ctx.textAlign="left"; ctx.textBaseline="alphabetic"; var _sh=((time*0.7)%2.4)-0.7, _shx=_bx+_sh*bw; ctx.save(); _rr(ctx,_bx,_by,bw,bh2,fs*0.12); ctx.clip(); var _shg=ctx.createLinearGradient(_shx-fs*0.5,0,_shx+fs*0.5,0); _shg.addColorStop(0,"rgba(255,255,255,0)"); _shg.addColorStop(.5,"rgba(255,255,255,.5)"); _shg.addColorStop(1,"rgba(255,255,255,0)"); ctx.fillStyle=_shg; ctx.fillRect(_shx-fs*0.5,_by,fs,bh2); ctx.restore(); }
+    else if(ICON==="aperture"){ ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); ctx.save(); ctx.translate(icx,icy); ctx.rotate(time*0.9); ctx.beginPath(); ctx.arc(0,0,iconR*0.62,0,Math.PI*2); ctx.stroke(); for(var _ab=0;_ab<6;_ab++){ var _ang=_ab*Math.PI/3; ctx.beginPath(); ctx.moveTo(Math.cos(_ang)*iconR*0.62,Math.sin(_ang)*iconR*0.62); ctx.lineTo(Math.cos(_ang+1.05)*iconR*0.24,Math.sin(_ang+1.05)*iconR*0.24); ctx.stroke(); } ctx.restore(); ctx.save(); ctx.translate(icx,icy); ctx.rotate(-time*1.4); ctx.beginPath(); ctx.arc(0,0,iconR*0.3,0,Math.PI*2); ctx.stroke(); for(var _ai=0;_ai<3;_ai++){ var _an2=_ai*Math.PI*2/3; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(_an2)*iconR*0.3,Math.sin(_an2)*iconR*0.3); ctx.stroke(); } ctx.restore(); }
+    else if(ICON==="clap"){ ctx.save(); ctx.strokeStyle=AC; ctx.lineWidth=Math.max(1.5,fs*0.06); var cw=iconR*1.15, chh=iconR*1.15, cx0=icx-cw/2, cy0=icy-chh/2+chh*0.2; ctx.strokeRect(cx0,cy0+chh*0.28,cw,chh*0.62); var _clap=Math.abs(Math.sin(time*3.4))*0.4; ctx.save(); ctx.translate(cx0,cy0); ctx.rotate(-0.08-_clap); ctx.fillStyle=AC; ctx.fillRect(0,0,cw,chh*0.26); ctx.strokeStyle="#0b111c"; ctx.lineWidth=Math.max(1,fs*0.04); for(var _s=0;_s<3;_s++){ var _sx=cw*0.2*(_s+1); ctx.beginPath(); ctx.moveTo(_sx,0); ctx.lineTo(_sx-cw*0.1,chh*0.24); ctx.stroke(); } ctx.restore(); ctx.restore(); }
     else { ctx.fillStyle=AC; ctx.beginPath(); ctx.moveTo(icx-iconR*0.22,icy-iconR*0.4); ctx.lineTo(icx-iconR*0.22,icy+iconR*0.4); ctx.lineTo(icx+iconR*0.46,icy); ctx.closePath(); ctx.fill(); }
-    var sepx=icx+iconR+gap*0.5; ctx.fillStyle="rgba("+ARGB+",.5)"; _para(ctx,sepx,barY+barH*0.22,Math.max(2,fs*0.05),barH*0.56,slant*0.5); ctx.fill();
+    var sepx=icx+iconW/2+gap*0.5; ctx.fillStyle="rgba("+ARGB+",.5)"; _para(ctx,sepx,barY+barH*0.22,Math.max(2,fs*0.05),barH*0.56,slant*0.5); ctx.fill();
     var txStart=sepx+gap+slant*0.4; ctx.textAlign="left";
     if(tagline){ ctx.font="800 "+titlefs+"px "+FF; ctx.fillStyle="#f6f8fc"; ctx.fillText(tlines[0],txStart,cyy-tagfs*0.32); ctx.font="italic 600 "+tagfs+"px "+FF; ctx.fillStyle=AC; ctx.fillText(tagline.toUpperCase(),txStart,cyy+titlefs*0.52); }
     else { ctx.font="800 "+titlefs+"px "+FF; ctx.fillStyle="#f6f8fc"; var ty=cyy-((tlines.length-1)*lineH)/2+titlefs*0.34; for(var _j=0;_j<tlines.length;_j++){ ctx.fillText(tlines[_j],txStart,ty); ty+=lineH; } }
