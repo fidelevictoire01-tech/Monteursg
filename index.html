@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX export qui ne demarrait pas : exigeait des PHOTOS -> refus silencieux sur montage video-only. Autorise video-only + messages d-echec VISIBLES (overlay). · BUILD 2026-08-09-C145 -->
+<!-- Studio Magot — Export : feuille format restauree (9:16/4:5/1:1/16:9) + lancement fiabilise (doExport ferme la feuille PUIS appelle exportFast direct, +80ms pour que l-overlay soit visible). · BUILD 2026-08-09-C147 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C145</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C147</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -774,7 +774,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="row">
     <button class="btn gold" id="exportBtn">⚡ Exporter la vidéo (9:16)</button>
   </div>
-  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
+  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
     <div style="font:700 16px system-ui;color:#fff;margin-bottom:14px">Export en cours…</div>
     <div style="width:80%;max-width:300px;height:12px;background:#1a2440;border-radius:8px;overflow:hidden"><div id="expBar" style="height:100%;width:0%;background:#E0A33E;transition:width .1s"></div></div>
     <div id="expPct" style="font:600 13px ui-monospace,monospace;color:#E0A33E;margin-top:10px">0 %</div>
@@ -8988,7 +8988,7 @@ function renderVNav(){
     };
   });
   var doExp=$("doExport");
-  if(doExp) doExp.onclick=function(){ closeSheets(); var xb=$("exportBtn"); if(xb) xb.click(); };
+  if(doExp) doExp.onclick=function(){ closeSheets(); setTimeout(function(){ try{ exportFast(); }catch(e){ if(typeof _expMsg==="function") _expMsg("Erreur au lancement : "+((e&&e.message)||e)); } }, 80); };
 
   /* ---------- 11a) D1 : fin du montage a la duree cible + fondu ---------- */
   (function d1fade(){
