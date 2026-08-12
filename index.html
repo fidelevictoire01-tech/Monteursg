@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Apercu editeur clip en 9:16 (comme le montage) + cadrage applique (cover/contain) pour valider le vrai rendu. Saccade video = mur iOS (reduite, pas eliminee). · BUILD 2026-08-09-C141 -->
+<!-- Studio Magot — FIX page parametres clip : cp-card sans hauteur max/defilement -> haut coupe + bouton Termine coupe. Ajout max-height 92vh + overflow + apercu reduit. · BUILD 2026-08-09-C142 -->
 
 <html lang="fr">
 <head>
@@ -407,8 +407,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .vc-snd{color:#f4bd4a;font-size:15px;flex:0 0 auto;margin-right:2px}
 .clipPrev{position:fixed;inset:0;z-index:9999;background:rgba(4,8,14,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:18px;animation:cpin .18s ease}
 @keyframes cpin{from{opacity:0}to{opacity:1}}
-.cp-card{width:100%;max-width:460px;background:linear-gradient(180deg,#111a2e,#0c1424);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:16px 16px 16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.cp-vidwrap{width:auto;aspect-ratio:9/16;max-height:42vh;max-width:min(58vw,230px);margin:0 auto 6px;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.cp-card{width:100%;max-width:460px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(180deg,#111a2e,#0c1424);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:16px 16px 16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.cp-vidwrap{width:auto;aspect-ratio:9/16;max-height:30vh;max-width:min(46vw,190px);margin:0 auto 6px;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.5)}
 .cp-vid{width:100%;height:100%;object-fit:cover;display:block}
 .cp-title{font:800 clamp(18px,5vw,22px) system-ui;color:#fff;margin:12px 2px 12px;display:flex;align-items:baseline;gap:9px}
 .cp-title small{font:600 clamp(11px,3.2vw,13px) ui-monospace,monospace;color:#8b98b3}
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C141</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C142</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
