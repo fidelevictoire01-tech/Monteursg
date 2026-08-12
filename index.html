@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Fluidite : decodages etales (max 2 simultanes) + anticipation 6s -> fin des saccades au decodage HEIC (fil principal) · BUILD 2026-08-09-C134 -->
+<!-- Studio Magot — Fluidite zoom : conversion JPEG a l-import -> re-decodage HORS-FIL (createImageBitmap) pendant la lecture -> plus de blocage du fil principal · BUILD 2026-08-09-C135 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C134</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C135</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1291,10 +1291,15 @@ function buildPartition(){
 
 /* ================= Rendu 2D ================= */
 var base=document.getElementById("base"), bctx=base.getContext("2d");
+function _viaImgBlob(blob,done,fail){ try{ var u=URL.createObjectURL(blob); var im=new Image(); im.onload=function(){ done(im); try{URL.revokeObjectURL(u);}catch(e){} }; im.onerror=function(){ try{URL.revokeObjectURL(u);}catch(e){} fail(); }; im.src=u; }catch(e){ fail(); } }
+function _decodeFromSrc(p,cb){ var mx=(typeof window!=="undefined"&&window._PMAX)?window._PMAX:1200; var done=function(src){ var c=prerender(src,mx); if(src&&src.close){try{src.close();}catch(e){}} cb(c); };
+  try{ if(p._jpgBlob){ if(window.createImageBitmap){ createImageBitmap(p._jpgBlob).then(done).catch(function(){ _viaImgBlob(p._jpgBlob,done,function(){ if(p._file)_decodeFromFile(p._file,cb); else cb(null); }); }); } else { _viaImgBlob(p._jpgBlob,done,function(){ if(p._file)_decodeFromFile(p._file,cb); else cb(null); }); } return; }
+    if(p._file){ _decodeFromFile(p._file,cb); return; } cb(null);
+  }catch(e){ if(p._file)_decodeFromFile(p._file,cb); else cb(null); } }
 function _decodeFromFile(file,cb){ var mx=(typeof window!=="undefined"&&window._PMAX)?window._PMAX:1280; var done=function(src){ var c=prerender(src,mx); if(src&&src.close){try{src.close();}catch(e){}} cb(c); }; try{ if(window.createImageBitmap){ createImageBitmap(file).then(done).catch(function(){ var u=URL.createObjectURL(file); var im=new Image(); im.onload=function(){ done(im); try{URL.revokeObjectURL(u);}catch(e){} }; im.onerror=function(){ try{URL.revokeObjectURL(u);}catch(e){} cb(null); }; im.src=u; }); } else { var u=URL.createObjectURL(file); var im=new Image(); im.onload=function(){ done(im); try{URL.revokeObjectURL(u);}catch(e){} }; im.onerror=function(){ cb(null); }; im.src=u; } }catch(e){ cb(null); } }
 var _decLRU=[], _DEC_MAX=14;
 function _touchDec(i){ if(typeof PHOTOS==="undefined"||!PHOTOS[i]) return; var k=_decLRU.indexOf(i); if(k>=0) _decLRU.splice(k,1); _decLRU.push(i); while(_decLRU.length>_DEC_MAX){ var old=_decLRU.shift(); if(old!==i && PHOTOS[old] && PHOTOS[old]._file){ PHOTOS[old].c=null; PHOTOS[old].img=null; PHOTOS[old]._durl=null; } } }
-function _ensureDecodedP(p,cb){ if(!p){ if(cb)cb(null); return; } if(p.c){ if(cb)cb(p.c); return; } if(!p._file){ if(cb)cb(null); return; } if(p._decoding){ if(cb)(p._decCbs=p._decCbs||[]).push(cb); return; } p._decoding=true; window._decInFlight=(window._decInFlight||0)+1; p._decCbs=cb?[cb]:[]; _decodeFromFile(p._file,function(c){ p._decoding=false; window._decInFlight=Math.max(0,(window._decInFlight||1)-1); if(c){ p.c=c; p.img=c; var ix=(typeof PHOTOS!=="undefined")?PHOTOS.indexOf(p):-1; if(ix>=0)_touchDec(ix); } var cbs=p._decCbs||[]; p._decCbs=null; for(var z=0;z<cbs.length;z++){ try{ cbs[z](c); }catch(e){} } }); }
+function _ensureDecodedP(p,cb){ if(!p){ if(cb)cb(null); return; } if(p.c){ if(cb)cb(p.c); return; } if(!p._jpgBlob && !p._file){ if(cb)cb(null); return; } if(p._decoding){ if(cb)(p._decCbs=p._decCbs||[]).push(cb); return; } p._decoding=true; window._decInFlight=(window._decInFlight||0)+1; p._decCbs=cb?[cb]:[]; _decodeFromSrc(p,function(c){ p._decoding=false; window._decInFlight=Math.max(0,(window._decInFlight||1)-1); if(c){ p.c=c; p.img=c; var ix=(typeof PHOTOS!=="undefined")?PHOTOS.indexOf(p):-1; if(ix>=0)_touchDec(ix); } var cbs=p._decCbs||[]; p._decCbs=null; for(var z=0;z<cbs.length;z++){ try{ cbs[z](c); }catch(e){} } }); }
 function ensurePhotoDecoded(i,cb){ if(typeof PHOTOS==="undefined"||!PHOTOS[i]){ if(cb)cb(null); return; } _ensureDecodedP(PHOTOS[i],cb); }
 function prerender(img,maxD){ try{ maxD=maxD||1280; var w=img.width||0,h=img.height||0; if(!w||!h) return null; var sc=Math.min(1,maxD/Math.max(w,h,1)); var cw=Math.max(1,Math.round(w*sc)), ch=Math.max(1,Math.round(h*sc)); var c=document.createElement("canvas"); c.width=cw; c.height=ch; var cx=c.getContext("2d"); if(!cx) return null; cx.drawImage(img,0,0,cw,ch); return c; }catch(e){ return null; } }
 function photoFeat(img){
@@ -7984,11 +7989,11 @@ document.getElementById("fPhotos").onchange=function(e){
   var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
   e.target.value="";
   var total=files.length, done=0, idx=0, CONC=4, _kept=0;
-  var pmax=(total>400)?1440:1600; window._PMAX=pmax;
+  var pmax=(total>400)?1200:1440; window._PMAX=pmax;
   setState("Réception de "+total+" photos… traitement 0/"+total);
   var after=function(){ if(A) buildPartition(); updateBadge(); var _ns=countSkipped(); setState(PHOTOS.length+" photos chargées"+(_ns>0?(" · "+_ns+" écartée(s)"):"")); if(A&&PHOTOS.length) paintStrip(playing?visualTime():0); embedPhotos(); };
   function addThumb(c){ var el=document.getElementById("thumbs"); if(!el||!c) return; var tw=108, th=Math.max(1,Math.round(tw*(c.height||1)/(c.width||1))); var tc=document.createElement("canvas"); tc.width=tw; tc.height=th; try{ tc.getContext("2d").drawImage(c,0,0,tw,th); }catch(e){} tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4)"; el.appendChild(tc); return tc; }
-  function add(src,file){ try{ var c=prerender(src,pmax); if(c)_kept++; if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height}); if(typeof _touchDec==="function") _touchDec(PHOTOS.length-1); var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
+  function add(src,file){ try{ var c=prerender(src,pmax); if(c)_kept++; if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height}); var _ix=PHOTOS.length-1; if(typeof _touchDec==="function") _touchDec(_ix); try{ if(c.toBlob){ c.toBlob(function(b){ if(b&&PHOTOS[_ix]){ PHOTOS[_ix]._jpgBlob=b; PHOTOS[_ix]._file=null; } },"image/jpeg",0.82); } }catch(e){} var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
       var _asp=c.width/(c.height||1);
       if(_asp<0.50 || _asp>2.1){ _ft.skip=true; _ft.label="format écran"; if(_th){ try{ _th.style.opacity="0.28"; _th.style.filter="grayscale(1)"; _th.title="écartée : format écran"; }catch(e){} } }
     }catch(x){} }
