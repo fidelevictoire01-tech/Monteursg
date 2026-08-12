@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX import qui se figeait (createImageBitmap HEIC bloque) : delai de secours -> l-import ne se bloque plus + progression en % · BUILD 2026-08-09-C129 -->
+<!-- Studio Magot — Import HEIC route direct vers <img> (createImageBitmap l-ignorait/ramait) -> import rapide + compteur illisibles · BUILD 2026-08-09-C130 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C129</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C130</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -7982,12 +7982,12 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
 document.getElementById("fPhotos").onchange=function(e){
   var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
   e.target.value="";
-  var total=files.length, done=0, idx=0, CONC=4;
+  var total=files.length, done=0, idx=0, CONC=4, _kept=0;
   var pmax=(total>400)?512:((total>250)?640:((total>150)?820:((total>80)?1080:1440))); window._PMAX=pmax;
   setState("Réception de "+total+" photos… traitement 0/"+total);
   var after=function(){ if(A) buildPartition(); updateBadge(); var _ns=countSkipped(); setState(PHOTOS.length+" photos chargées"+(_ns>0?(" · "+_ns+" écartée(s)"):"")); if(A&&PHOTOS.length) paintStrip(playing?visualTime():0); embedPhotos(); };
   function addThumb(c){ var el=document.getElementById("thumbs"); if(!el||!c) return; var tw=108, th=Math.max(1,Math.round(tw*(c.height||1)/(c.width||1))); var tc=document.createElement("canvas"); tc.width=tw; tc.height=th; try{ tc.getContext("2d").drawImage(c,0,0,tw,th); }catch(e){} tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4)"; el.appendChild(tc); return tc; }
-  function add(src,file){ try{ var c=prerender(src,pmax); if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height}); if(typeof _touchDec==="function") _touchDec(PHOTOS.length-1); var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
+  function add(src,file){ try{ var c=prerender(src,pmax); if(c)_kept++; if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height}); if(typeof _touchDec==="function") _touchDec(PHOTOS.length-1); var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
       var _asp=c.width/(c.height||1);
       if(_asp<0.50 || _asp>2.1){ _ft.skip=true; _ft.label="format écran"; if(_th){ try{ _th.style.opacity="0.28"; _th.style.filter="grayscale(1)"; _th.title="écartée : format écran"; }catch(e){} } }
     }catch(x){} }
@@ -7998,7 +7998,8 @@ document.getElementById("fPhotos").onchange=function(e){
     var doAdd=function(src){ if(settled)return; settled=true; try{ add(src,file); }catch(e){} finishOne(); };
     var doSkip=function(){ if(settled)return; settled=true; finishOne(); };
     var viaImg=function(){ if(settled)return; try{ var url=URL.createObjectURL(file); var img=new Image(); var t2=setTimeout(function(){ if(settled)return; try{URL.revokeObjectURL(url);}catch(x){} doSkip(); },6000); img.onload=function(){ clearTimeout(t2); try{URL.revokeObjectURL(url);}catch(x){} doAdd(img); }; img.onerror=function(){ clearTimeout(t2); try{URL.revokeObjectURL(url);}catch(x){} doSkip(); }; img.src=url; }catch(e){ doSkip(); } };
-    if(window.createImageBitmap){ var t1=setTimeout(viaImg,2500); createImageBitmap(file).then(function(bmp){ clearTimeout(t1); doAdd(bmp); }).catch(function(){ clearTimeout(t1); viaImg(); }); }
+    var isHeic=/hei[cf]/i.test(file.type||"")||/\.hei[cf]$/i.test(file.name||"");
+    if(!isHeic && window.createImageBitmap){ var t1=setTimeout(viaImg,1500); createImageBitmap(file).then(function(bmp){ clearTimeout(t1); doAdd(bmp); }).catch(function(){ clearTimeout(t1); viaImg(); }); }
     else viaImg();
   }
   for(var k=0;k<Math.min(CONC,total);k++) startNext();
