@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Export : feuille format restauree (9:16/4:5/1:1/16:9) + lancement fiabilise (doExport ferme la feuille PUIS appelle exportFast direct, +80ms pour que l-overlay soit visible). · BUILD 2026-08-09-C147 -->
+<!-- Studio Magot — Diagnostic export : expShow(0) des la 1re ligne de exportFast (barre visible si appelee) + doExport robuste (verifie exportFast, messages d-erreur). · BUILD 2026-08-09-C148 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C147</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C148</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8075,6 +8075,7 @@ async function _mixVideoAudioExport(L, R, sr){
   }
 }
 async function exportFast(){
+  try{ expShow(0); }catch(_x){}
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
   if(typeof VideoEncoder==="undefined"||typeof Mp4Muxer==="undefined"){ _expMsg("Export non supporté sur ce navigateur (essaie Safari à jour)."); return; }
   stopPlay(); EXPORTING=true; expShow(0);
@@ -8988,7 +8989,7 @@ function renderVNav(){
     };
   });
   var doExp=$("doExport");
-  if(doExp) doExp.onclick=function(){ closeSheets(); setTimeout(function(){ try{ exportFast(); }catch(e){ if(typeof _expMsg==="function") _expMsg("Erreur au lancement : "+((e&&e.message)||e)); } }, 80); };
+  if(doExp) doExp.onclick=function(){ try{ closeSheets(); }catch(_c){} setTimeout(function(){ if(typeof exportFast!=="function"){ if(typeof _expMsg==="function")_expMsg("exportFast introuvable"); return; } try{ exportFast(); }catch(e){ if(typeof _expMsg==="function") _expMsg("Erreur au lancement : "+((e&&e.message)||e)); } }, 80); };
 
   /* ---------- 11a) D1 : fin du montage a la duree cible + fondu ---------- */
   (function d1fade(){
