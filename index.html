@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — DUREE PAR PHOTO (snap-to-beat) : selecteur dans editeur retouche ; extension ajoutee a la lecture (aligne lecture/export) · BUILD 2026-08-09-C137 -->
+<!-- Studio Magot — Fluidite video : pre-chargement ameliore (3 clips, fenetre 2.8s) + demarrage du prochain clip juste avant la coupe -> moins de saccade au switch · BUILD 2026-08-09-C140 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C137</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C140</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1641,7 +1641,9 @@ function drawSegAt(sg,t,ox,smul){
   else if(mv==="panUD"){ zoom=baseZ+amp*0.4; dy=(-panA*0.6 + 1.2*panA*ease); }
   else { zoom=baseZ+amp*ease; }
   zoom*=smul;
-  var rf=Math.min(Wd/iw,Hd/ih)*zoom, wf=iw*rf, hf=ih*rf;
+  var _fitMode=isVid?((_clip&&_clip._fit)||"fit"):((sg.img>=0&&PHOTOS[sg.img]&&PHOTOS[sg.img]._fit)||"fit");
+  var _fbase=(_fitMode==="fill")?Math.max(Wd/iw,Hd/ih):Math.min(Wd/iw,Hd/ih);
+  var rf=_fbase*zoom, wf=iw*rf, hf=ih*rf;
   bctx.save(); bctx.translate(cx+ox+dx, cy+dy);
   bctx.drawImage(img,-wf/2,-hf/2,wf,hf);
   bctx.restore();
@@ -7848,7 +7850,7 @@ function loop(){
   if(sg && sg.video && sg.vclip!=null && CLIPS[sg.vclip] && CLIPS[sg.vclip].ready){ var _clA=CLIPS[sg.vclip];
     if(VIDACT!==idx){ VIDACT=idx; for(var _c=0;_c<CLIPS.length;_c++){ if(_c!==sg.vclip){ try{ CLIPS[_c].el.pause(); }catch(e){} } } try{ _clA.el.muted=true; _clA.el.playbackRate=(sg.vspeed||_clA.speed||1); if(Math.abs((_clA.el.currentTime||0)-(sg.vstart||0))>0.18) _clA.el.currentTime=sg.vstart||0; }catch(e){} var _pv=_clA.el.play(); if(_pv&&_pv.then) _pv.catch(function(){}); }
   } else { if(VIDACT>=0){ VIDACT=-1; for(var _c2=0;_c2<CLIPS.length;_c2++){ try{ CLIPS[_c2].el.pause(); }catch(e){} } } }
-  try{ if(typeof SEGS!=="undefined"&&SEGS&&idx>=0){ var _primed=0; for(var _pi2=idx+1; _pi2<SEGS.length && (SEGS[_pi2].start-t)<1.4 && _primed<2; _pi2++){ var _ps=SEGS[_pi2]; if(_ps.video&&_ps.vclip!=null&&_ps.vclip!==sg.vclip&&CLIPS[_ps.vclip]&&CLIPS[_ps.vclip].ready){ var _pe=CLIPS[_ps.vclip].el; if(_pe.paused && Math.abs((_pe.currentTime||0)-(_ps.vstart||0))>0.12){ _pe.muted=true; try{ _pe.currentTime=_ps.vstart||0; }catch(_e){} } _primed++; } } } }catch(e){}
+  try{ if(typeof SEGS!=="undefined"&&SEGS&&idx>=0){ var _primed=0; for(var _pi2=idx+1; _pi2<SEGS.length && (SEGS[_pi2].start-t)<2.8 && _primed<3; _pi2++){ var _ps=SEGS[_pi2]; if(_ps.video&&_ps.vclip!=null&&_ps.vclip!==sg.vclip&&CLIPS[_ps.vclip]&&CLIPS[_ps.vclip].ready){ var _pe=CLIPS[_ps.vclip].el; if(_pe.paused && Math.abs((_pe.currentTime||0)-(_ps.vstart||0))>0.12){ _pe.muted=true; try{ _pe.currentTime=_ps.vstart||0; }catch(_e){} } if((_ps.start-t)<0.45 && _pe.paused){ _pe.muted=true; try{ var _pp2=_pe.play(); if(_pp2&&_pp2.then)_pp2.catch(function(){}); }catch(_e2){} } _primed++; } } } }catch(e){}
   var strongPulse=(sg&&sg.strong&&into<0.10)?(1-into/0.10):0;
   _atmo=sg?(sg.atmo||null):null; _atmoAmt=(ATMO_AMT[MOOD]!=null?ATMO_AMT[MOOD]:0.6);
   if(glReady && TR.ready && inTrans){
@@ -8505,13 +8507,15 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var p=PHOTOS[i]; if(!p) return;
     if(!p._grade) p._grade={expo:0,contrast:0,sat:0,temp:0};
     var DURS=[["0","Automatique"],["3","3 s"],["5","5 s"],["8","8 s"],["10","10 s"],["15","15 s"],["20","20 s"],["30","30 s"]];
+    var FITS=[["fit","Ajust\u00e9 (fond flou)"],["fill","Rempli (plein cadre)"]];
     var work={expo:p._grade.expo||0,contrast:p._grade.contrast||0,sat:p._grade.sat||0,temp:p._grade.temp||0};
     var applyAll=!!window._gradeApplyAll;
     var ov=document.createElement("div"); ov.className="clipPrev";
     ov.innerHTML='<div class="cp-card">'
       +'<div class="prg-prev"><canvas class="prg-cv"></canvas></div>'
       +'<div class="cp-title">Retouche <small>Photo '+(i+1)+'</small></div>'
-      +'<div class="cp-sec" style="margin:2px 2px 8px">Dur\u00e9e du plan</div><select class="te-sel" id="prgDur" style="width:100%;margin-bottom:6px">'+DURS.map(function(o){ var sel=(Math.abs((+o[0])-(p._dur||0))<0.1)?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
+      +'<div class="cp-sec" style="margin:2px 2px 8px">Dur\u00e9e du plan</div><select class="te-sel" id="prgDur" style="width:100%;margin-bottom:8px">'+DURS.map(function(o){ var sel=(Math.abs((+o[0])-(p._dur||0))<0.1)?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
+      +'<div class="cp-sec" style="margin:2px 2px 8px">Cadrage</div><select class="te-sel" id="prgFit" style="width:100%;margin-bottom:6px">'+FITS.map(function(o){ var sel=((p._fit||"fit")===o[0])?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
       +'<div class="cp-color"><div class="cp-sec">Ambiance</div>'
         +'<div class="cp-presets" id="prgPre">'+VPRESETS.map(function(pp,pi){ return '<button class="cp-pre" data-pre="'+pi+'">'+esc(pp.n)+'</button>'; }).join("")+'</div>'
         +'<div class="cp-adj">'
@@ -8537,6 +8541,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var all=ov.querySelector("#prgAll"); if(all)all.onclick=function(){ window._gradeApplyAll=!window._gradeApplyAll; all.classList.toggle("on",window._gradeApplyAll); if(window._gradeApplyAll){ setAll(); apply(); } };
     function done(){ try{ ov.remove(); }catch(e){} try{ if(typeof renderPGrid==="function") renderPGrid(); }catch(e){} try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
     var _du=ov.querySelector("#prgDur"); if(_du) _du.onchange=function(){ p._dur=(+_du.value||0); try{ if(A&&(PHOTOS.length||clipVidReady)){ buildPartition(); paintStrip(playing?visualTime():0); } }catch(e){} };
+    var _fi=ov.querySelector("#prgFit"); if(_fi) _fi.onchange=function(){ p._fit=_fi.value; try{ paintStrip(playing?visualTime():0); }catch(e){} };
     var dn=ov.querySelector("#prgDone"); if(dn)dn.onclick=done;
     ov.onclick=function(e){ if(e.target===ov) done(); };
     try{ _paintAllRanges(); }catch(e){}
@@ -8790,6 +8795,7 @@ function renderVNav(){
     ov.innerHTML='<div class="cp-card" role="dialog">'
       +'<div class="cp-vidwrap"><video class="cp-vid" playsinline webkit-playsinline loop></video></div>'
       +'<div class="cp-title">Clip '+(ci+1)+' <small>'+clock(c.dur||0)+'</small></div>'
+      +'<div class="cp-sec" style="margin:2px 2px 8px">Cadrage</div><select class="te-sel" id="cpFit" style="width:100%;margin-bottom:8px"><option value="fit"'+(((c._fit||"fit")==="fit")?" selected":"")+'>Ajust\u00e9 (fond flou)</option><option value="fill"'+((c._fit==="fill")?" selected":"")+'>Rempli (plein cadre)</option></select>'
       +'<div class="cp-trim"><div class="cp-sec">Moment de d\u00e9part <b id="cpTrimT">'+clock(c.trimStart||0)+'</b></div><input type="range" id="cpTrim" min="0" max="'+Math.round((c.dur||1)*100)+'" value="'+Math.round((c.trimStart||0)*100)+'"><div class="vsb-hint">Fais glisser pour choisir le meilleur passage \u2014 c\u2019est de l\u00e0 que le clip d\u00e9marre dans le montage.</div></div>'
       +'<div class="cp-speed"><div class="cp-sec">Vitesse</div><div class="cp-spd-seg" id="cpSpd"><button data-s="0.5">Ralenti</button><button data-s="1">Normal</button><button data-s="1.5">Rapide</button><button data-s="2">\u00d72</button></div></div>'
       +'<div class="cp-color"><div class="cp-sec">Couleur & teinte</div>'
@@ -8803,6 +8809,7 @@ function renderVNav(){
     +'</div>';
     document.body.appendChild(ov);
     var pv=ov.querySelector(".cp-vid");
+    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; try{ paintStrip(playing?visualTime():0); }catch(e){} };
     try{ pv.src=c.el._u; pv.muted=false; pv.style.filter=_cssFilter(c.color); var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
     function _applyColor(){ try{ pv.style.filter=_cssFilter(c.color); }catch(e){} }
     Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(bt){ bt.onclick=function(){ var pi=+bt.getAttribute("data-pre"); c.preset=pi; c.color={expo:VPRESETS[pi].c.expo,contrast:VPRESETS[pi].c.contrast,sat:VPRESETS[pi].c.sat,temp:VPRESETS[pi].c.temp}; Array.prototype.forEach.call(ov.querySelectorAll(".cp-pre"),function(b2){ b2.classList.remove("on"); }); bt.classList.add("on"); var et=ov.querySelector("#cpTemp"),es=ov.querySelector("#cpSat"),ee=ov.querySelector("#cpExpo"); if(et)et.value=Math.round(c.color.temp*100); if(es)es.value=Math.round(c.color.sat*100); if(ee)ee.value=Math.round(c.color.expo*100); _applyColor(); }; });
@@ -8846,7 +8853,8 @@ function renderVNav(){
       +'<div class="cp-actions"><button class="cp-done" id="meDone">Termin\u00e9</button></div>'
     +'</div>';
     document.body.appendChild(ov);
-    var pv=ov.querySelector(".cp-vid"); try{ pv.src=clip.el._u; pv.muted=true; pv.playbackRate=work.speed; pv.style.filter=_cssFilter(work.color); pv.currentTime=seg.vstart||0; var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
+    var pv=ov.querySelector(".cp-vid");
+    var _cf=ov.querySelector("#cpFit"); if(_cf) _cf.onchange=function(){ c._fit=_cf.value; try{ paintStrip(playing?visualTime():0); }catch(e){} }; try{ pv.src=clip.el._u; pv.muted=true; pv.playbackRate=work.speed; pv.style.filter=_cssFilter(work.color); pv.currentTime=seg.vstart||0; var pp=pv.play(); if(pp&&pp.then) pp.catch(function(){}); }catch(e){}
     function _ac(){ try{ pv.style.filter=_cssFilter(work.color); }catch(e){} }
     Array.prototype.forEach.call(ov.querySelectorAll("#meSpd button"),function(b){ b.classList.toggle("on",Math.abs((+b.getAttribute("data-s"))-work.speed)<0.01); b.onclick=function(){ work.speed=+b.getAttribute("data-s"); Array.prototype.forEach.call(ov.querySelectorAll("#meSpd button"),function(x){x.classList.toggle("on",Math.abs((+x.getAttribute("data-s"))-work.speed)<0.01);}); try{ pv.playbackRate=work.speed; }catch(e){} }; });
     Array.prototype.forEach.call(ov.querySelectorAll("#mePre button"),function(b){ b.onclick=function(){ var p=VPRESETS[+b.getAttribute("data-pre")].c; work.color={expo:p.expo,contrast:p.contrast,sat:p.sat,temp:p.temp}; var et=ov.querySelector("#meTemp"),es=ov.querySelector("#meSat"),ee=ov.querySelector("#meExpo"); if(et)et.value=Math.round(work.color.temp*100); if(es)es.value=Math.round(work.color.sat*100); if(ee)ee.value=Math.round(work.color.expo*100); _ac(); try{ _paintAllRanges(); }catch(e){} }; });
