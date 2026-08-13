@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX RAFRAICHISSEMENT + VITESSE EXPORT : yields (rAF) apres chaque etape et toutes les 8 images -> la progression s-affiche vraiment (avant : UI figee sur Initialisation pendant l-encodage). Plafond resolution export a 1280px -> encodage bien plus rapide/fiable sur iPhone. Logique validee via harnais Node (frames, non-blocage, gardes). · BUILD 2026-08-13-C153 -->
+<!-- Studio Magot — FIX GEL APRES INITIALISATION : _expYield utilisait requestAnimationFrame, qui peut ne JAMAIS se declencher en webview iOS -> await bloque a vie juste apres Initialisation. Remplace par setTimeout(0) qui se declenche toujours. C-etait le seul await non-borne de la preparation. · BUILD 2026-08-13-C154 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C153</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C154</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8040,7 +8040,7 @@ function renderMontageAt(t){
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; }
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
-function _expYield(){ return new Promise(function(r){ try{ if(typeof requestAnimationFrame==="function"){ requestAnimationFrame(function(){ r(); }); } else { setTimeout(r,0); } }catch(_e){ setTimeout(r,0); } }); }
+function _expYield(){ return new Promise(function(r){ setTimeout(r,0); }); }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
 async function _mixVideoAudioExport(L, R, sr){
   if(typeof SEGS==="undefined"||!SEGS||!ctx) return;
