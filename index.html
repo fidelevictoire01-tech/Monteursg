@@ -1,5 +1,6 @@
 <!doctype html>
 <!-- Studio Magot — FIX GEL APRES INITIALISATION : _expYield utilisait requestAnimationFrame, qui peut ne JAMAIS se declencher en webview iOS -> await bloque a vie juste apres Initialisation. Remplace par setTimeout(0) qui se declenche toujours. C-etait le seul await non-borne de la preparation. · BUILD 2026-08-13-C154 -->
+<!-- Studio Magot — FIX EXPORT ANTI-BLOCAGE (C155) : (1) venc.flush()/aenc.flush() etaient des await NON bornes -> gel a ~90% sur Safari/iOS quand l'encodeur ne rend jamais la main ; desormais bornes par _expRace() (25s/20s). (2) Aucun moyen de sortir d'un export fige : ajout bouton "Annuler" sur l'overlay + _expForceReset() qui rearme l'UI meme si un await reste parque. (3) Watchdog global 3 min. (4) Garde anti double-lancement (double-tap). (5) Repli MediaRecorder universel quand WebCodecs absent (vieux Android/iOS/Firefox) -> WebM/MP4 selon support, au lieu d'un cul-de-sac. · BUILD 2026-08-13-C155 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C154</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C155</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -937,6 +938,24 @@ function genThumb(clip){ if(!clip||clip.thumb||!clip.el||!clip.ready) return; va
   setTimeout(function(){ if(!done) draw(); }, 1200);
 }
 var EXPORTING=false;
+/* === CONTROLE ROBUSTESSE EXPORT (anti-blocage) ===
+   EXPORT_ABORT : demande d'annulation par l'utilisateur (bouton) ou par le watchdog.
+   _expWatch    : id du watchdog global (force la sortie si tout se fige).
+   _expRace()   : borne N'IMPORTE quel await potentiellement infini (flush encodeur, decode...). */
+var EXPORT_ABORT=false, _expWatch=null;
+function _expRace(promise, ms, label){
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise(function(_,rej){ setTimeout(function(){ rej(new Error((label||"opération")+" : délai dépassé ("+ms+" ms)")); }, ms); })
+  ]);
+}
+/* Sortie de secours GARANTIE : réarme l'UI même si un await encodeur reste figé en tâche parquée. */
+function _expForceReset(msg){
+  try{ EXPORT_ABORT=true; EXPORTING=false; }catch(e){}
+  try{ if(_expWatch){ clearTimeout(_expWatch); _expWatch=null; } }catch(e){}
+  try{ if(typeof expHide==="function") expHide(); }catch(e){}
+  try{ if(msg && typeof _expMsg==="function") _expMsg(msg); }catch(e){}
+}
 var EXPFMT={w:1080,h:1920,name:"9:16"};
 var SYNC_BASE={cinema:0, doux:0.08, dynamique:-0.06, voyage:0.02};   /* phase de base par mode (à 120 BPM) */
 function autoSync(mode,bpm){ var bi=(bpm&&bpm>0)?60/bpm:0.5; var fct=Math.max(0.6,Math.min(1.8, bi/0.5)); return Math.max(-0.35,Math.min(0.35,(SYNC_BASE[mode]||0)*fct)); }
@@ -8063,12 +8082,102 @@ async function _mixVideoAudioExport(L, R, sr){
     }
   }
 }
+/* ===== REPLI UNIVERSEL (MediaRecorder, temps réel) — pour navigateurs/téléphones sans WebCodecs ===== */
+async function exportRecorderFallback(){
+  try{
+    if(EXPORTING){ _expMsg("Un export est déjà en cours\u2026"); return; }
+    if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
+    if(typeof MediaRecorder==="undefined"){ _expMsg("Export impossible : ni WebCodecs ni MediaRecorder sur ce navigateur. Mets Chrome/Safari à jour."); return; }
+    stopPlay(); EXPORTING=true; EXPORT_ABORT=false; expShow(0); _expStage("Mode compatible (temps réel)\u2026");
+    var srcCanvas=(glReady && gl && gl.canvas)?gl.canvas:base;
+    if(!srcCanvas || typeof srcCanvas.captureStream!=="function"){ EXPORTING=false; _expMsg("Capture du canvas non supportée (captureStream absent) sur ce navigateur."); return; }
+    var FPS=30;
+    var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
+    var stream=srcCanvas.captureStream(FPS);
+    /* --- audio best-effort : on route la musique vers un flux capturable --- */
+    var audioCtx=null, audioSrc=null, audioTrackAdded=false;
+    try{
+      if(AUDIOBUF){
+        var _AC=window.AudioContext||window.webkitAudioContext;
+        audioCtx=new _AC();
+        var _buf=AUDIOBUF; try{ if(window.MULTI){ var _pb=renderPlanToBuffer(DUR, AUDIOBUF.sampleRate); if(_pb) _buf=_pb; } }catch(e){}
+        audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf;
+        var _dest=audioCtx.createMediaStreamDestination();
+        audioSrc.connect(_dest);   /* pas de connexion aux HP : évite de crier pendant l'export */
+        var _atk=_dest.stream.getAudioTracks()[0];
+        if(_atk){ stream.addTrack(_atk); audioTrackAdded=true; }
+      }
+    }catch(e){ try{ audioCtx&&audioCtx.close(); }catch(_){} audioCtx=null; audioSrc=null; }
+    /* --- choix du conteneur selon le support réel --- */
+    var mimes=["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+    var mime=""; for(var mi=0;mi<mimes.length;mi++){ try{ if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(mimes[mi])){ mime=mimes[mi]; break; } }catch(e){} }
+    var rec; try{ rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:5000000}:{videoBitsPerSecond:5000000}); }
+    catch(e){ try{ rec=new MediaRecorder(stream); }catch(e2){ EXPORTING=false; _expMsg("MediaRecorder refusé : "+((e2&&e2.message)||e2)); return; } }
+    var outType=(mime&&mime.indexOf("mp4")>=0)?"video/mp4":"video/webm", ext=(outType==="video/mp4")?"mp4":"webm";
+    var chunks=[], done=false;
+    rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+    function _fbFinish(){
+      if(done) return; done=true;
+      try{ if(_expWatch){ clearTimeout(_expWatch); _expWatch=null; } }catch(e){}
+      var blob=new Blob(chunks,{type:outType});
+      EXPORTING=false; expHide();
+      try{ audioSrc&&audioSrc.stop(); }catch(e){}
+      try{ audioCtx&&audioCtx.close(); }catch(e){}
+      try{ stream.getTracks().forEach(function(t){ try{t.stop();}catch(_){} }); }catch(e){}
+      try{ renderMontageAt(0); }catch(e){}
+      if(!blob.size){ _expMsg("Le repli n'a produit aucune donnée (capture bloquée par le navigateur)."); return; }
+      var url=URL.createObjectURL(blob);
+      var vv=document.getElementById("expVideo"); if(vv) vv.src=url;
+      var info=document.getElementById("expInfo"); if(info) info.textContent=(blob.size/1024/1024).toFixed(1)+" Mo · "+DUR.toFixed(0)+"s · "+ext.toUpperCase()+(audioTrackAdded?" · avec son":" · sans son")+" · mode compatible";
+      var share=document.getElementById("expShare");
+      if(share) share.onclick=async function(){
+        try{ var file=new File([blob],"magot-voyage."+ext,{type:outType}); if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:"Magot Voyage"}); return; } }catch(e){}
+        var a=document.createElement("a"); a.href=url; a.download="magot-voyage."+ext; document.body.appendChild(a); a.click(); a.remove();
+      };
+      var cl=document.getElementById("expClose"); if(cl) cl.onclick=function(){ document.getElementById("expRes").style.display="none"; try{ URL.revokeObjectURL(url); }catch(e){} };
+      document.getElementById("expRes").style.display="block";
+    }
+    rec.onstop=_fbFinish;
+    rec.onerror=function(){ try{ if(rec.state!=="inactive") rec.stop(); }catch(e){} _fbFinish(); };
+    /* watchdog du repli : durée + marge, puis on coupe */
+    try{ if(_expWatch) clearTimeout(_expWatch); }catch(e){}
+    _expWatch=setTimeout(function(){ if(EXPORTING){ try{ if(rec.state!=="inactive") rec.stop(); }catch(e){} _expForceReset("Mode compatible interrompu (trop long)."); } }, (DUR*1000)+60000);
+    if(audioCtx){ try{ await audioCtx.resume(); }catch(e){} }
+    try{ rec.start(); }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_){} _expMsg("Démarrage MediaRecorder impossible : "+((e&&e.message)||e)); return; }
+    var t0=performance.now();
+    if(audioSrc){ try{ audioSrc.start(); }catch(e){} }
+    (function _fbLoop(){
+      if(EXPORT_ABORT){ try{ if(rec.state!=="inactive") rec.stop(); }catch(e){} return; }
+      var t=(performance.now()-t0)/1000;
+      if(t>=DUR){ try{ renderMontageAt(Math.max(0,DUR-0.001)); }catch(e){} setTimeout(function(){ try{ if(rec.state!=="inactive") rec.stop(); }catch(e){} }, 140); return; }
+      try{
+        var _si=-1; for(var _q=0;_q<SEGS.length;_q++){ if(t>=SEGS[_q].start && t<SEGS[_q].end){ _si=_q; break; } }
+        var _sg=(_si>=0)?SEGS[_si]:null;
+        if(_sg && _sg.video && _sg.vclip!=null && CLIPS[_sg.vclip] && CLIPS[_sg.vclip].ready){
+          var _cl=CLIPS[_sg.vclip], _vt=(_sg.vstart||0)+(t-_sg.start)*(_sg.vspeed||_cl.speed||1); _vt=Math.max(0,Math.min((_cl.dur||0.1)-0.05,_vt));
+          try{ if(Math.abs((_cl.el.currentTime||0)-_vt)>0.08) _cl.el.currentTime=_vt; }catch(e){}
+        }
+      }catch(e){}
+      try{ renderMontageAt(t); }catch(e){}
+      try{ expShow(Math.min(0.98, t/DUR)); }catch(e){}
+      requestAnimationFrame(_fbLoop);
+    })();
+  }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_w){} _expMsg("Échec du mode compatible : "+((e&&e.message)||e)); }
+}
 async function exportFast(){
+  if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }  /* anti double-lancement */
   try{ expShow(0); _expStage("Initialisation\u2026"); }catch(_x){}
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
-  if(typeof VideoEncoder==="undefined"){ _expMsg("Export non supporté sur ce navigateur (VideoEncoder absent — essaie Safari à jour)."); return; }
-  if(typeof Mp4Muxer==="undefined"){ _expMsg("Librairie MP4 non chargée (vérifie la connexion / le CDN mp4-muxer). Recharge la page."); return; }
-  stopPlay(); EXPORTING=true; expShow(0);
+  if(typeof VideoEncoder==="undefined" || typeof VideoFrame==="undefined" || typeof Mp4Muxer==="undefined"){
+    /* Pas de WebCodecs (ou muxer MP4 non chargé) : navigateurs/téléphones plus anciens
+       -> on bascule sur le repli MediaRecorder (capture temps réel) au lieu d'un cul-de-sac. */
+    return exportRecorderFallback();
+  }
+  stopPlay(); EXPORTING=true; EXPORT_ABORT=false; expShow(0);
+  /* Watchdog global : si l'export se fige (encodeur Safari/iOS, decode audio, GPU perdu...),
+     on rend la main à l'utilisateur au bout de 3 min au lieu de le laisser sur un écran mort. */
+  try{ if(_expWatch) clearTimeout(_expWatch); }catch(e){}
+  _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu : trop long (blocage encodeur probable). Réessaie, ou réduis la durée / le format."); } }, 180000);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
   var _capPx=1280, _mxWH=Math.max(W,H);
@@ -8101,13 +8210,14 @@ async function exportFast(){
     muxer=new Mp4Muxer.Muxer(mo);
     venc=new VideoEncoder({ output:function(chunk,meta){ muxer.addVideoChunk(chunk,meta); }, error:function(e){ _vencErr=(e&&e.message)||String(e); } });
     venc.configure(vcfg);
-  }catch(e){ EXPORTING=false; try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} _expMsg("Config encodeur impossible : "+((e&&e.message)||e)); return; }
+  }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_w){} try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} _expMsg("Config encodeur impossible : "+((e&&e.message)||e)); return; }
   _expStage("Pr\u00e9paration\u2026"); await _expYield();
   var _nclip=CLIPS.filter(function(c){return c&&c.ready;}).length, _dci=0;
   for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ _dci++; _expStage("Pr\u00e9chauffage vid\u00e9o "+_dci+"/"+_nclip); try{ CLIPS[_wc].el.muted=true; var _wp=CLIPS[_wc].el.play(); if(_wp&&_wp.then){ await Promise.race([ _wp.catch(function(){}), new Promise(function(r){ setTimeout(r,400); }) ]); } CLIPS[_wc].el.pause(); }catch(e){} } }
   var t0=performance.now();
   try{
     for(var fnum=0; fnum<N; fnum++){
+      if(EXPORT_ABORT) throw new Error("Export annulé.");
       if(_vencErr) throw new Error("Encodeur vid\u00e9o : "+_vencErr);
       var _t=fnum/FPS;
       var _si=-1; for(var _q=0;_q<SEGS.length;_q++){ if(_t>=SEGS[_q].start && _t<SEGS[_q].end){ _si=_q; break; } }
@@ -8124,8 +8234,8 @@ async function exportFast(){
       var _qw=0; while(venc.encodeQueueSize>8){ if(_vencErr) throw new Error("Encodeur vid\u00e9o : "+_vencErr); await new Promise(function(r){ setTimeout(r,6); }); if(++_qw>1500){ throw new Error("Encodeur bloqu\u00e9 (file satur\u00e9e, "+venc.encodeQueueSize+" en attente)"); } }
       if((fnum&63)===63){ await new Promise(function(r){ setTimeout(r,0); }); }
     }
-    await venc.flush(); venc.close();
-  }catch(e){ EXPORTING=false; try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} _expMsg("\u00c9chec export : "+((e&&e.message)||e)); return; }
+    await _expRace(venc.flush(), 25000, "Finalisation vidéo (flush)"); try{ venc.close(); }catch(_c){}
+  }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_w){} try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} var _em=((e&&e.message)||e)+""; _expMsg((EXPORT_ABORT||/annul/i.test(_em))?"Export annulé.":("\u00c9chec export : "+_em)); return; }
   if(useAudio){ try{ _expStage("Audio\u2026"); var _aencErr=null;
     var _srcBuf=AUDIOBUF;
     if(window.MULTI){ try{ var _pb=renderPlanToBuffer(DUR, Asr); if(_pb) _srcBuf=_pb; }catch(e){} }
@@ -8136,8 +8246,9 @@ async function exportFast(){
     var aenc=new AudioEncoder({ output:function(chunk,meta){ try{ if(meta&&meta.decoderConfig){ meta.decoderConfig.description=makeASC(Asr,Ach); } else { meta={decoderConfig:{description:makeASC(Asr,Ach)}}; } }catch(e){} muxer.addAudioChunk(chunk,meta); }, error:function(e){ _aencErr=(e&&e.message)||String(e); } });
     aenc.configure({codec:"mp4a.40.2", sampleRate:Asr, numberOfChannels:Ach, bitrate:128000});
     for(var off=0; off<tot; off+=1024){ var n=Math.min(1024,tot-off); var data=new Float32Array(n*2); data.set(Lc.subarray(off,off+n),0); data.set(Rc.subarray(off,off+n),n); var ad=new AudioData({format:"f32-planar",sampleRate:Asr,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(off*1000000/Asr),data:data}); aenc.encode(ad); ad.close(); }
-    await aenc.flush(); aenc.close();
+    await _expRace(aenc.flush(), 20000, "Finalisation audio (flush)"); try{ aenc.close(); }catch(_c){}
   }catch(e){} }
+  try{ if(_expWatch){ clearTimeout(_expWatch); _expWatch=null; } }catch(e){}
   _expStage("Finalisation\u2026"); expShow(0.98);
   muxer.finalize();
   var blob=new Blob([muxer.target.buffer],{type:"video/mp4"});
@@ -8168,6 +8279,9 @@ async function exportFast(){
   for(var i=0;i<bs.length;i++){ (function(b){ b.onclick=function(){ setFormat(+b.getAttribute("data-w"),+b.getAttribute("data-h"),b.getAttribute("data-n"),b); }; })(bs[i]); }
 })();
 var _eb=document.getElementById("exportBtn"); if(_eb) _eb.onclick=function(){ exportFast(); };
+/* Bouton Annuler : sortie de secours immédiate — même si un await encodeur reste figé,
+   ceci réarme l'UI (le bouton s'exécute dans une tâche séparée) et libère l'utilisateur. */
+(function(){ var _xc=document.getElementById("expCancel"); if(_xc){ _xc.onclick=function(){ _expForceReset("Export annulé."); }; } })();
 initGL(); paintStrip(0); updateBadge(); try{ _paintAllRanges(); }catch(e){}
 try{ if(document.fonts&&document.fonts.load){ ['"Poppins"','"Playfair Display"','"Lora"','"Caveat"','"Montserrat"','"Raleway"','"DM Serif Display"'].forEach(function(f){ try{ document.fonts.load('700 40px '+f); document.fonts.load('400 40px '+f); }catch(e){} }); } }catch(e){}
 essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait à l'analyse */ } });
@@ -9191,6 +9305,7 @@ function renderVNav(){
     <div style="width:80%;max-width:300px;height:12px;background:#1a2440;border-radius:8px;overflow:hidden"><div id="expBar" style="height:100%;width:0%;background:#E0A33E;transition:width .1s"></div></div>
     <div id="expPct" style="font:600 13px ui-monospace,monospace;color:#E0A33E;margin-top:10px">0 %</div>
     <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
+    <button id="expCancel" style="margin-top:18px;border:1px solid #3b466b;background:#131d38;color:#dfe7f6;border-radius:11px;padding:10px 18px;font:600 13px system-ui;cursor:pointer">Annuler l'export</button>
   </div>
   <div id="expRes" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.94);backdrop-filter:blur(4px);padding:18px 18px 30px;overflow:auto;text-align:center">
     <div style="font:700 16px system-ui;color:#fff;margin:6px 0 10px">Ta vidéo est prête 🎬</div>
