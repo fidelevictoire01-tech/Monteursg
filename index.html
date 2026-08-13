@@ -610,7 +610,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C166</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C167</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8099,11 +8099,13 @@ function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.di
 function _expSizeRing(){
   try{
     var svg=document.getElementById("expRingSvg"); if(!svg) return;
-    var sw=document.querySelector(".stageWrap");
-    var r=sw?sw.getBoundingClientRect():null;
     var vw=window.innerWidth||390, vh=window.innerHeight||800;
+    /* Cadre vidéo VISIBLE : le canvas #gl est déplacé dans .hero par la façade.
+       (.stageWrap d'origine est cachée hors-écran à left:-99999px -> à éviter.) */
+    var r=null, sels=["#gl","#base",".hero"];
+    for(var _si=0;_si<sels.length;_si++){ var _el=document.querySelector(sels[_si]); if(!_el) continue; var _r=_el.getBoundingClientRect(); if(_r && _r.width>40 && _r.height>40 && _r.right>0 && _r.left<vw && _r.bottom>0 && _r.top<vh){ r=_r; break; } }
     var pad=9, W, H, useReal=false, ox=0, oy=0;
-    if(r && r.width>40 && r.height>40 && r.bottom>0 && r.top<vh){ W=r.width; H=r.height; ox=r.left; oy=r.top; useReal=true; }
+    if(r){ W=r.width; H=r.height; ox=r.left; oy=r.top; useReal=true; }
     else{
       var fw=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.w)?EXPFMT.w:9, fh=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.h)?EXPFMT.h:16;
       var boxW=vw*0.60, boxH=vh*0.42;
