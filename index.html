@@ -620,7 +620,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C163</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C165</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8104,6 +8104,34 @@ function renderMontageAt(t){
 }
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; var rg=document.getElementById("expRing"); if(rg){ var off=Math.max(0,Math.min(1,1-p)); rg.style.strokeDashoffset=String(off); } }
+/* Recalcule le contour du liseré pour épouser le RATIO du format d'export choisi (EXPFMT). */
+function _expSizeRing(){
+  try{
+    var svg=document.getElementById("expRingSvg"); if(!svg) return;
+    var w=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.w)?EXPFMT.w:9, h=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.h)?EXPFMT.h:16;
+    var L=168, rectW, rectH;
+    if(w>=h){ rectW=L; rectH=L*h/w; } else { rectH=L; rectW=L*w/h; }
+    var m=8, rx=Math.max(6, Math.min(16, rectW/2-2, rectH/2-2));
+    var left=m, top=m, right=m+rectW, bottom=m+rectH, cx=m+rectW/2, cy=m+rectH/2;
+    var VBW=rectW+2*m, VBH=rectH+2*m;
+    function f(n){ return Math.round(n*100)/100; }
+    var d="M"+f(cx)+" "+f(top)
+      +" H"+f(right-rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(right)+" "+f(top+rx)
+      +" V"+f(bottom-rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(right-rx)+" "+f(bottom)
+      +" H"+f(left+rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(left)+" "+f(bottom-rx)
+      +" V"+f(top+rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(left+rx)+" "+f(top)
+      +" H"+f(cx)+" Z";
+    svg.setAttribute("viewBox","0 0 "+f(VBW)+" "+f(VBH));
+    var tk=document.getElementById("expTrack"), rg=document.getElementById("expRing");
+    if(tk) tk.setAttribute("d",d); if(rg) rg.setAttribute("d",d);
+    var tx=document.getElementById("expPct"); if(tx){ tx.setAttribute("x",f(cx)); tx.setAttribute("y",f(cy)); }
+    /* taille d'affichage réelle (px) : on tient dans ~58vw x 30vh en gardant le ratio */
+    var vw=window.innerWidth||390, vh=window.innerHeight||800;
+    var scale=Math.min((vw*0.58)/VBW, (vh*0.30)/VBH);
+    svg.style.width=Math.round(VBW*scale)+"px";
+    svg.style.height=Math.round(VBH*scale)+"px";
+  }catch(e){}
+}
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
 function _expYield(){ return new Promise(function(r){ setTimeout(r,0); }); }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
@@ -8228,7 +8256,7 @@ async function exportStudio(){
   if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
   if(typeof MediaRecorder==="undefined"){ _expMsg("Enregistrement non supporté ici. Ouvre la page dans Safari (\u2197 en bas \u2192 \u00ab Ouvrir dans Safari \u00bb)."); return; }
-  stopPlay(); EXPORTING=true; EXPORT_ABORT=false; expShow(0);
+  stopPlay(); EXPORTING=true; EXPORT_ABORT=false; expShow(0); try{ _expSizeRing(); }catch(e){}
   /* Watchdog global couvrant Turbo + repli : rend la main au bout de 5 min si tout se fige. */
   try{ if(_expWatch) clearTimeout(_expWatch); }catch(e){}
   _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu (trop long)."); } }, 300000);
@@ -9561,9 +9589,9 @@ function renderVNav(){
      z-index releve pour passer au-dessus de la facade Kimi. Feedback enfin visible. -->
   <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
     <div style="font:700 16px system-ui;color:#fff;margin-bottom:18px">Export en cours…</div>
-    <svg viewBox="0 0 100 178" width="168" style="max-width:54vw;overflow:visible">
-      <rect x="5" y="5" width="90" height="168" rx="14" fill="none" stroke="#1a2440" stroke-width="4.5"></rect>
-      <rect id="expRing" x="5" y="5" width="90" height="168" rx="14" fill="none" stroke="#E0A33E" stroke-width="4.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" transform="rotate(-90 50 89)" style="filter:drop-shadow(0 0 5px rgba(224,163,62,.65));transition:stroke-dashoffset .2s ease"></rect>
+    <svg id="expRingSvg" viewBox="0 0 100 178" style="overflow:visible;width:min(54vw,190px);height:auto">
+      <path id="expTrack" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="#1a2440" stroke-width="4.5"></path>
+      <path id="expRing" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="#E0A33E" stroke-width="4.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 5px rgba(224,163,62,.55));transition:stroke-dashoffset .2s ease"></path>
       <text id="expPct" x="50" y="89" dy="0.35em" text-anchor="middle" fill="#E0A33E" style="font:700 15px ui-monospace,monospace">0 %</text>
     </svg>
     <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
