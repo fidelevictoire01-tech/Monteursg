@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX FEEDBACK EXPORT : #expProg + #expRes deplaces hors de .wrap (opacity:0) vers body, z-index 99999. La barre de progression et l-ecran resultat sont enfin visibles (avant : export OK mais retour invisible). · BUILD 2026-08-13-C150 -->
+<!-- Studio Magot — FIX GEL EXPORT : timeouts sur prechauffage clips (400ms) + decodage photo (800ms), capture erreurs encodeurs video/audio (avant avalees), garde anti-boucle file d-encodage, sonde d-etape visible (#expStage), messages d-echec via _expMsg au lieu de setState (invisible car dans .wrap). · BUILD 2026-08-13-C151 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C150</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C151</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8039,6 +8039,7 @@ function renderMontageAt(t){
 }
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; }
+function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
 async function _mixVideoAudioExport(L, R, sr){
   if(typeof SEGS==="undefined"||!SEGS||!ctx) return;
@@ -8076,18 +8077,22 @@ async function exportFast(){
   if(base.width!==W||base.height!==H){ setRenderSize(W,H); await new Promise(function(r){ setTimeout(r,30); }); }
   var vcfg=null, vc=["avc1.640028","avc1.4D4028","avc1.42E01F","avc1.42E01E"];
   for(var i=0;i<vc.length;i++){ var cfg={codec:vc[i],width:W,height:H,bitrate:5000000,framerate:FPS}; try{ if(!VideoEncoder.isConfigSupported||(await VideoEncoder.isConfigSupported(cfg)).supported){ vcfg=cfg; break; } }catch(e){} }
-  if(!vcfg){ EXPORTING=false; expHide(); setState("Codec vidéo non supporté."); return; }
+  if(!vcfg){ EXPORTING=false; _expMsg("Codec vid\u00e9o non support\u00e9 (aucun profil H.264 accept\u00e9 par ce Safari)."); return; }
   var useAudio=(AUDIOBUF && typeof AudioEncoder!=="undefined");
   var Asr=useAudio?AUDIOBUF.sampleRate:44100, Ach=2;
   var mo={ target:new Mp4Muxer.ArrayBufferTarget(), fastStart:"in-memory", video:{codec:"avc",width:W,height:H} };
   if(useAudio) mo.audio={codec:"aac", numberOfChannels:Ach, sampleRate:Asr};
   var muxer=new Mp4Muxer.Muxer(mo);
-  var venc=new VideoEncoder({ output:function(chunk,meta){ muxer.addVideoChunk(chunk,meta); }, error:function(e){} });
+  var _vencErr=null;
+  var venc=new VideoEncoder({ output:function(chunk,meta){ muxer.addVideoChunk(chunk,meta); }, error:function(e){ _vencErr=(e&&e.message)||String(e); } });
   venc.configure(vcfg);
-  for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ try{ CLIPS[_wc].el.muted=true; var _wp=CLIPS[_wc].el.play(); if(_wp&&_wp.then){ await _wp.catch(function(){}); } CLIPS[_wc].el.pause(); }catch(e){} } }
+  _expStage("Pr\u00e9paration\u2026");
+  var _nclip=CLIPS.filter(function(c){return c&&c.ready;}).length, _dci=0;
+  for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ _dci++; _expStage("Pr\u00e9chauffage vid\u00e9o "+_dci+"/"+_nclip); try{ CLIPS[_wc].el.muted=true; var _wp=CLIPS[_wc].el.play(); if(_wp&&_wp.then){ await Promise.race([ _wp.catch(function(){}), new Promise(function(r){ setTimeout(r,400); }) ]); } CLIPS[_wc].el.pause(); }catch(e){} } }
   var t0=performance.now();
   try{
     for(var fnum=0; fnum<N; fnum++){
+      if(_vencErr) throw new Error("Encodeur vid\u00e9o : "+_vencErr);
       var _t=fnum/FPS;
       var _si=-1; for(var _q=0;_q<SEGS.length;_q++){ if(_t>=SEGS[_q].start && _t<SEGS[_q].end){ _si=_q; break; } }
       var _sg=(_si>=0)?SEGS[_si]:null;
@@ -8095,29 +8100,29 @@ async function exportFast(){
         var _cl=CLIPS[_sg.vclip], _vt=(_sg.vstart||0)+(_t-_sg.start)*(_sg.vspeed||_cl.speed||1); _vt=Math.max(0,Math.min((_cl.dur||0.1)-0.05,_vt));
         await seekClip(_cl.el, _vt);
       }
-      if(_sg && !_sg.video && _sg.img>=0 && PHOTOS[_sg.img] && !PHOTOS[_sg.img].c){ try{ await ensurePhotoDecodedAsync(_sg.img); }catch(e){} }
+      if(_sg && !_sg.video && _sg.img>=0 && PHOTOS[_sg.img] && !PHOTOS[_sg.img].c){ try{ await Promise.race([ ensurePhotoDecodedAsync(_sg.img), new Promise(function(r){ setTimeout(r,800); }) ]); }catch(e){} }
       renderMontageAt(_t);
       var frame=new VideoFrame(glReady?gl.canvas:base,{timestamp:Math.round(fnum*1000000/FPS), duration:Math.round(1000000/FPS)});
       venc.encode(frame,{keyFrame:(fnum%FPS===0)}); frame.close();
-      if((fnum&7)===0) expShow(fnum/N*0.9);
-      while(venc.encodeQueueSize>8){ await new Promise(function(r){ setTimeout(r,6); }); }
+      if((fnum&7)===0){ expShow(fnum/N*0.9); _expStage("Image "+(fnum+1)+" / "+N); }
+      var _qw=0; while(venc.encodeQueueSize>8){ if(_vencErr) throw new Error("Encodeur vid\u00e9o : "+_vencErr); await new Promise(function(r){ setTimeout(r,6); }); if(++_qw>1500){ throw new Error("Encodeur bloqu\u00e9 (file satur\u00e9e, "+venc.encodeQueueSize+" en attente)"); } }
       if((fnum&63)===63){ await new Promise(function(r){ setTimeout(r,0); }); }
     }
     await venc.flush(); venc.close();
-  }catch(e){ EXPORTING=false; expHide(); setState("Échec export image : "+((e&&e.message)||e)); return; }
-  if(useAudio){ try{
+  }catch(e){ EXPORTING=false; try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} _expMsg("\u00c9chec export : "+((e&&e.message)||e)); return; }
+  if(useAudio){ try{ _expStage("Audio\u2026"); var _aencErr=null;
     var _srcBuf=AUDIOBUF;
     if(window.MULTI){ try{ var _pb=renderPlanToBuffer(DUR, Asr); if(_pb) _srcBuf=_pb; }catch(e){} }
     var _Lc=_srcBuf.getChannelData(0), _Rc=(_srcBuf.numberOfChannels>1)?_srcBuf.getChannelData(1):_srcBuf.getChannelData(0);
     var tot=Math.min(_srcBuf.length, Math.floor(DUR*Asr));
     var Lc=new Float32Array(_Lc.subarray(0,tot)), Rc=new Float32Array(_Rc.subarray(0,tot));
     if(window.VIDSOUND){ try{ await _mixVideoAudioExport(Lc,Rc,Asr); }catch(e){} }
-    var aenc=new AudioEncoder({ output:function(chunk,meta){ try{ if(meta&&meta.decoderConfig){ meta.decoderConfig.description=makeASC(Asr,Ach); } else { meta={decoderConfig:{description:makeASC(Asr,Ach)}}; } }catch(e){} muxer.addAudioChunk(chunk,meta); }, error:function(e){} });
+    var aenc=new AudioEncoder({ output:function(chunk,meta){ try{ if(meta&&meta.decoderConfig){ meta.decoderConfig.description=makeASC(Asr,Ach); } else { meta={decoderConfig:{description:makeASC(Asr,Ach)}}; } }catch(e){} muxer.addAudioChunk(chunk,meta); }, error:function(e){ _aencErr=(e&&e.message)||String(e); } });
     aenc.configure({codec:"mp4a.40.2", sampleRate:Asr, numberOfChannels:Ach, bitrate:128000});
     for(var off=0; off<tot; off+=1024){ var n=Math.min(1024,tot-off); var data=new Float32Array(n*2); data.set(Lc.subarray(off,off+n),0); data.set(Rc.subarray(off,off+n),n); var ad=new AudioData({format:"f32-planar",sampleRate:Asr,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(off*1000000/Asr),data:data}); aenc.encode(ad); ad.close(); }
     await aenc.flush(); aenc.close();
   }catch(e){} }
-  expShow(0.98);
+  _expStage("Finalisation\u2026"); expShow(0.98);
   muxer.finalize();
   var blob=new Blob([muxer.target.buffer],{type:"video/mp4"});
   var dt=(performance.now()-t0)/1000;
