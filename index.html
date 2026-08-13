@@ -566,50 +566,40 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .mm-del{ background:rgba(229,90,80,.16); color:#ff8f88; border:0; border-radius:8px; width:32px; height:32px; font-size:15px; }
 .mm-add{ width:100%; background:linear-gradient(90deg,#e5aa34,#f4bd4a); color:#1a1206; font-weight:800; border:0; border-radius:12px; padding:14px; font-size:16px; }
   /* ============================================================
-     REDESIGN PANNEAU CLIP — Studio Magot (cinéma · posé · or)
-     100% CSS : aucun id/handler modifié. Surclasse les .cp-*.
+     PANNEAU CLIP — Studio Magot (compact · sans scroll · responsive)
+     100% CSS : aucun id/handler modifié.
      ============================================================ */
-  .clipPrev{ background:rgba(3,6,12,.80); backdrop-filter:blur(20px) saturate(1.1); -webkit-backdrop-filter:blur(20px) saturate(1.1); padding:16px; }
-  .cp-card{ max-width:440px; background:radial-gradient(130% 90% at 50% -12%, #17243f 0%, #0f1828 52%, #0a111d 100%); border:1px solid rgba(244,189,74,.16); border-radius:24px; padding:18px 18px 16px; box-shadow:0 32px 72px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.05); }
-  /* Aperçu : petit écran de cinéma */
-  .cp-vidwrap{ max-height:33vh; max-width:min(50vw,200px); margin:2px auto 12px; border-radius:16px; border:1px solid rgba(255,255,255,.09); box-shadow:0 12px 34px rgba(0,0,0,.55); position:relative; }
-  .cp-vidwrap::after{ content:""; position:absolute; inset:0; border-radius:16px; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(244,189,74,.14), inset 0 0 42px rgba(0,0,0,.30); }
-  /* Titre en serif de marque, centré */
-  .cp-title{ font-family:"Playfair Display",Georgia,serif !important; font-weight:800; font-size:clamp(21px,5.6vw,25px); color:#fdf3df; letter-spacing:.2px; margin:4px 2px 16px; justify-content:center; text-align:center; }
-  .cp-title small{ font-family:ui-monospace,monospace !important; font-weight:600; font-size:12px; color:#e8c069; background:rgba(244,189,74,.10); border:1px solid rgba(244,189,74,.24); padding:3px 9px; border-radius:999px; }
-  /* Étiquettes de section : eyebrow doré */
-  .cp-sec{ font:800 11px system-ui; letter-spacing:.15em; text-transform:uppercase; color:#aab7cd; margin:0 0 11px; padding-left:12px; position:relative; }
-  .cp-sec::before{ content:""; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4px; height:13px; border-radius:2px; background:linear-gradient(180deg,#f7c65a,#c98f2e); }
-  .cp-trim .cp-sec b, .cp-title small{ letter-spacing:normal; }
-  .cp-trim .cp-sec b{ color:#f7cb63; }
-  /* Rythme vertical homogène des sections */
-  .cp-trim{ margin:14px 2px 2px; padding-top:15px; border-top:1px solid rgba(255,255,255,.07); }
-  .cp-speed{ margin:14px 2px 2px; padding-top:15px; border-top:1px solid rgba(255,255,255,.07); }
-  .cp-color{ margin:14px 2px 2px; padding-top:15px; border-top:1px solid rgba(255,255,255,.07); }
-  .vsb-hint, .cp-trim .vsb-hint{ font-size:11.5px; color:#7f8da4; line-height:1.45; margin-top:9px; }
-  /* Sélecteur Cadrage */
-  .te-sel{ background-color:#131f36; border:1px solid rgba(255,255,255,.11); border-radius:13px; padding:13px 34px 13px 14px; font:600 15px system-ui; color:#eef4fd; }
+  .clipPrev{ background:rgba(3,6,12,.80); backdrop-filter:blur(20px) saturate(1.1); -webkit-backdrop-filter:blur(20px) saturate(1.1); padding:14px; }
+  .cp-card{ max-width:430px; max-height:94vh; overflow-y:auto; background:radial-gradient(130% 90% at 50% -12%, #17243f 0%, #0f1828 52%, #0a111d 100%); border:1px solid rgba(244,189,74,.16); border-radius:22px; padding:14px 15px; box-shadow:0 28px 66px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.05); }
+  .cp-vidwrap{ max-height:21vh; max-width:min(36vw,148px); margin:0 auto 8px; border-radius:14px; border:1px solid rgba(255,255,255,.09); box-shadow:0 10px 26px rgba(0,0,0,.5); position:relative; }
+  .cp-vidwrap::after{ content:""; position:absolute; inset:0; border-radius:14px; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(244,189,74,.14), inset 0 0 34px rgba(0,0,0,.28); }
+  .cp-title{ font-family:"Playfair Display",Georgia,serif !important; font-weight:800; font-size:clamp(18px,4.8vw,22px); color:#fdf3df; letter-spacing:.2px; margin:2px 2px 10px; justify-content:center; text-align:center; }
+  .cp-title small{ font-family:ui-monospace,monospace !important; font-weight:600; font-size:11.5px; color:#e8c069; background:rgba(244,189,74,.10); border:1px solid rgba(244,189,74,.24); padding:2px 8px; border-radius:999px; letter-spacing:normal; }
+  .cp-sec{ font:800 10.5px system-ui; letter-spacing:.15em; text-transform:uppercase; color:#aab7cd; margin:0 0 8px; padding-left:11px; position:relative; }
+  .cp-sec::before{ content:""; position:absolute; left:0; top:50%; transform:translateY(-50%); width:4px; height:12px; border-radius:2px; background:linear-gradient(180deg,#f7c65a,#c98f2e); }
+  .cp-trim .cp-sec b{ color:#f7cb63; letter-spacing:normal; }
+  .cp-trim{ margin:11px 2px 2px; padding-top:11px; border-top:1px solid rgba(255,255,255,.07); }
+  .cp-speed{ margin:11px 2px 2px; padding-top:11px; border-top:1px solid rgba(255,255,255,.07); }
+  .cp-color{ margin:11px 2px 2px; padding-top:11px; border-top:1px solid rgba(255,255,255,.07); }
+  .vsb-hint, .cp-trim .vsb-hint{ font-size:11px; color:#7f8da4; line-height:1.4; margin-top:6px; }
+  .te-sel{ background-color:#131f36; border:1px solid rgba(255,255,255,.11); border-radius:12px; padding:11px 32px 11px 13px; font:600 14px system-ui; color:#eef4fd; }
   .te-sel:focus{ border-color:rgba(244,189,74,.5); outline:none; }
-  /* Contrôle segmenté Vitesse */
-  .cp-spd-seg{ display:flex; gap:4px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:visible; padding:4px; margin-top:8px; }
-  .cp-spd-seg button{ flex:1; border:0; border-radius:10px; background:transparent; color:#aeb9cc; font:700 13px system-ui; padding:11px 4px; cursor:pointer; transition:background .15s,color .15s,box-shadow .15s; }
-  .cp-spd-seg button.on{ background:linear-gradient(180deg,#f7c65a,#e3a531); color:#231705; box-shadow:0 5px 14px rgba(244,189,74,.30); }
-  /* Pastilles de teinte */
-  .cp-presets{ display:flex; gap:8px; overflow-x:auto; padding:2px 2px 6px; -webkit-overflow-scrolling:touch; }
-  .cp-pre{ flex:0 0 auto; padding:9px 15px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.045); color:#cdd8e6; font:700 13px system-ui; cursor:pointer; transition:all .15s; }
-  .cp-pre.on{ border-color:rgba(244,189,74,.6); background:linear-gradient(180deg,rgba(244,189,74,.20),rgba(244,189,74,.05)); color:#f7cb63; box-shadow:0 4px 14px rgba(244,189,74,.20); }
-  /* Réglages fins : libellé + curseur doré tactile */
-  .cp-adj{ margin-top:12px; display:flex; flex-direction:column; gap:13px; }
-  .cp-adj label{ display:flex; align-items:center; gap:12px; font:600 13px system-ui; color:#c8d3e3; }
-  .cp-adj label span{ flex:0 0 82px; }
-  .clipPrev input[type=range]{ -webkit-appearance:none; appearance:none; height:5px; border-radius:999px; background:rgba(255,255,255,.15); outline:none; }
-  .clipPrev input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:23px; height:23px; border-radius:50%; background:radial-gradient(circle at 34% 30%, #ffe6ad, #f4bd4a 46%, #d99a2f 100%); border:2px solid #17100a; box-shadow:0 2px 8px rgba(0,0,0,.5), 0 0 0 4px rgba(244,189,74,.13); cursor:pointer; }
-  .clipPrev input[type=range]::-moz-range-thumb{ width:21px; height:21px; border-radius:50%; background:#f4bd4a; border:2px solid #17100a; cursor:pointer; }
-  /* Barre d'actions */
-  .cp-actions{ display:flex; gap:10px; margin-top:18px; padding-top:15px; border-top:1px solid rgba(255,255,255,.07); }
-  .cp-del{ flex:0 0 auto; padding:13px 16px; border-radius:13px; border:1px solid rgba(255,110,110,.30); background:rgba(255,90,90,.07); color:#ff9a9a; font:700 14px system-ui; cursor:pointer; transition:background .15s; }
+  .cp-spd-seg{ display:flex; gap:4px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:12px; overflow:visible; padding:3px; margin-top:7px; }
+  .cp-spd-seg button{ flex:1; border:0; border-radius:9px; background:transparent; color:#aeb9cc; font:700 12.5px system-ui; padding:9px 4px; cursor:pointer; transition:background .15s,color .15s,box-shadow .15s; }
+  .cp-spd-seg button.on{ background:linear-gradient(180deg,#f7c65a,#e3a531); color:#231705; box-shadow:0 4px 12px rgba(244,189,74,.28); }
+  .cp-presets{ display:flex; gap:7px; overflow-x:auto; padding:1px 1px 5px; -webkit-overflow-scrolling:touch; }
+  .cp-pre{ flex:0 0 auto; padding:8px 13px; border-radius:11px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.045); color:#cdd8e6; font:700 12.5px system-ui; cursor:pointer; transition:all .15s; }
+  .cp-pre.on{ border-color:rgba(244,189,74,.6); background:linear-gradient(180deg,rgba(244,189,74,.20),rgba(244,189,74,.05)); color:#f7cb63; box-shadow:0 3px 12px rgba(244,189,74,.18); }
+  .cp-adj{ margin-top:9px; display:flex; flex-direction:column; gap:9px; }
+  .cp-adj label{ display:flex; align-items:center; gap:11px; font:600 12.5px system-ui; color:#c8d3e3; }
+  .cp-adj label span{ flex:0 0 78px; }
+  .clipPrev input[type=range]{ -webkit-appearance:none; appearance:none; height:4px; border-radius:999px; background:rgba(255,255,255,.15); outline:none; }
+  .clipPrev input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:radial-gradient(circle at 34% 30%, #ffe6ad, #f4bd4a 46%, #d99a2f 100%); border:2px solid #17100a; box-shadow:0 2px 7px rgba(0,0,0,.5), 0 0 0 3px rgba(244,189,74,.13); cursor:pointer; }
+  .clipPrev input[type=range]::-moz-range-thumb{ width:18px; height:18px; border-radius:50%; background:#f4bd4a; border:2px solid #17100a; cursor:pointer; }
+  .cp-actions{ display:flex; gap:9px; margin-top:13px; padding-top:11px; border-top:1px solid rgba(255,255,255,.07); }
+  .cp-del{ flex:0 0 auto; padding:12px 15px; border-radius:12px; border:1px solid rgba(255,110,110,.30); background:rgba(255,90,90,.07); color:#ff9a9a; font:700 13.5px system-ui; cursor:pointer; transition:background .15s; }
   .cp-del:active{ background:rgba(255,90,90,.15); }
-  .cp-done{ flex:1; padding:14px; border-radius:14px; border:0; background:linear-gradient(180deg,#f7c65a,#e3a531); color:#231705; font:800 16px system-ui; cursor:pointer; box-shadow:0 8px 22px rgba(244,189,74,.30); transition:transform .1s; }
+  .cp-done{ flex:1; padding:13px; border-radius:13px; border:0; background:linear-gradient(180deg,#f7c65a,#e3a531); color:#231705; font:800 15.5px system-ui; cursor:pointer; box-shadow:0 7px 20px rgba(244,189,74,.28); transition:transform .1s; }
   .cp-done:active{ transform:translateY(1px); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;600&family=Caveat:wght@400;700&family=Montserrat:wght@400;700&family=Raleway:wght@400;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
@@ -620,7 +610,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C165</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C166</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8104,16 +8094,25 @@ function renderMontageAt(t){
 }
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; var rg=document.getElementById("expRing"); if(rg){ var off=Math.max(0,Math.min(1,1-p)); rg.style.strokeDashoffset=String(off); } }
-/* Recalcule le contour du liseré pour épouser le RATIO du format d'export choisi (EXPFMT). */
+/* Positionne le liseré EXACTEMENT autour du cadre vidéo réel (.stageWrap).
+   Repli : anneau centré au ratio du format d'export si le cadre est introuvable. */
 function _expSizeRing(){
   try{
     var svg=document.getElementById("expRingSvg"); if(!svg) return;
-    var w=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.w)?EXPFMT.w:9, h=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.h)?EXPFMT.h:16;
-    var L=168, rectW, rectH;
-    if(w>=h){ rectW=L; rectH=L*h/w; } else { rectH=L; rectW=L*w/h; }
-    var m=8, rx=Math.max(6, Math.min(16, rectW/2-2, rectH/2-2));
-    var left=m, top=m, right=m+rectW, bottom=m+rectH, cx=m+rectW/2, cy=m+rectH/2;
-    var VBW=rectW+2*m, VBH=rectH+2*m;
+    var sw=document.querySelector(".stageWrap");
+    var r=sw?sw.getBoundingClientRect():null;
+    var vw=window.innerWidth||390, vh=window.innerHeight||800;
+    var pad=9, W, H, useReal=false, ox=0, oy=0;
+    if(r && r.width>40 && r.height>40 && r.bottom>0 && r.top<vh){ W=r.width; H=r.height; ox=r.left; oy=r.top; useReal=true; }
+    else{
+      var fw=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.w)?EXPFMT.w:9, fh=(typeof EXPFMT!=="undefined"&&EXPFMT&&EXPFMT.h)?EXPFMT.h:16;
+      var boxW=vw*0.60, boxH=vh*0.42;
+      if(fw>=fh){ W=boxW; H=boxW*fh/fw; if(H>boxH){ H=boxH; W=boxH*fw/fh; } }
+      else{ H=boxH; W=boxH*fw/fh; if(W>boxW){ W=boxW; H=boxW*fh/fw; } }
+      ox=(vw-W)/2; oy=(vh*0.40)-H/2;
+    }
+    var rx=Math.max(8, Math.min(14, W/2-2, H/2-2));
+    var m=pad, left=m, top=m, right=m+W, bottom=m+H, cx=m+W/2, cy=m+H/2, VBW=W+2*m, VBH=H+2*m;
     function f(n){ return Math.round(n*100)/100; }
     var d="M"+f(cx)+" "+f(top)
       +" H"+f(right-rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(right)+" "+f(top+rx)
@@ -8122,14 +8121,10 @@ function _expSizeRing(){
       +" V"+f(top+rx)+" A"+f(rx)+" "+f(rx)+" 0 0 1 "+f(left+rx)+" "+f(top)
       +" H"+f(cx)+" Z";
     svg.setAttribute("viewBox","0 0 "+f(VBW)+" "+f(VBH));
-    var tk=document.getElementById("expTrack"), rg=document.getElementById("expRing");
+    var tk=document.getElementById("expTrack"), rg=document.getElementById("expRing"), tx=document.getElementById("expPct");
     if(tk) tk.setAttribute("d",d); if(rg) rg.setAttribute("d",d);
-    var tx=document.getElementById("expPct"); if(tx){ tx.setAttribute("x",f(cx)); tx.setAttribute("y",f(cy)); }
-    /* taille d'affichage réelle (px) : on tient dans ~58vw x 30vh en gardant le ratio */
-    var vw=window.innerWidth||390, vh=window.innerHeight||800;
-    var scale=Math.min((vw*0.58)/VBW, (vh*0.30)/VBH);
-    svg.style.width=Math.round(VBW*scale)+"px";
-    svg.style.height=Math.round(VBH*scale)+"px";
+    if(tx){ tx.setAttribute("x",f(cx)); tx.setAttribute("y",f(cy)); }
+    svg.style.left=(ox-pad)+"px"; svg.style.top=(oy-pad)+"px"; svg.style.width=f(VBW)+"px"; svg.style.height=f(VBH)+"px"; svg.style.transform="none";
   }catch(e){}
 }
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
@@ -9587,16 +9582,17 @@ function renderVNav(){
 
 <!-- Overlays d'export sortis de .wrap (qui est en opacity:0) — enfants directs de body,
      z-index releve pour passer au-dessus de la facade Kimi. Feedback enfin visible. -->
-  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
-    <div style="font:700 16px system-ui;color:#fff;margin-bottom:18px">Export en cours…</div>
-    <svg id="expRingSvg" viewBox="0 0 100 178" style="overflow:visible;width:min(54vw,190px);height:auto">
-      <path id="expTrack" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="#1a2440" stroke-width="4.5"></path>
-      <path id="expRing" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="#E0A33E" stroke-width="4.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 5px rgba(224,163,62,.55));transition:stroke-dashoffset .2s ease"></path>
-      <text id="expPct" x="50" y="89" dy="0.35em" text-anchor="middle" fill="#E0A33E" style="font:700 15px ui-monospace,monospace">0 %</text>
+  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(4,8,16,.55);align-items:center;justify-content:flex-end;flex-direction:column;text-align:center;padding:24px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 34px)">
+    <div style="font:700 16px system-ui;color:#fff;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.6)">Export en cours…</div>
+    <div style="font:12px system-ui;color:#c2ccdd;margin-bottom:14px;text-shadow:0 1px 4px rgba(0,0,0,.6)">Laisse l'écran allumé.</div>
+    <button id="expCancel" onclick="try{_expForceReset('Export annulé.');}catch(e){}" style="border:1px solid #3b466b;background:rgba(19,29,56,.9);color:#dfe7f6;border-radius:12px;padding:11px 20px;font:600 13px system-ui;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)">Annuler l'export</button>
+    <svg id="expRingSvg" viewBox="0 0 100 178" style="position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;overflow:visible;z-index:99999">
+      <path id="expTrack" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="rgba(150,168,205,.5)" stroke-width="5"></path>
+      <path id="expRing" d="M50 5 H81 A14 14 0 0 1 95 19 V159 A14 14 0 0 1 81 173 H19 A14 14 0 0 1 5 159 V19 A14 14 0 0 1 19 5 Z" fill="none" stroke="#E0A33E" stroke-width="5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" style="filter:drop-shadow(0 0 7px rgba(224,163,62,.75));transition:stroke-dashoffset .2s ease"></path>
+      <text id="expPct" x="50" y="89" dy="0.35em" text-anchor="middle" fill="#fff" style="font:800 17px ui-monospace,monospace;filter:drop-shadow(0 2px 7px rgba(0,0,0,.8))">0 %</text>
     </svg>
-    <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
-    <button id="expCancel" onclick="try{_expForceReset('Export annulé.');}catch(e){}" style="margin-top:18px;border:1px solid #3b466b;background:#131d38;color:#dfe7f6;border-radius:11px;padding:10px 18px;font:600 13px system-ui;cursor:pointer">Annuler l'export</button>
   </div>
+
   <div id="expRes" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.94);backdrop-filter:blur(4px);padding:18px 18px 30px;overflow:auto;text-align:center">
     <div style="font:700 16px system-ui;color:#fff;margin:6px 0 10px">Ta vidéo est prête 🎬</div>
     <video id="expVideo" controls playsinline style="display:block;width:100%;max-width:420px;margin:0 auto;border-radius:12px;background:#000"></video>
