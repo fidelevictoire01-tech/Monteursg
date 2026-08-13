@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX EXPORT : URL mp4-muxer corrigee (.min.js 404 -> .js) : le global Mp4Muxer se charge enfin. Message d-erreur scinde (VideoEncoder vs Mp4Muxer) pour un diagnostic honnete. · BUILD 2026-08-13-C149 -->
+<!-- Studio Magot — FIX FEEDBACK EXPORT : #expProg + #expRes deplaces hors de .wrap (opacity:0) vers body, z-index 99999. La barre de progression et l-ecran resultat sont enfin visibles (avant : export OK mais retour invisible). · BUILD 2026-08-13-C150 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C149</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C150</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -773,19 +773,6 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </div>
   <div class="row">
     <button class="btn gold" id="exportBtn">⚡ Exporter la vidéo (9:16)</button>
-  </div>
-  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
-    <div style="font:700 16px system-ui;color:#fff;margin-bottom:14px">Export en cours…</div>
-    <div style="width:80%;max-width:300px;height:12px;background:#1a2440;border-radius:8px;overflow:hidden"><div id="expBar" style="height:100%;width:0%;background:#E0A33E;transition:width .1s"></div></div>
-    <div id="expPct" style="font:600 13px ui-monospace,monospace;color:#E0A33E;margin-top:10px">0 %</div>
-    <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
-  </div>
-  <div id="expRes" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(6,10,22,.94);backdrop-filter:blur(4px);padding:18px 18px 30px;overflow:auto;text-align:center">
-    <div style="font:700 16px system-ui;color:#fff;margin:6px 0 10px">Ta vidéo est prête 🎬</div>
-    <video id="expVideo" controls playsinline style="display:block;width:100%;max-width:420px;margin:0 auto;border-radius:12px;background:#000"></video>
-    <div id="expInfo" style="font:600 12px ui-monospace,monospace;color:#7bd88f;margin:10px 0"></div>
-    <button class="btn gold" id="expShare" style="display:block;width:100%;max-width:420px;margin:0 auto">⬇ Enregistrer / Partager</button>
-    <button class="btn" id="expClose" style="display:block;width:100%;max-width:420px;margin:8px auto 0">Fermer</button>
   </div>
 
   <div id="state" class="hint"></div>
@@ -9175,5 +9162,22 @@ function renderVNav(){
 })();
 
 </script>
+
+<!-- Overlays d'export sortis de .wrap (qui est en opacity:0) — enfants directs de body,
+     z-index releve pour passer au-dessus de la facade Kimi. Feedback enfin visible. -->
+  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
+    <div style="font:700 16px system-ui;color:#fff;margin-bottom:14px">Export en cours…</div>
+    <div style="width:80%;max-width:300px;height:12px;background:#1a2440;border-radius:8px;overflow:hidden"><div id="expBar" style="height:100%;width:0%;background:#E0A33E;transition:width .1s"></div></div>
+    <div id="expPct" style="font:600 13px ui-monospace,monospace;color:#E0A33E;margin-top:10px">0 %</div>
+    <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
+  </div>
+  <div id="expRes" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.94);backdrop-filter:blur(4px);padding:18px 18px 30px;overflow:auto;text-align:center">
+    <div style="font:700 16px system-ui;color:#fff;margin:6px 0 10px">Ta vidéo est prête 🎬</div>
+    <video id="expVideo" controls playsinline style="display:block;width:100%;max-width:420px;margin:0 auto;border-radius:12px;background:#000"></video>
+    <div id="expInfo" style="font:600 12px ui-monospace,monospace;color:#7bd88f;margin:10px 0"></div>
+    <button class="btn gold" id="expShare" style="display:block;width:100%;max-width:420px;margin:0 auto">⬇ Enregistrer / Partager</button>
+    <button class="btn" id="expClose" style="display:block;width:100%;max-width:420px;margin:8px auto 0">Fermer</button>
+  </div>
+
 </body>
 </html>
