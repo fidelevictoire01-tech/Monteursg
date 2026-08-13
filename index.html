@@ -633,7 +633,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C172</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C173</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1291,7 +1291,12 @@ function buildPartition(){
         var _sc=_prox2*0.9 + _s2*0.7 + _mt2*0.4;
         if(_sc>_bestSc){ _bestSc=_sc; _bestK=_k; }
       }
-      var _ct=(_bestK>=0)?snapKick(beats[_bestK]):_tgt;
+      var _ct=_tgt;
+      if(_bestK>=0){ _ct=snapKick(beats[_bestK]); }
+      else { /* aucun temps dans la fenêtre : on prend le TEMPS le plus proche -> jamais hors musique */
+        var _nk=-1,_ndp=1e9; for(var _k3=0;_k3<beats.length;_k3++){ if(beats[_k3]<=_prevC+0.30||beats[_k3]>=wEnd-0.30) continue; var _dp=Math.abs(beats[_k3]-_tgt); if(_dp<_ndp){ _ndp=_dp; _nk=_k3; } }
+        if(_nk>=0) _ct=snapKick(beats[_nk]);
+      }
       if(_ct<=_prevC+0.30 || _ct>=wEnd-0.30) _ct=Math.min(wEnd-0.30, _prevC+_slot);
       cuts.push({t:_ct, s:(_bestK>=0?(str[_bestK]||0.5):0.5)}); _prevC=_ct;
     }
