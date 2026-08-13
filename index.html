@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — Diagnostic export : expShow(0) des la 1re ligne de exportFast (barre visible si appelee) + doExport robuste (verifie exportFast, messages d-erreur). · BUILD 2026-08-09-C148 -->
+<!-- Studio Magot — FIX EXPORT : URL mp4-muxer corrigee (.min.js 404 -> .js) : le global Mp4Muxer se charge enfin. Message d-erreur scinde (VideoEncoder vs Mp4Muxer) pour un diagnostic honnete. · BUILD 2026-08-13-C149 -->
 
 <html lang="fr">
 <head>
@@ -38,7 +38,7 @@
   .fmt{padding:10px 4px;font-size:13px}
   .fmt.on{background:#E0A33E;color:#241603;border-color:#E0A33E}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.js"></script>
 <style id="kimiCSS">
 
 :root{
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C148</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C149</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8077,7 +8077,8 @@ async function _mixVideoAudioExport(L, R, sr){
 async function exportFast(){
   try{ expShow(0); }catch(_x){}
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
-  if(typeof VideoEncoder==="undefined"||typeof Mp4Muxer==="undefined"){ _expMsg("Export non supporté sur ce navigateur (essaie Safari à jour)."); return; }
+  if(typeof VideoEncoder==="undefined"){ _expMsg("Export non supporté sur ce navigateur (VideoEncoder absent — essaie Safari à jour)."); return; }
+  if(typeof Mp4Muxer==="undefined"){ _expMsg("Librairie MP4 non chargée (vérifie la connexion / le CDN mp4-muxer). Recharge la page."); return; }
   stopPlay(); EXPORTING=true; expShow(0);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
