@@ -574,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C158</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C159</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8115,8 +8115,12 @@ async function exportStudio(){
     try{ renderMontageAt(0); if(glReady&&gl&&gl.canvas){ bctx.drawImage(gl.canvas,0,0,base.width,base.height); } }catch(e){}
 
     _setStage("Flux vid\u00e9o\u2026"); await _paint();
-    if(typeof base.captureStream!=="function"){ EXPORTING=false; try{setRenderSize(_ow,_oh);}catch(e){} _expMsg("Capture non supportée ici. Ouvre la page dans Safari."); return; }
-    var stream; try{ stream=base.captureStream(FPS); }catch(e){ EXPORTING=false; try{setRenderSize(_ow,_oh);}catch(_r){} _expMsg("Capture refusée : "+((e&&e.message)||e)+". Essaie dans Safari."); return; }
+    /* On capture DIRECTEMENT le canvas WebGL : plus de recopie GPU->2D par image (c'était
+       le goulot qui plafonnait à ~7 i/s). Repli sur le canvas 2D si pas de WebGL. */
+    var capCanvas=(glReady && gl && gl.canvas && typeof gl.canvas.captureStream==="function") ? gl.canvas : base;
+    if(typeof capCanvas.captureStream!=="function"){ EXPORTING=false; try{setRenderSize(_ow,_oh);}catch(e){} _expMsg("Capture non supportée ici. Ouvre la page dans Safari."); return; }
+    var _useGLcap=(capCanvas!==base);
+    var stream; try{ stream=capCanvas.captureStream(FPS); }catch(e){ EXPORTING=false; try{setRenderSize(_ow,_oh);}catch(_r){} _expMsg("Capture refusée : "+((e&&e.message)||e)+". Essaie dans Safari."); return; }
 
     _setStage("Audio\u2026"); await _paint();
     var audioCtx=null,audioSrc=null,audioAdded=false;
@@ -8145,7 +8149,7 @@ async function exportStudio(){
       if(sg&&sg.video&&sg.vclip!=null&&CLIPS[sg.vclip]&&CLIPS[sg.vclip].ready){ var cl=CLIPS[sg.vclip], vt=(sg.vstart||0)+(t-sg.start)*(sg.vspeed||cl.speed||1); vt=Math.max(0,Math.min((cl.dur||0.1)-0.05,vt)); try{ if(Math.abs((cl.el.currentTime||0)-vt)>0.08) cl.el.currentTime=vt; }catch(e){} }
       else if(sg&&!sg.video&&sg.img>=0&&PHOTOS[sg.img]&&!PHOTOS[sg.img].c){ try{ ensurePhotoDecoded(sg.img); }catch(e){} }
       try{ renderMontageAt(t); }catch(e){}
-      if(glReady&&gl&&gl.canvas){ try{ bctx.drawImage(gl.canvas,0,0,base.width,base.height); }catch(e){} }
+      if(!_useGLcap && glReady && gl && gl.canvas){ try{ bctx.drawImage(gl.canvas,0,0,base.width,base.height); }catch(e){} }
     }
 
     if(audioCtx){ try{ await audioCtx.resume(); }catch(e){} }
@@ -8161,7 +8165,7 @@ async function exportStudio(){
     if(audioSrc){ try{ audioSrc.start(); }catch(e){} }
     _hardStop=setTimeout(function(){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} }, Math.round(DUR*1000)+700);
 
-    var _tick=Math.max(16,Math.round(1000/FPS));
+    var _rafLoop=(typeof requestAnimationFrame==="function");
     (function _loop(){
       if(EXPORT_ABORT){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} return; }
       var t=(performance.now()-t0)/1000;
@@ -8169,7 +8173,7 @@ async function exportStudio(){
       _renderFrameTo(t);
       try{ expShow(Math.min(0.99,t/DUR)); }catch(e){}
       try{ var st=document.getElementById("expStage"); if(st) st.textContent="Enregistrement\u2026 "+Math.round(t)+"/"+Math.round(DUR)+" s"+(_bytes?(" · "+(_bytes/1048576).toFixed(1)+" Mo"):""); }catch(e){}
-      setTimeout(_loop,_tick);
+      if(_rafLoop) requestAnimationFrame(_loop); else setTimeout(_loop, Math.max(16,Math.round(1000/FPS)));
     })();
   }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_w){} _expMsg("Échec export : "+((e&&e.message)||e)); }
 }
