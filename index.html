@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Studio Magot — FIX PREPARATION EXPORT : la phase avant la boucle (isConfigSupported / muxer / configure) n-etait ni instrumentee ni protegee -> gel muet a 0%. Ajout etape Initialisation des la 1re ligne (preuve de version), timeout 1.5s sur isConfigSupported, muxer+encodeur+configure dans try/catch visible. · BUILD 2026-08-13-C152 -->
+<!-- Studio Magot — FIX RAFRAICHISSEMENT + VITESSE EXPORT : yields (rAF) apres chaque etape et toutes les 8 images -> la progression s-affiche vraiment (avant : UI figee sur Initialisation pendant l-encodage). Plafond resolution export a 1280px -> encodage bien plus rapide/fiable sur iPhone. Logique validee via harnais Node (frames, non-blocage, gardes). · BUILD 2026-08-13-C153 -->
 
 <html lang="fr">
 <head>
@@ -573,7 +573,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C152</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C153</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8040,6 +8040,7 @@ function renderMontageAt(t){
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
 function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; }
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
+function _expYield(){ return new Promise(function(r){ try{ if(typeof requestAnimationFrame==="function"){ requestAnimationFrame(function(){ r(); }); } else { setTimeout(r,0); } }catch(_e){ setTimeout(r,0); } }); }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
 async function _mixVideoAudioExport(L, R, sr){
   if(typeof SEGS==="undefined"||!SEGS||!ctx) return;
@@ -8070,12 +8071,14 @@ async function exportFast(){
   stopPlay(); EXPORTING=true; expShow(0);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
+  var _capPx=1280, _mxWH=Math.max(W,H);
+  if(_mxWH>_capPx){ var _scl=_capPx/_mxWH; W=Math.max(2,Math.round(W*_scl/2)*2); H=Math.max(2,Math.round(H*_scl/2)*2); }
   if(_PORDER && _PORDER.length){ var _cpi=0, _csi=0; while(_csi<SEGS.length){ if(SEGS[_csi].video){ _csi++; continue; } if(_cpi>=_PORDER.length) break; var _cph=_PORDER[_cpi]; SEGS[_csi].img=_cph; var _need=_capNeeded(_cph); if(_need>0){ while((SEGS[_csi].end-SEGS[_csi].start) < _need-0.01 && _csi+1<SEGS.length && !SEGS[_csi+1].video){ SEGS[_csi].end=SEGS[_csi+1].end; SEGS.splice(_csi+1,1); } } _cpi++; _csi++; } }
   var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
   var N=Math.round(DUR*FPS);
   var _ow=base.width,_oh=base.height;
   if(base.width!==W||base.height!==H){ setRenderSize(W,H); await new Promise(function(r){ setTimeout(r,30); }); }
-  _expStage("V\u00e9rification du codec\u2026");
+  _expStage("V\u00e9rification du codec\u2026"); await _expYield();
   var vcfg=null, vc=["avc1.640028","avc1.4D4028","avc1.42E01F","avc1.42E01E"];
   for(var i=0;i<vc.length;i++){ var cfg={codec:vc[i],width:W,height:H,bitrate:5000000,framerate:FPS};
     try{
@@ -8099,7 +8102,7 @@ async function exportFast(){
     venc=new VideoEncoder({ output:function(chunk,meta){ muxer.addVideoChunk(chunk,meta); }, error:function(e){ _vencErr=(e&&e.message)||String(e); } });
     venc.configure(vcfg);
   }catch(e){ EXPORTING=false; try{ if(base.width!==_ow||base.height!==_oh) setRenderSize(_ow,_oh); }catch(_r){} _expMsg("Config encodeur impossible : "+((e&&e.message)||e)); return; }
-  _expStage("Pr\u00e9paration\u2026");
+  _expStage("Pr\u00e9paration\u2026"); await _expYield();
   var _nclip=CLIPS.filter(function(c){return c&&c.ready;}).length, _dci=0;
   for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ _dci++; _expStage("Pr\u00e9chauffage vid\u00e9o "+_dci+"/"+_nclip); try{ CLIPS[_wc].el.muted=true; var _wp=CLIPS[_wc].el.play(); if(_wp&&_wp.then){ await Promise.race([ _wp.catch(function(){}), new Promise(function(r){ setTimeout(r,400); }) ]); } CLIPS[_wc].el.pause(); }catch(e){} } }
   var t0=performance.now();
@@ -8117,7 +8120,7 @@ async function exportFast(){
       renderMontageAt(_t);
       var frame=new VideoFrame(glReady?gl.canvas:base,{timestamp:Math.round(fnum*1000000/FPS), duration:Math.round(1000000/FPS)});
       venc.encode(frame,{keyFrame:(fnum%FPS===0)}); frame.close();
-      if((fnum&7)===0){ expShow(fnum/N*0.9); _expStage("Image "+(fnum+1)+" / "+N); }
+      if((fnum&7)===0){ expShow(fnum/N*0.9); _expStage("Image "+(fnum+1)+" / "+N); await _expYield(); }
       var _qw=0; while(venc.encodeQueueSize>8){ if(_vencErr) throw new Error("Encodeur vid\u00e9o : "+_vencErr); await new Promise(function(r){ setTimeout(r,6); }); if(++_qw>1500){ throw new Error("Encodeur bloqu\u00e9 (file satur\u00e9e, "+venc.encodeQueueSize+" en attente)"); } }
       if((fnum&63)===63){ await new Promise(function(r){ setTimeout(r,0); }); }
     }
