@@ -666,7 +666,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C179</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C180</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8327,6 +8327,83 @@ async function _turboExport(){
   return "ok";
 }
 
+/* ===================================================================
+   SIGNATURE MAGOT — pages intro/outro cinématiques (fond noir, or, Playfair)
+   Texte écrit par Mistral une fois greffé (via window.SIGN_TEXT) ; en attendant,
+   proverbes variés tirés d'une petite bibliothèque locale + texte par défaut.
+   =================================================================== */
+var SIGN={ on:true, introDur:3.6, outroDur:3.8, data:null };
+var SIGN_PROVERBS=[
+  "Le vrai voyage ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux.",
+  "On ne part jamais vraiment : on emporte les lieux avec soi.",
+  "Voyager, c'est vivre deux fois.",
+  "Le monde est un livre, et ceux qui ne voyagent pas n'en lisent qu'une page.",
+  "Les plus belles routes sont celles que l'on n'avait pas prévues.",
+  "Un voyage se mesure en souvenirs, pas en kilomètres.",
+  "Ce ne sont pas les distances qui comptent, mais les instants.",
+  "Chaque départ est une promesse, chaque retour un trésor.",
+  "Voyager, c'est apprendre à s'émerveiller encore.",
+  "Les souvenirs sont les seuls bagages qui ne pèsent jamais.",
+  "Là où tes pas te portent, ton cœur se souvient.",
+  "Le bonheur n'est pas la destination, mais le chemin parcouru ensemble.",
+  "Partir, c'est offrir à demain de beaux souvenirs d'aujourd'hui.",
+  "Les grands voyages laissent des traces là où on ne les attend pas."
+];
+function _signPick2(){ var a=SIGN_PROVERBS, i=Math.floor(Math.random()*a.length), j; do{ j=Math.floor(Math.random()*a.length); }while(a.length>1&&j===i); return [a[i],a[j]]; }
+function _signBuild(){
+  var d=window.SIGN_TEXT||null;   /* fourni par Mistral après la greffe */
+  if(d && (d.introProverbe||d.introProverb)){
+    SIGN.data={ introTitle:d.introTitre||d.introTitle||"Ton voyage", introText:d.introTexte||d.introText||"",
+      introProverb:d.introProverbe||d.introProverb||"", outroText:d.outroTexte||d.outroText||"",
+      outroProverb:d.outroProverbe||d.outroProverb||"" };
+    return;
+  }
+  var p=_signPick2();
+  SIGN.data={ introTitle:"Ton voyage", introText:"Revivez vos plus beaux moments, image après image.",
+    introProverb:p[0], outroText:"Merci d'avoir voyagé avec nous.", outroProverb:p[1] };
+}
+function _signWrap(ctx,text,cx,y,maxW,lh){
+  text=String(text||""); var words=text.split(/\s+/), line="", lines=[];
+  for(var n=0;n<words.length;n++){ var test=line?(line+" "+words[n]):words[n];
+    if(ctx.measureText(test).width>maxW && line){ lines.push(line); line=words[n]; } else line=test; }
+  if(line) lines.push(line);
+  var yy=y-(lines.length-1)*lh/2;
+  for(var k=0;k<lines.length;k++){ ctx.fillText(lines[k],cx,yy+k*lh); }
+  return lines.length;
+}
+function drawSignatureCard(kind,prog){
+  var w=base.width,h=base.height,cx=w/2,S=w/1080, sd=SIGN.data||{};
+  var a=1; if(prog<0.20)a=prog/0.20; else if(prog>0.80)a=Math.max(0,(1-prog)/0.20); a=Math.max(0,Math.min(1,a));
+  bctx.save();
+  bctx.fillStyle="#000"; bctx.fillRect(0,0,w,h);
+  var g=bctx.createRadialGradient(cx,h*0.46,0,cx,h*0.46,Math.max(w,h)*0.72);
+  g.addColorStop(0,"rgba(46,34,10,0.55)"); g.addColorStop(1,"rgba(0,0,0,0)");
+  bctx.fillStyle=g; bctx.fillRect(0,0,w,h);
+  bctx.globalAlpha=a; bctx.textAlign="center"; bctx.textBaseline="middle";
+  function line(y,ww){ bctx.strokeStyle="rgba(227,165,49,0.55)"; bctx.lineWidth=1.4*S; bctx.beginPath(); bctx.moveTo(cx-ww*S,y); bctx.lineTo(cx+ww*S,y); bctx.stroke(); }
+  if(kind==="intro"){
+    bctx.fillStyle="#e3a531"; bctx.font="600 "+(21*S)+"px 'Playfair Display',Georgia,serif";
+    bctx.fillText("MAGOT VOYAGE", cx, h*0.29);
+    line(h*0.335, 46);
+    bctx.fillStyle="#f7e9c8"; bctx.font="800 "+(58*S)+"px 'Playfair Display',Georgia,serif";
+    _signWrap(bctx, sd.introTitle||"Ton voyage", cx, h*0.44, w*0.82, 66*S);
+    bctx.fillStyle="rgba(238,232,214,0.86)"; bctx.font="400 "+(25*S)+"px system-ui,-apple-system,sans-serif";
+    _signWrap(bctx, sd.introText||"", cx, h*0.56, w*0.78, 34*S);
+    bctx.fillStyle="#e3a531"; bctx.font="italic 500 "+(27*S)+"px 'Playfair Display',Georgia,serif";
+    _signWrap(bctx, sd.introProverb?("« "+sd.introProverb+" »"):"", cx, h*0.70, w*0.80, 36*S);
+  } else {
+    bctx.fillStyle="#e3a531"; bctx.font="italic 500 "+(30*S)+"px 'Playfair Display',Georgia,serif";
+    _signWrap(bctx, sd.outroProverb?("« "+sd.outroProverb+" »"):"", cx, h*0.40, w*0.82, 42*S);
+    bctx.fillStyle="rgba(238,232,214,0.90)"; bctx.font="400 "+(25*S)+"px system-ui,-apple-system,sans-serif";
+    _signWrap(bctx, sd.outroText||"", cx, h*0.55, w*0.78, 34*S);
+    line(h*0.625, 42);
+    bctx.fillStyle="#e3a531"; bctx.font="700 "+(30*S)+"px 'Playfair Display',Georgia,serif";
+    bctx.fillText("Studio Magot", cx, h*0.685);
+  }
+  bctx.restore();
+  _atmo=null; if(glReady){ try{ drawGL(performance.now()/1000, 0); }catch(e){} }
+}
+
 async function exportStudio(){
   if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
@@ -8357,6 +8434,9 @@ async function exportStudio(){
        "Can't find variable: _PORDER" qui tuait l'export en silence. Corrigé en le retirant :
        l'export rend fidèlement ce que l'aperçu affiche. */
     var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
+    _signBuild();
+    var INTRO=SIGN.on?SIGN.introDur:0, OUTRO=SIGN.on?SIGN.outroDur:0, TOT=INTRO+DUR+OUTRO;
+    try{ if(SIGN.on&&document.fonts&&document.fonts.load){ document.fonts.load("800 58px 'Playfair Display'"); document.fonts.load("italic 500 30px 'Playfair Display'"); } }catch(e){}
     var _ow=base.width,_oh=base.height;
 
     _setStage("R\u00e9glage image\u2026"); await _paint();
@@ -8374,8 +8454,8 @@ async function exportStudio(){
     var stream; try{ stream=capCanvas.captureStream(FPS); }catch(e){ EXPORTING=false; try{setRenderSize(_ow,_oh);}catch(_r){} _expMsg("Capture refusée : "+((e&&e.message)||e)+". Essaie dans Safari."); return; }
 
     _setStage("Audio\u2026"); await _paint();
-    var audioCtx=null,audioSrc=null,audioAdded=false;
-    try{ if(AUDIOBUF){ var AC=window.AudioContext||window.webkitAudioContext; audioCtx=new AC(); var _buf=AUDIOBUF; try{ if(window.MULTI){ var _pb=renderPlanToBuffer(DUR,AUDIOBUF.sampleRate); if(_pb)_buf=_pb; } }catch(e){} audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf; var _dest=audioCtx.createMediaStreamDestination(); audioSrc.connect(_dest); var _atk=_dest.stream.getAudioTracks()[0]; if(_atk){ stream.addTrack(_atk); audioAdded=true; } } }catch(e){ try{audioCtx&&audioCtx.close();}catch(_){} audioCtx=null;audioSrc=null; }
+    var audioCtx=null,audioSrc=null,audioAdded=false,_sgain=null;
+    try{ if(AUDIOBUF){ var AC=window.AudioContext||window.webkitAudioContext; audioCtx=new AC(); var _buf=AUDIOBUF; try{ if(window.MULTI){ var _pb=renderPlanToBuffer(DUR,AUDIOBUF.sampleRate); if(_pb)_buf=_pb; } }catch(e){} audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf; var _dest=audioCtx.createMediaStreamDestination(); _sgain=audioCtx.createGain(); audioSrc.connect(_sgain); _sgain.connect(_dest); var _atk=_dest.stream.getAudioTracks()[0]; if(_atk){ stream.addTrack(_atk); audioAdded=true; } } }catch(e){ try{audioCtx&&audioCtx.close();}catch(_){} audioCtx=null;audioSrc=null; }
 
     _setStage("Encodeur\u2026"); await _paint();
     var mimes=["video/mp4","video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
@@ -8396,7 +8476,7 @@ async function exportStudio(){
       var blob=null; try{ blob=new Blob(chunks,{type:outType}); }catch(e){ EXPORTING=false; expHide(); try{ chunks.length=0; }catch(_){} _expMsg("Mémoire insuffisante à la finalisation. Montage trop long : réduis la durée ou la qualité."); return; }
       try{ chunks.length=0; }catch(e){}   /* libère tout de suite la RAM des morceaux (évite le double pic mémoire = crash iOS) */
       if(!blob || !blob.size){ EXPORTING=false; expHide(); try{ renderMontageAt(0);}catch(e){} _expMsg("Aucune image capturée. Ouvre la page dans Safari (\u2197 en bas) : les navigateurs intégrés (in-app) bloquent la capture vidéo."); return; }
-      _showExportResult(blob, outType, ext, DUR, audioAdded, null);
+      _showExportResult(blob, outType, ext, (typeof TOT!=='undefined'?TOT:DUR), audioAdded, null);
     }
     rec.onstop=_finish; rec.onerror=function(){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} _finish(); };
 
@@ -8415,23 +8495,31 @@ async function exportStudio(){
     if(EXPORT_ABORT){ EXPORTING=false; try{ stream.getTracks().forEach(function(t){try{t.stop();}catch(_){}});}catch(e){} try{ setRenderSize(_ow,_oh);}catch(e){} expHide(); return; }
 
     try{ if(_expWatch)clearTimeout(_expWatch); }catch(e){}
-    _expWatch=setTimeout(function(){ if(EXPORTING&&!done){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} _expForceReset("Export interrompu (trop long)."); } }, (DUR*1000)+90000);
+    _expWatch=setTimeout(function(){ if(EXPORTING&&!done){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} _expForceReset("Export interrompu (trop long)."); } }, (TOT*1000)+90000);
 
     _setStage("Enregistrement\u2026"); await _paint();
-    _renderFrameTo(0);
+    if(INTRO>0){ try{ drawSignatureCard("intro",0); }catch(e){} } else { _renderFrameTo(0); }
     try{ rec.start(1000); }catch(e){ try{ rec.start(); }catch(e2){ EXPORTING=false; _cleanup(); _expMsg("Démarrage impossible : "+((e2&&e2.message)||e2)); return; } }
     var t0=performance.now();
-    if(audioSrc){ try{ audioSrc.start(); }catch(e){} }
-    _hardStop=setTimeout(function(){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} }, Math.round(DUR*1000)+700);
+    if(audioSrc){ try{ var ac0=audioCtx.currentTime;
+        audioSrc.start(ac0+INTRO);                                     /* la musique démarre avec les photos (après l'intro) */
+        if(_sgain){ _sgain.gain.setValueAtTime(0.0001, ac0+INTRO);
+          _sgain.gain.exponentialRampToValueAtTime(1, ac0+INTRO+0.6);  /* fondu d'entrée doux */
+          _sgain.gain.setValueAtTime(1, ac0+INTRO+Math.max(0.7,DUR-1.6));
+          _sgain.gain.linearRampToValueAtTime(0.0001, ac0+INTRO+DUR); } /* fin en douceur : la musique s'éteint avant l'outro */
+      }catch(e){ try{ audioSrc.start(); }catch(_){} } }
+    _hardStop=setTimeout(function(){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} }, Math.round(TOT*1000)+700);
 
     var _rafLoop=(typeof requestAnimationFrame==="function");
     (function _loop(){
       if(EXPORT_ABORT){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} return; }
       var t=(performance.now()-t0)/1000;
-      if(t>=DUR){ try{ _renderFrameTo(Math.max(0,DUR-0.001)); }catch(e){} return; }
-      _renderFrameTo(t);
-      try{ expShow(Math.min(0.99,t/DUR)); }catch(e){}
-      try{ var st=document.getElementById("expStage"); if(st) st.textContent="Enregistrement\u2026 "+Math.round(t)+"/"+Math.round(DUR)+" s"+(_bytes?(" · "+(_bytes/1048576).toFixed(1)+" Mo"):""); }catch(e){}
+      if(t>=TOT){ try{ drawSignatureCard("outro",1); }catch(e){} return; }
+      if(INTRO>0 && t<INTRO){ try{ drawSignatureCard("intro", t/INTRO); }catch(e){} }
+      else if(t < INTRO+DUR){ _renderFrameTo(t-INTRO); }
+      else { try{ drawSignatureCard("outro", (t-INTRO-DUR)/Math.max(0.1,OUTRO)); }catch(e){} }
+      try{ expShow(Math.min(0.99,t/TOT)); }catch(e){}
+      try{ var st=document.getElementById("expStage"); if(st) st.textContent="Enregistrement\u2026 "+Math.round(t)+"/"+Math.round(TOT)+" s"+(_bytes?(" · "+(_bytes/1048576).toFixed(1)+" Mo"):""); }catch(e){}
       if(_rafLoop) requestAnimationFrame(_loop); else setTimeout(_loop, Math.max(16,Math.round(1000/FPS)));
     })();
   }catch(e){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(_w){} _expMsg("Échec export : "+((e&&e.message)||e)); }
