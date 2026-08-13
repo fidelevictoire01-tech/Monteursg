@@ -574,7 +574,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C161</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C162</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8057,7 +8057,7 @@ function renderMontageAt(t){
   } else { var r=renderBaseFrame(t); if(glReady) drawGL(t,r.strongPulse); }
 }
 function _expMsg(m){ try{ var e=document.getElementById("expProg"); var t=e?e.querySelector("div"):null; if(e){ if(t) t.textContent=m; e.style.display="flex"; var b=document.getElementById("expBar"); if(b)b.style.width="0%"; setTimeout(function(){ try{ e.style.display="none"; if(t)t.textContent="Export en cours\u2026"; }catch(x){} },2600); } }catch(x){} try{ if(typeof setState==="function") setState(m); }catch(x){} }
-function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; }
+function expShow(p){ var e=document.getElementById("expProg"); if(e){ e.style.display="flex"; } var b=document.getElementById("expBar"), pc=document.getElementById("expPct"); var v=Math.round(p*100); if(b) b.style.width=v+"%"; if(pc) pc.textContent=v+" %"; var rg=document.getElementById("expRing"); if(rg){ var off=Math.max(0,Math.min(1,1-p)); rg.style.strokeDashoffset=String(off); } }
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
 function _expYield(){ return new Promise(function(r){ setTimeout(r,0); }); }
 function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
@@ -8186,8 +8186,9 @@ async function exportStudio(){
   /* Watchdog global couvrant Turbo + repli : rend la main au bout de 5 min si tout se fige. */
   try{ if(_expWatch) clearTimeout(_expWatch); }catch(e){}
   _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu (trop long)."); } }, 300000);
-  /* 1) TURBO (WebCodecs, hors temps réel : rapide + fluide). Bascule auto si échec technique. */
-  if(typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined" && !window._MAGOT_NO_TURBO){
+  /* 1) TURBO (WebCodecs) — DÉSACTIVÉ par défaut : sur iPhone l'encodeur est plus lent que le
+     temps réel. Réactivable via window._MAGOT_TURBO=true (utile surtout sur ordinateur). */
+  if(window._MAGOT_TURBO===true && typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined"){
     var _tr="fail"; try{ _tr=await _turboExport(); }catch(e){ _tr="fail"; }
     if(_tr==="ok") return;
     if(_tr==="abort"||EXPORT_ABORT){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(e){} expHide(); return; }
@@ -9513,9 +9514,12 @@ function renderVNav(){
 <!-- Overlays d'export sortis de .wrap (qui est en opacity:0) — enfants directs de body,
      z-index releve pour passer au-dessus de la facade Kimi. Feedback enfin visible. -->
   <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,10,22,.86);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
-    <div style="font:700 16px system-ui;color:#fff;margin-bottom:14px">Export en cours…</div>
-    <div style="width:80%;max-width:300px;height:12px;background:#1a2440;border-radius:8px;overflow:hidden"><div id="expBar" style="height:100%;width:0%;background:#E0A33E;transition:width .1s"></div></div>
-    <div id="expPct" style="font:600 13px ui-monospace,monospace;color:#E0A33E;margin-top:10px">0 %</div>
+    <div style="font:700 16px system-ui;color:#fff;margin-bottom:18px">Export en cours…</div>
+    <svg viewBox="0 0 100 178" width="168" style="max-width:54vw;overflow:visible">
+      <rect x="5" y="5" width="90" height="168" rx="14" fill="none" stroke="#1a2440" stroke-width="4.5"></rect>
+      <rect id="expRing" x="5" y="5" width="90" height="168" rx="14" fill="none" stroke="#E0A33E" stroke-width="4.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" transform="rotate(-90 50 89)" style="filter:drop-shadow(0 0 5px rgba(224,163,62,.65));transition:stroke-dashoffset .2s ease"></rect>
+      <text id="expPct" x="50" y="89" dy="0.35em" text-anchor="middle" fill="#E0A33E" style="font:700 15px ui-monospace,monospace">0 %</text>
+    </svg>
     <div style="font:12px system-ui;color:#9fb0d0;margin-top:10px">Laisse l'écran allumé quelques secondes.</div>
     <button id="expCancel" onclick="try{_expForceReset('Export annulé.');}catch(e){}" style="margin-top:18px;border:1px solid #3b466b;background:#131d38;color:#dfe7f6;border-radius:11px;padding:10px 18px;font:600 13px system-ui;cursor:pointer">Annuler l'export</button>
   </div>
