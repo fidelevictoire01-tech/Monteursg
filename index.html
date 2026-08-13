@@ -657,7 +657,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C176</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C177</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8831,10 +8831,42 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     if(!ok){ _mLoading=false; t.loading=false; renderLib(); showProg(true,"Chargement impossible sur ce navigateur."); setTimeout(function(){ showProg(false); },1800); return; }
     watchAnalyze(t);
   }
+  /* Lit les tags ID3v2 d'un MP3 importé : pochette embarquée (APIC), titre (TIT2), style (TCON), artiste (TPE1). */
+  function _parseID3(b){
+    if(!b || b.length<10 || b[0]!==0x49||b[1]!==0x44||b[2]!==0x33) return null;   /* "ID3" */
+    var ver=b[3];
+    var size=((b[6]&0x7f)<<21)|((b[7]&0x7f)<<14)|((b[8]&0x7f)<<7)|(b[9]&0x7f);
+    var pos=10, end=Math.min(b.length,10+size), out={};
+    function rd(enc,arr){ try{ var lab=(enc===1)?"utf-16":(enc===2)?"utf-16be":(enc===3)?"utf-8":"iso-8859-1"; return new TextDecoder(lab).decode(arr).replace(/\u0000+$/,"").trim(); }catch(e){ var s=""; for(var i=0;i<arr.length;i++){ if(arr[i]===0)break; s+=String.fromCharCode(arr[i]); } return s.trim(); } }
+    while(pos+10<=end){
+      var id=String.fromCharCode(b[pos],b[pos+1],b[pos+2],b[pos+3]);
+      if(!/^[A-Z0-9]{4}$/.test(id)) break;
+      var fs=(ver===4)?(((b[pos+4]&0x7f)<<21)|((b[pos+5]&0x7f)<<14)|((b[pos+6]&0x7f)<<7)|(b[pos+7]&0x7f)):((b[pos+4]<<24)|(b[pos+5]<<16)|(b[pos+6]<<8)|b[pos+7]);
+      var fst=pos+10; if(fs<=0 || fst+fs>end) break;
+      var data=b.subarray(fst,fst+fs);
+      if(id==="TIT2" && !out.title){ out.title=rd(data[0],data.subarray(1)); }
+      else if(id==="TPE1" && !out.artist){ out.artist=rd(data[0],data.subarray(1)); }
+      else if(id==="TCON" && !out.type){ out.type=rd(data[0],data.subarray(1)); }
+      else if(id==="APIC" && !out.cover){
+        var enc=data[0], p=1, ms=p; while(p<data.length && data[p]!==0) p++; var mime=rd(0,data.subarray(ms,p)); p++;
+        p++; /* picture type */
+        if(enc===1||enc===2){ while(p+1<data.length && !(data[p]===0&&data[p+1]===0)) p+=2; p+=2; } else { while(p<data.length && data[p]!==0) p++; p++; }
+        var img=data.subarray(p);
+        if(img.length>100){ try{ out.cover=URL.createObjectURL(new Blob([img],{type:mime||"image/jpeg"})); }catch(e){} }
+      }
+      pos=fst+fs;
+    }
+    return out;
+  }
+  function _readID3(file, cb){
+    try{ var sl=(file.slice?file.slice(0,4*1024*1024):file); var fr=new FileReader(); fr.onload=function(){ try{ cb(_parseID3(new Uint8Array(fr.result))); }catch(e){ cb(null); } }; fr.onerror=function(){ cb(null); }; fr.readAsArrayBuffer(sl); }catch(e){ cb(null); }
+  }
   function addImport(file){
     var nm=cleanName(file.name);
     var t={ id:"i"+(++LIB_SEQ), title:nm, artist:"Import", file:file, remote:false };
     LIB.unshift(t); renderLib(); probeDur(t);
+    /* pochette + infos embarquées dans le MP3 (Suno les inclut) */
+    _readID3(file, function(meta){ if(!meta) return; var ch=false; if(meta.title){ t.title=meta.title; ch=true; } if(meta.type){ t.type=meta.type; ch=true; } if(meta.artist && meta.artist.toLowerCase()!=="import"){ t.artist=meta.artist; ch=true; } if(meta.cover){ t.cover=meta.cover; ch=true; } if(ch) renderLib(); });
     prepareTrack(t, function(ok){ if(ok) addToMix(t); else renderLib(); }, true);
   }
   function watchAnalyze(t){
