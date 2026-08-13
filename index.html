@@ -633,7 +633,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C170</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C172</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1277,6 +1277,25 @@ function buildPartition(){
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
      -> chaque coupe tombe sur un accent réel ; jamais de seconde arbitraire. */
   var cuts=[], lastCut=MST, bi=0, gi=0, span=(emax-emin)||1;
+  var _photoCmd=(_nP>0 && !clipVidReady && beats.length>=2);   /* montage 100% photos -> ce sont les photos qui commandent */
+  if(_photoCmd){
+    /* Exactement UN plan par photo : coupes reparties puis calees sur le meilleur temps proche (accent+proximite) pour garder la synchro. */
+    var _N=_nP, _prevC=MST, _slot=bdur/_N;
+    for(var _i=1;_i<_N;_i++){
+      var _tgt=MST+_i*_slot, _win=_slot*0.9, _bestK=-1, _bestSc=-1;
+      for(var _k=0;_k<beats.length;_k++){
+        if(beats[_k]<=_prevC+Math.max(0.35,_slot*0.35)) continue;
+        if(beats[_k]>=wEnd-0.30) break;
+        var _d=Math.abs(beats[_k]-_tgt); if(_d>_win) continue;
+        var _s2=(str[_k]||0), _mt2=(metricArr&&metricArr[_k]!=null)?metricArr[_k]:0.4, _prox2=1-Math.min(1,_d/_win);
+        var _sc=_prox2*0.9 + _s2*0.7 + _mt2*0.4;
+        if(_sc>_bestSc){ _bestSc=_sc; _bestK=_k; }
+      }
+      var _ct=(_bestK>=0)?snapKick(beats[_bestK]):_tgt;
+      if(_ct<=_prevC+0.30 || _ct>=wEnd-0.30) _ct=Math.min(wEnd-0.30, _prevC+_slot);
+      cuts.push({t:_ct, s:(_bestK>=0?(str[_bestK]||0.5):0.5)}); _prevC=_ct;
+    }
+  } else {
   while(gi++<20000){
     var lo=lastCut+emin, hi=lastCut+emax, tgt=lastCut+etgt;
     while(bi<beats.length && beats[bi]<lo) bi++;
@@ -1297,6 +1316,7 @@ function buildPartition(){
     cuts.push({t:cut, s:(str[bestK]||0)}); lastCut=cut; bi=bestK+1;
   }
   while(cuts.length && (wEnd - cuts[cuts.length-1].t) < 0.5) cuts.pop();   /* pas de dernier plan trop court */
+  }
   var pts=[{t:MST,s:0.6}].concat(cuts);           /* 1er plan : du début au 1er accent */
   for(var c=0;c<pts.length;c++){
     var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:wEnd);
@@ -1305,6 +1325,24 @@ function buildPartition(){
     SEGS.push({start:start,end:end,strong:strong,e:_eAt(start)});
   }
   var MOVES=["zoomIn","panLR","zoomOut","panRL","zoomIn","panRL","zoomOut","panLR"];
+  /* GARANTIE "toutes les photos passent" : si le nombre de plans (imposé par les temps de la
+     musique) est inférieur au nombre de photos retenues, on découpe les plans les plus longs
+     — sur un vrai temps musical si possible — jusqu'à avoir un plan par photo. Sans ça, les
+     photos au-delà du nombre de plans n'étaient jamais affichées. */
+  (function(){
+    var _keptN=0; for(var _kp=0;_kp<PHOTOS.length;_kp++){ if(PHOTOS[_kp] && !(PHOTOS[_kp].feat&&PHOTOS[_kp].feat.skip)) _keptN++; }
+    if(_keptN<=0 || SEGS.length===0 || SEGS.length>=_keptN) return;
+    var _guard=0;
+    while(SEGS.length<_keptN && _guard++<300){
+      var _li=0,_lmax=-1; for(var _s=0;_s<SEGS.length;_s++){ var _len=SEGS[_s].end-SEGS[_s].start; if(_len>_lmax){ _lmax=_len; _li=_s; } }
+      if(_lmax<0.8) break;                                  /* plus rien de découpable proprement */
+      var _sgL=SEGS[_li], _mid=(_sgL.start+_sgL.end)/2, _cutT=_mid, _bd=1e9;
+      for(var _bk=0;_bk<beats.length;_bk++){ if(beats[_bk]>_sgL.start+0.35 && beats[_bk]<_sgL.end-0.35){ var _dd=Math.abs(beats[_bk]-_mid); if(_dd<_bd){ _bd=_dd; _cutT=beats[_bk]; } } }
+      var _newSeg={start:_cutT,end:_sgL.end,strong:false,e:_eAt(_cutT)};
+      _sgL.end=_cutT;
+      SEGS.splice(_li+1,0,_newSeg);
+    }
+  })();
   var _PORDER=PHOTOS.length?computePhotoOrder():[];
   SEGS.forEach(function(sg,idx){
     sg.img=_PORDER.length?_PORDER[idx%_PORDER.length]:-1;
