@@ -624,6 +624,30 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .te-apply2{ margin-top:14px; padding:12px 14px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); border-radius:14px; }
   .te-apply2-tt{ color:#dbe4f0; font:700 14px system-ui; }
   .vtog.on{ background:#e3a531; }
+  /* ============================================================
+     BIBLIOTHÈQUE MUSICALE — façon appli musicale (recherche + pochettes)
+     ============================================================ */
+  .msearch{ position:relative; margin:2px 0 12px; }
+  .msearch svg{ position:absolute; left:13px; top:50%; transform:translateY(-50%); color:#7f8da4; pointer-events:none; }
+  .msearch input{ width:100%; box-sizing:border-box; background:#0d1626; border:1px solid rgba(255,255,255,.10); border-radius:13px; color:#eef4fd; font:500 14px system-ui; padding:12px 13px 12px 39px; outline:none; -webkit-appearance:none; }
+  .msearch input:focus{ border-color:rgba(244,189,74,.5); box-shadow:0 0 0 3px rgba(244,189,74,.10); }
+  .msearch input::placeholder{ color:#6f7d92; }
+  .mlib{ display:flex; flex-direction:column; gap:9px; margin:2px 0 12px; }
+  .mtrack{ display:flex; align-items:center; gap:11px; padding:9px 10px; border:1px solid rgba(255,255,255,.08); border-radius:15px; background:rgba(255,255,255,.025); color:#eaf1fb; transition:border-color .15s,background .15s; }
+  .mtrack.on{ border-color:rgba(244,189,74,.6); background:linear-gradient(180deg,rgba(244,189,74,.12),rgba(244,189,74,.02)); box-shadow:0 4px 16px rgba(244,189,74,.12); }
+  .mt-main{ flex:1; min-width:0; display:flex; align-items:center; gap:12px; background:none; border:0; color:inherit; text-align:left; cursor:pointer; padding:0; }
+  .mt-cov{ position:relative; width:54px; height:54px; border-radius:11px; flex-shrink:0; overflow:hidden; display:grid; place-items:center; background:linear-gradient(158deg,#2a4c7f,#12274c); box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 4px 12px rgba(0,0,0,.35); }
+  .mt-cov img{ width:100%; height:100%; object-fit:cover; }
+  .mt-ph{ color:#cfe0ff; font-size:22px; }
+  .mt-covplay{ position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:15px; background:rgba(0,0,0,.30); }
+  .mt-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .mt-meta b{ font-size:14.5px; font-weight:700; color:#f4f7fc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mt-meta small{ font-size:11.5px; color:#93a1b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mtrack.on .mt-meta b{ color:#f7cb63; }
+  .mt-addbtn{ flex-shrink:0; background:none; border:0; cursor:pointer; padding:2px; display:grid; place-items:center; }
+  .mt-add{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#f4bd4a; border:1.5px solid rgba(244,189,74,.5); font-size:19px; line-height:1; transition:background .15s; }
+  .mt-add:active{ background:rgba(244,189,74,.15); }
+  .mt-act{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#231705; background:linear-gradient(180deg,#f7c65a,#e3a531); font-size:15px; font-weight:800; box-shadow:0 3px 10px rgba(244,189,74,.3); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;600&family=Caveat:wght@400;700&family=Montserrat:wght@400;700&family=Raleway:wght@400;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 </head>
@@ -633,7 +657,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C175</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C176</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8694,7 +8718,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
 
   /* ---------- 5) Biblioth\u00e8que musique (fa\u00e7ade) ---------- */
   var msBody=q('.sheet-bg[data-bg="music"] .sh-body');
-  var LIB=[], LIB_ACTIVE=null, LIB_SEQ=0, PENDING=null, _mLoading=false;
+  var LIB=[], LIB_ACTIVE=null, LIB_SEQ=0, PENDING=null, _mLoading=false, _mQuery="";
   var MIX=[]; /* ids des pistes du mix, dans l'ordre (= enchaînement DJ) */
   function inMix(id){ return MIX.indexOf(id)>=0; }
   function mixPos(id){ return MIX.indexOf(id)+1; }
@@ -8745,7 +8769,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function cleanName(s){ return String(s||"").replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").trim(); }
   function clock(sec){ sec=Math.max(0,Math.round(sec||0)); var m=Math.floor(sec/60),s=sec%60; return m+":"+(s<10?"0":"")+s; }
-  function trackMeta(t){ var d=t.durStr?t.durStr:(t.dur!=null?clock(t.dur):""); var a=t.artist||(t.remote?"":"Import"); return d?(a?d+" \u00B7 "+a:d):a; }
+  function trackMeta(t){ var d=t.durStr?t.durStr:(t.dur!=null?clock(t.dur):""); var ty=t.type||t.artist||(t.remote?"":"Import"); return ty?(d?ty+" \u00B7 "+d:ty):d; }
   function probeDur(t){
     if(t.dur!=null||t.durStr) return;
     var revoke=false, src=t.url||(t.file?(revoke=true,URL.createObjectURL(t.file)):null); if(!src) return;
@@ -8771,7 +8795,10 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   function renderLib(){
     var lib=$("mLib"); if(!lib) return;
     if(!LIB.length){ lib.innerHTML='<p class="sh-note" style="opacity:.72">Aucune piste pour l\'instant. Importe une musique, ou d\u00e9pose tes pistes + <b>musics.json</b> dans le d\u00e9p\u00f4t.</p>'; return; }
-    lib.innerHTML=LIB.map(function(t){
+    var _q=(_mQuery||"").trim().toLowerCase();
+    var _list=_q?LIB.filter(function(t){ return ((t.title||"")+" "+(t.type||"")+" "+(t.artist||"")).toLowerCase().indexOf(_q)>=0; }):LIB;
+    if(!_list.length){ lib.innerHTML='<p class="sh-note" style="opacity:.72">Aucun r\u00e9sultat pour \u00ab '+esc(_mQuery)+' \u00bb.</p>'; return; }
+    lib.innerHTML=_list.map(function(t){
       var act=inMix(t.id); var _mp=mixPos(t.id);
       var playing=(PREV && PREV.id===t.id && PREV.audio && !PREV.audio.paused);
       var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Dans le mix">'+_mp+'</span>':'<span class="mt-add" title="Ajouter au mix">\uFF0B</span>');
@@ -8858,7 +8885,8 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   if(msBody){
     msBody.innerHTML=
-      '<p class="sh-note">Tape le <b>\uFF0B</b> pour ajouter une musique au <b>mix DJ</b> (jusqu\u2019\u00e0 4, num\u00e9ro = ordre). Une seule = mono. Le r\u00e9alisateur cale les coupes sur le tempo de chacune.</p>'
+      '<div class="msearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><input id="mSearch" type="search" placeholder="Rechercher un titre, un style\u2026" autocomplete="off" spellcheck="false"></div>'
+     +'<p class="sh-note">Choisis un morceau (<b>\uFF0B</b> pour l\'ajouter au <b>mix DJ</b>, jusqu\u2019\u00e0 4). Le r\u00e9alisateur cale les coupes sur son tempo. Ou importe le tien.</p>'
      +'<div id="mLib" class="mlib"></div>'
      +'<div id="mProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
      +'<button class="doexp" id="mImport">\uFF0B Importer une musique</button>';
@@ -8866,11 +8894,12 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     try{ (document.body||document.documentElement).appendChild(myMusicIn); }catch(e){}
     myMusicIn.onchange=function(){ var f=this.files&&this.files[0]; if(!f) return; this.value=""; addImport(f); };
     var mi=$("mImport"); if(mi) mi.onclick=function(){ myMusicIn.click(); };
+    var msrch=$("mSearch"); if(msrch) msrch.oninput=function(){ _mQuery=this.value||""; renderLib(); };
     renderLib();
     try{
       fetch("musics.json",{cache:"no-store"}).then(function(r){ return r&&r.ok?r.json():null; }).then(function(arr){
         if(arr && arr.length){
-          arr.forEach(function(m){ var t={ id:"r"+(++LIB_SEQ), title:m.title||cleanName(m.file||m.url||""), artist:m.artist||"", cover:m.cover||"", url:m.file||m.url, remote:true }; if(typeof m.duration==="string") t.durStr=m.duration; else if(typeof m.duration==="number") t.dur=m.duration; LIB.push(t); probeDur(t); });
+          arr.forEach(function(m){ var t={ id:"r"+(++LIB_SEQ), title:m.title||cleanName(m.file||m.url||""), artist:m.artist||"", type:m.type||m.genre||m.style||"", cover:m.cover||"", url:m.file||m.url, remote:true }; if(typeof m.duration==="string") t.durStr=m.duration; else if(typeof m.duration==="number") t.dur=m.duration; LIB.push(t); probeDur(t); });
           renderLib();
         }
       }).catch(function(){});
