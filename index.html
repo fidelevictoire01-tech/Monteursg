@@ -671,7 +671,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C186</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C187</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1313,10 +1313,13 @@ function buildPartition(){
       avail=want; bdur=want; window.DUR_FIT=1;
     }
     window.DUR_NP=(_nP||1); }
-  bdur=Math.max(1,Math.min(bdur,avail)); var wEnd=MST+bdur; window.MONTAGE_DUR=wEnd; window.MSTART_EFF=MST;
+  bdur=Math.max(1,Math.min(bdur,avail));
+  var _iD=(typeof SIGN!=="undefined"&&SIGN.on)?SIGN.introDur:0, _oD=(typeof SIGN!=="undefined"&&SIGN.on)?SIGN.outroDur:0;
+  var pStart=MST+_iD, pEnd=pStart+bdur, wEnd=pEnd+_oD;   /* la musique joue sur TOUT : intro + photos + outro */
+  window.MONTAGE_DUR=wEnd; window.MSTART_EFF=MST; window.SIGN_PS=pStart; window.SIGN_PE=pEnd;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
      -> chaque coupe tombe sur un accent réel ; jamais de seconde arbitraire. */
-  var cuts=[], lastCut=MST, bi=0, gi=0, span=(emax-emin)||1;
+  var cuts=[], lastCut=pStart, bi=0, gi=0, span=(emax-emin)||1;
   while(gi++<20000){
     var lo=lastCut+emin, hi=lastCut+emax, tgt=lastCut+etgt;
     while(bi<beats.length && beats[bi]<lo) bi++;
@@ -1333,13 +1336,13 @@ function buildPartition(){
     }
     if(bestK<0) bestK=bi;                       /* fenêtre sans temps : le 1er après le plancher (reste un vrai temps) */
     var cut=snapKick(beats[bestK]);             /* on cale sur le VRAI coup de batterie, pas juste le tick */
-    if(cut>=wEnd-0.30) break;
+    if(cut>=pEnd-0.30) break;
     cuts.push({t:cut, s:(str[bestK]||0)}); lastCut=cut; bi=bestK+1;
   }
-  while(cuts.length && (wEnd - cuts[cuts.length-1].t) < 0.5) cuts.pop();   /* pas de dernier plan trop court */
-  var pts=[{t:MST,s:0.6}].concat(cuts);           /* 1er plan : du début au 1er accent */
+  while(cuts.length && (pEnd - cuts[cuts.length-1].t) < 0.5) cuts.pop();   /* pas de dernier plan trop court */
+  var pts=[{t:pStart,s:0.6}].concat(cuts);           /* 1er plan photo : après l'intro */
   for(var c=0;c<pts.length;c++){
-    var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:wEnd);
+    var start=pts[c].t, end=(c+1<pts.length?pts[c+1].t:pEnd);
     if(end-start<0.4) continue;
     var strong=(pts[c].s>=M.accent) || _eAt(start)>0.55;
     SEGS.push({start:start,end:end,strong:strong,e:_eAt(start)});
@@ -1411,6 +1414,13 @@ function buildPartition(){
     if(PHOTOS.length>0){ for(var _mv=SEGS.length-2; _mv>=0; _mv--){ if(SEGS[_mv].video && SEGS[_mv+1] && !SEGS[_mv+1].video){ SEGS[_mv].end=SEGS[_mv+1].end; SEGS.splice(_mv+1,1); } } }
   }
   for(var _es=0; _es<SEGS.length; _es++){ if(!SEGS[_es].video && SEGS[_es].img!=null && SEGS[_es].img>=0){ var _en=_capNeeded(SEGS[_es].img); if(_en>0){ while((SEGS[_es].end-SEGS[_es].start) < _en-0.01 && _es+1<SEGS.length && !SEGS[_es+1].video){ SEGS[_es].end=SEGS[_es+1].end; SEGS.splice(_es+1,1); } } } }
+  /* SIGNATURE : intro au tout début, outro à la toute fin -> plans à part entière de la timeline.
+     La musique joue par-dessus (elle démarre sur l'intro, se termine sur l'outro). */
+  if((typeof SIGN!=="undefined"&&SIGN.on) && SEGS.length){
+    try{ _signBuild(); }catch(e){}
+    if(_iD>0) SEGS.unshift({start:MST, end:pStart, sign:"intro", img:-1, trans:"none"});
+    if(_oD>0) SEGS.push({start:pEnd, end:wEnd, sign:"outro", img:-1, trans:"none"});
+  }
 }
 
 /* ================= Rendu 2D ================= */
@@ -7960,11 +7970,12 @@ function loop(){
   if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
   var t=visualTime(); if(t<0) t=0;
   if(!window.LOOP_ON && window.MONTAGE_DUR){ var _mf=Math.min(9,Math.max(4,window.MONTAGE_DUR*0.16)); if(t>window.MONTAGE_DUR-_mf){ try{ masterVol(Math.pow(Math.max(0,(window.MONTAGE_DUR-t)/_mf),0.7)); }catch(e){} } }
-  if(!window.LOOP_ON && window.MONTAGE_DUR && t>=window.MONTAGE_DUR-0.02){ if(SIGN.on){ _sigStartOutro(); return; } stopPlay(); resetBtn(); return; }
+  if(!window.LOOP_ON && window.MONTAGE_DUR && t>=window.MONTAGE_DUR-0.02){ stopPlay(); resetBtn(); return; }
   if(window.MULTI){ var _cti=_curPlanTrackIdx(); if(_cti!==window._lastCti){ window._lastCti=_cti; try{ updateBadge(); }catch(e){} try{ if(typeof syncLabel==="function") syncLabel(); }catch(e){} } }
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
+  if(sg&&sg.sign){ if(VIDACT>=0){ VIDACT=-1; for(var _c2s=0;_c2s<CLIPS.length;_c2s++){ try{ CLIPS[_c2s].el.pause(); }catch(e){} } } try{ drawSignatureCard(sg.sign, (t-sg.start)/Math.max(0.1,sg.end-sg.start)); }catch(e){} try{ paintStrip(t); }catch(e){} raf=requestAnimationFrame(loop); return; }
   /* Option A */
   var next=(idx>=0 && idx+1<SEGS.length)?SEGS[idx+1]:null;
   try{ if(SEGS && idx>=0){ for(var _pj=idx; _pj<SEGS.length && (SEGS[_pj].start - t)<6; _pj++){ if((window._decInFlight||0)>=2) break; var _sp=SEGS[_pj]; if(_sp && !_sp.video && _sp.img>=0 && PHOTOS[_sp.img] && !PHOTOS[_sp.img].c && !PHOTOS[_sp.img]._decoding){ ensurePhotoDecoded(_sp.img); } } } }catch(e){}
@@ -7988,52 +7999,16 @@ function loop(){
     var r=renderBaseFrame(t);
     if(glReady) drawGL(t,r.strongPulse);
   }
-  if(!window.LOOP_ON && window.MONTAGE_DUR && t>window.MONTAGE_DUR-1.0){ _fadeBlackOverlay((t-(window.MONTAGE_DUR-1.0))/1.0); }
   paintStrip(t);
   }catch(_lerr){}
   if(playing) raf=requestAnimationFrame(loop);
 }
 /* Phase outro de l'aperçu : coupe le son, joue la carte de fin, puis arrête. */
-function _sigStartOutro(){
-  try{ waStop(); }catch(e){} if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} }
-  _sigPhase="outro"; var _s0=_perfNow(); cancelAnimationFrame(raf);
-  (function _outroLoop(){
-    if(!playing || _sigPhase!=="outro") return;
-    var e=(_perfNow()-_s0)/1000;
-    if(e>=SIGN.outroDur){ _sigPhase=null; stopPlay(); resetBtn(); try{ renderMontageAt(0); }catch(_x){} return; }
-    try{ drawSignatureCard("outro", e/Math.max(0.1,SIGN.outroDur)); }catch(_x){}
-    raf=requestAnimationFrame(_outroLoop);
-  })();
-}
 function startPlay(){
   _iosUnlock();
   if(!A){ setState("Choisis d'abord une musique."); return; }
   if(!PHOTOS.length && !clipVidReady){ setState("Ajoute des photos ou des vid\u00e9os."); return; }
   if(!audioEl){ setState("Musique non chargée."); return; }
-  /* Signature : page d'intro AVANT le montage, uniquement au démarrage (pas au reprise de pause). */
-  if(SIGN.on && (pausedOffset||0)<=0.05){
-    try{ _signBuild(); }catch(e){}
-    /* iOS bloque toute lecture audio qui ne démarre pas DANS le geste. L'intro dure ~3,6 s :
-       on "réveille" donc l'audio ici (muet), il tourne pendant l'intro, puis _startPlayCore le
-       remet au bon endroit et le rend audible. Sans ça, le montage se figeait / ne jouait pas. */
-    try{ if(ctx&&ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){}
-    try{ if(audioEl){ audioEl.muted=true; try{ audioEl.currentTime=0; }catch(e){} var _uw=audioEl.play(); if(_uw&&_uw.then) _uw.catch(function(){}); } }catch(e){}
-    playing=true; _sigPhase="intro";
-    try{ document.getElementById("play").textContent="\u23F8 Pause"; }catch(e){}
-    try{ document.getElementById("empty").style.display="none"; }catch(e){}
-    var _s0=_perfNow(); cancelAnimationFrame(raf);
-    (function _introLoop(){
-      if(!playing || _sigPhase!=="intro") return;
-      var e=(_perfNow()-_s0)/1000;
-      if(e>=SIGN.introDur){ _sigPhase=null; _startPlayCore(); return; }
-      try{ drawSignatureCard("intro", e/Math.max(0.1,SIGN.introDur)); }catch(_x){}
-      raf=requestAnimationFrame(_introLoop);
-    })();
-    return;
-  }
-  _startPlayCore();
-}
-function _startPlayCore(){
   buildPartition();
   try{ masterVol(1); }catch(e){}
   try{ if(ctx&&ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){}
@@ -8198,6 +8173,7 @@ function renderMontageAt(t){
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
+  if(sg&&sg.sign){ try{ drawSignatureCard(sg.sign, (t-sg.start)/Math.max(0.1,sg.end-sg.start)); }catch(e){} return; }
   /* Option A */
   var next=(idx>=0 && idx+1<SEGS.length)?SEGS[idx+1]:null;
   var trName=next?next.trans:"none";
@@ -8406,9 +8382,10 @@ function _signBuild(){
       outroProverb:d.outroProverbe||d.outroProverb||"" };
     return;
   }
+  if(SIGN.data && SIGN.data._auto) return;   /* déjà tiré au sort : on garde les mêmes proverbes */
   var p=_signPick2();
   SIGN.data={ introTitle:"Ton voyage", introText:"Revivez vos plus beaux moments, image après image.",
-    introProverb:p[0], outroText:"Merci d'avoir voyagé avec nous.", outroProverb:p[1] };
+    introProverb:p[0], outroText:"Merci d'avoir voyagé avec nous.", outroProverb:p[1], _auto:true };
 }
 function _signWrap(ctx,text,cx,y,maxW,lh){
   text=String(text||""); var words=text.split(/\s+/), line="", lines=[];
@@ -8485,7 +8462,7 @@ async function exportStudio(){
        l'export rend fidèlement ce que l'aperçu affiche. */
     var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
     _signBuild();
-    var INTRO=SIGN.on?SIGN.introDur:0, OUTRO=SIGN.on?SIGN.outroDur:0, TOT=INTRO+DUR+OUTRO;
+    var INTRO=0, OUTRO=0, TOT=DUR;   /* intro/outro sont désormais dans la timeline (SEGS) */
     try{ if(SIGN.on&&document.fonts&&document.fonts.load){ document.fonts.load("800 58px 'Playfair Display'"); document.fonts.load("italic 500 30px 'Playfair Display'"); } }catch(e){}
     var _ow=base.width,_oh=base.height;
 
@@ -8567,10 +8544,8 @@ async function exportStudio(){
     (function _loop(){
       if(EXPORT_ABORT){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} return; }
       var t=(performance.now()-t0)/1000;
-      if(t>=TOT){ try{ drawSignatureCard("outro",1); }catch(e){} return; }
-      if(INTRO>0 && t<INTRO){ try{ drawSignatureCard("intro", t/INTRO); }catch(e){} }
-      else if(t < INTRO+DUR){ _startExpAudio(); _renderFrameTo(t-INTRO); var _mt=t-INTRO; if(_mt>DUR-1.0){ _fadeBlackOverlay((_mt-(DUR-1.0))/1.0); } }
-      else { try{ drawSignatureCard("outro", (t-INTRO-DUR)/Math.max(0.1,OUTRO)); }catch(e){} }
+      if(t>=TOT){ try{ _renderFrameTo(Math.max(0,DUR-0.001)); }catch(e){} return; }
+      _startExpAudio(); _renderFrameTo(t);
       try{ expShow(Math.min(0.99,t/TOT)); }catch(e){}
       try{ var st=document.getElementById("expStage"); if(st) st.textContent="Enregistrement\u2026 "+Math.round(t)+"/"+Math.round(TOT)+" s"+(_bytes?(" · "+(_bytes/1048576).toFixed(1)+" Mo"):""); }catch(e){}
       if(_rafLoop) requestAnimationFrame(_loop); else setTimeout(_loop, Math.max(16,Math.round(1000/FPS)));
