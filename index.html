@@ -627,6 +627,66 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .te-apply2{ margin-top:14px; padding:12px 14px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); border-radius:14px; }
   .te-apply2-tt{ color:#dbe4f0; font:700 14px system-ui; }
   .vtog.on{ background:#e3a531; }
+  /* ============================================================
+     ÉDITEUR — thème « cinéma » de la maquette (noir profond, or #D4AF37, Cormorant Garamond)
+     ============================================================ */
+  .app{ background:#050505 !important; }
+  /* Entête */
+  .header .brand h1{ font-family:"Cormorant Garamond",Georgia,serif !important; font-weight:600 !important; font-size:26px !important; color:#F5F2EB !important; letter-spacing:.3px; }
+  .header .brand h1 i{ color:#D4AF37 !important; }
+  .header .brand p{ color:#A8A6A1 !important; letter-spacing:1px; }
+  .export{ background:#D4AF37 !important; color:#050505 !important; border:0 !important; box-shadow:0 6px 18px rgba(212,175,55,.35) !important; font-weight:700 !important; }
+  /* Pastilles info */
+  .info{ background:#151413 !important; border:1px solid #282622 !important; border-radius:14px !important; }
+  .info>div{ border-right-color:#232120 !important; }
+  .info b{ color:#F5F2EB !important; }
+  .info small{ color:#A8A6A1 !important; letter-spacing:.5px; }
+  .info .ico, .info>div:first-child .ico, .info>div:nth-child(n+2) .ico{ color:#D4AF37 !important; filter:none !important; }
+  /* Titres de section -> eyebrow doré */
+  .section>.title h3, .s-seq .title h3, .s-src .title h3, .s-amb .title h3{ color:#D4AF37 !important; letter-spacing:3px !important; font-size:10px !important; font-weight:600 !important; }
+  .section>.title button{ color:#A8A6A1 !important; }
+  /* Séquence / sync */
+  .timeline{ background:#0d0c0b !important; border:1px solid #232120 !important; }
+  .syncline label{ color:#A8A6A1 !important; }
+  .syncline .v{ color:#D4AF37 !important; }
+  .syncline .rs{ color:#D1CFC9 !important; }
+  input[type=range]{ accent-color:#D4AF37; }
+  /* Sources */
+  .source{ background:#151413 !important; border:1px solid #282622 !important; border-radius:14px !important; padding:11px !important; }
+  .source:active{ background:#1b1917 !important; }
+  .source .ico{ background:#453C22 !important; color:#D4AF37 !important; width:34px !important; height:34px !important; border-radius:999px !important; }
+  .source .ico svg{ width:15px !important; height:15px !important; }
+  .source h4{ font-family:"Cormorant Garamond",Georgia,serif !important; font-size:16px !important; font-weight:600 !important; color:#F5F2EB !important; }
+  .source p{ color:#A8A6A1 !important; }
+  .source .chev{ color:#D4AF37 !important; }
+  /* Ambiance */
+  .ambience{ border:1px solid #D4AF37 !important; background:linear-gradient(180deg,rgba(212,175,55,.08),#151413) !important; border-radius:14px !important; }
+  .ambicon{ background:#453C22 !important; color:#D4AF37 !important; }
+  .ambtext b{ color:#F5F2EB !important; font-family:"Cormorant Garamond",serif; font-size:16px !important; font-weight:600; }
+  .ambtext b span{ color:#D4AF37 !important; }
+  .ambtext small{ color:#A8A6A1 !important; }
+  .ambience .chev{ color:#D4AF37 !important; }
+  /* Barre du bas */
+  .watch{ background:#D4AF37 !important; color:#050505 !important; }
+  .films-btn{ background:#151413 !important; border:1px solid #282622 !important; color:#D4AF37 !important; }
+  /* Aperçu vide -> palette maquette */
+  #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(35,33,32,.7), rgba(5,5,5,.3) 60%, transparent) !important; }
+  .empty-ic{ background:#151413 !important; border:1px solid rgba(212,175,55,.3) !important; color:#D4AF37 !important; }
+  .empty-t{ font-family:"Cormorant Garamond",Georgia,serif !important; color:#F5F2EB !important; }
+  .empty-s{ color:#A8A6A1 !important; }
+  /* Aperçu (hero) façon maquette */
+  .hero{ border-radius:20px !important; overflow:hidden; }
+  .hero .veil{ background:linear-gradient(to top, rgba(5,5,5,.92), transparent 52%) !important; }
+  .play-main{ width:72px !important; height:72px !important; top:50% !important; background:#D4AF37 !important; color:#050505 !important; border:0 !important; box-shadow:0 12px 32px rgba(212,175,55,.45) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; }
+  .play-main svg{ width:26px; height:26px; }
+  .hero-top{ justify-content:space-between !important; align-items:center; }
+  .apercu-lbl{ display:inline-flex; align-items:center; background:rgba(5,5,5,.5); border:1px solid rgba(212,175,55,.35); color:#D4AF37; font:700 9px system-ui; letter-spacing:2px; padding:6px 12px; border-radius:999px; }
+  .iconbtn{ background:rgba(5,5,5,.55) !important; border:1px solid rgba(212,175,55,.3) !important; color:#D4AF37 !important; border-radius:11px !important; }
+  .kicker{ color:#D4AF37 !important; letter-spacing:2px !important; }
+  .hero-copy h2{ font-family:"Cormorant Garamond",Georgia,serif; color:#F5F2EB; font-weight:600; }
+  .trk{ background:rgba(255,255,255,.16) !important; }
+  .trk>span{ background:#D4AF37 !important; }
+  .progress-row{ color:#D1CFC9 !important; }
   /* État vide de l'aperçu — accueillant et de marque */
   #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(30,44,74,.55), rgba(10,16,28,.25) 58%, transparent 100%) !important; }
   .empty-in{ display:flex; flex-direction:column; align-items:center; gap:13px; }
@@ -672,7 +732,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .mcat.on{ border-color:#f4bd4a; box-shadow:0 0 0 1px rgba(244,189,74,.6), 0 5px 16px rgba(244,189,74,.22); }
   .mcat.on::before{ background:linear-gradient(180deg,rgba(244,189,74,.12),rgba(8,12,22,.68)); }
 </style>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;600&family=Caveat:wght@400;700&family=Montserrat:wght@400;700&family=Raleway:wght@400;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Lora:wght@400;600&family=Caveat:wght@400;700&family=Montserrat:wght@400;700&family=Raleway:wght@400;700&family=DM+Serif+Display&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&display=swap" rel="stylesheet">
 </head>
 <body>
 <!-- ====== INTERFACE KIMI (greffée) ====== -->
@@ -680,7 +740,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C200</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C205</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -688,6 +748,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     
     <div class="veil"></div>
     <div class="hero-top">
+      <span class="apercu-lbl">APERÇU</span>
       <button class="iconbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
     </div>
     <button class="play-main" id="heroPlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5l14 7-14 7z"/></svg></button>
@@ -8234,6 +8295,7 @@ function studioDeleteFilm(id){ try{ var idx=_filmsIndex().filter(function(f){ re
 
 /* ---- UI : galerie de films (overlay injecté) ---- */
 function _fmtAgo(ts){ if(!ts) return ""; var d=Math.floor((Date.now()-ts)/1000); if(d<60)return "à l'instant"; if(d<3600)return Math.floor(d/60)+" min"; if(d<86400)return Math.floor(d/3600)+" h"; return Math.floor(d/86400)+" j"; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
 function _ensureFilmsOverlay(){ if(document.getElementById("filmsOv")) return;
   if(!document.getElementById("cormorantFont")){ var lk=document.createElement("link"); lk.id="cormorantFont"; lk.rel="stylesheet"; lk.href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&display=swap"; document.head.appendChild(lk); }
   var o=document.createElement("div"); o.id="filmsOv";
