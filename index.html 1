@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#050505" />
+<title>Studio Magot — Cinéma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,500&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --surface:#050505; --on:#F5F2EB; --s2:#151413; --on2:#D1CFC9;
+    --s3:#23211F; --on3:#A8A6A1; --brand:#D4AF37; --onBrand:#050505;
+    --brand2:#8F7A3E; --brand3:#453C22; --border:#282622; --borderStrong:#4A4740; --divider:#1C1A17;
+    --serif:'Cormorant Garamond', Georgia, serif; --sans:'Manrope', system-ui, sans-serif;
+    --xs:4px; --sm:8px; --md:12px; --lg:16px; --xl:24px; --xxl:32px; --xxxl:48px;
+    --rsm:6px; --rmd:12px; --rlg:20px; --rpill:999px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:#0a0a0a; color:var(--on); font-family:var(--sans);
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:0;
+  }
+  .app{
+    width:100%; max-width:430px; height:100vh; background:var(--surface);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+  }
+  @media(min-width:900px){
+    body{background:radial-gradient(1200px 800px at 50% -10%, #1a1712 0%, #050505 60%)}
+    .app{height:92vh; max-height:920px; border-radius:44px; border:1px solid var(--border);
+      box-shadow:0 40px 120px rgba(0,0,0,.7); overflow:hidden}
+  }
+  @media(min-width:1300px){ .app{max-width:520px} }
+
+  .screen{position:absolute; inset:0; display:none; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch}
+  .screen.active{display:flex}
+  .screen::-webkit-scrollbar{width:0}
+
+  .eyebrow{color:var(--brand); font-size:10px; letter-spacing:3px; text-transform:uppercase}
+  .serif{font-family:var(--serif)}
+  .btn-primary{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--brand); color:var(--onBrand); font-weight:700; font-size:14px;
+    letter-spacing:1px; padding:16px; border:none; border-radius:var(--rpill); cursor:pointer;
+    box-shadow:0 8px 24px rgba(212,175,55,.35);
+  }
+  .icon-btn{
+    width:44px; height:44px; border-radius:999px; border:1px solid var(--border);
+    background:var(--s2); color:var(--on); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0; font-size:20px;
+  }
+  .icon-btn.gold{background:var(--brand); color:var(--onBrand); border:none}
+  .scrim{position:absolute; inset:0}
+  .fade-in{animation:fade .5s ease both}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+
+  #onboarding{background:#050505}
+  .ob-bg{position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1747751593259-6a10e36d50ee?w=1600&q=90') center/cover}
+  .ob-scrim{position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,.15) 0%, rgba(5,5,5,.55) 50%, rgba(5,5,5,.98) 100%)}
+  .ob-top{position:relative; display:flex; justify-content:space-between; align-items:center; padding:20px var(--xl)}
+  .brand-row{display:flex; align-items:center; gap:8px}
+  .dot{width:6px; height:6px; border-radius:999px; background:var(--brand)}
+  .brand-name{font-size:11px; letter-spacing:3px; font-weight:600}
+  .year{color:var(--brand); font-family:var(--serif); letter-spacing:4px; font-size:12px}
+  .ob-bottom{position:relative; margin-top:auto; padding:0 var(--xl) var(--xxl)}
+  .ob-headline{font-family:var(--serif); font-size:56px; line-height:.95; letter-spacing:-1px; margin:16px 0}
+  .ob-headline em{color:var(--brand)}
+  .ob-body{color:var(--on2); font-size:15px; line-height:1.5; margin-bottom:24px; max-width:400px}
+  .ob-foot{display:flex; justify-content:center; gap:8px; margin-top:16px; color:var(--on3); font-size:11px}
+
+  .hdr{display:flex; align-items:center; justify-content:space-between; padding:16px var(--xl) 12px; position:relative}
+  .hdr-title{font-family:var(--serif); font-size:24px}
+  .content{padding:0 var(--xl) 120px}
+
+  .hero{height:440px; border-radius:var(--rlg); overflow:hidden; position:relative; margin-top:8px; background:var(--s2)}
+  .hero-img{position:absolute; inset:0; background-size:cover; background-position:center}
+  .hero-scrim{position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,.05) 0%, rgba(5,5,5,.35) 40%, rgba(5,5,5,.98) 100%)}
+  .hero-inner{position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:var(--xl); gap:12px}
+  .chip{background:var(--brand); color:var(--onBrand); font-size:10px; letter-spacing:2px; font-weight:700; padding:6px 12px; border-radius:999px}
+  .chip-ghost{border:1px solid rgba(245,242,235,.4); background:rgba(5,5,5,.35); font-size:10px; letter-spacing:2px; font-weight:600; padding:6px 12px; border-radius:999px}
+  .hero-title{font-family:var(--serif); font-size:44px; line-height:1; letter-spacing:-1px}
+  .meta-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12px}
+  .play-btn{display:inline-flex; align-items:center; gap:8px; background:var(--brand); color:var(--onBrand); font-weight:700; font-size:13px; letter-spacing:1px; padding:12px 22px; border-radius:999px; align-self:flex-start; border:none; cursor:pointer}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; margin:32px 0 16px}
+  .section-title{font-family:var(--serif); font-size:26px}
+  .grid{display:grid; grid-template-columns:1fr; gap:16px}
+  @media(min-width:640px){ .grid{grid-template-columns:1fr 1fr} }
+  .poster{aspect-ratio:4/5; border-radius:var(--rlg); overflow:hidden; position:relative; background:var(--s2); cursor:pointer}
+  .poster .hero-img{transition:transform .5s}
+  .poster:hover .hero-img{transform:scale(1.05)}
+  .poster-scrim{position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(5,5,5,.85) 100%)}
+  .poster-inner{position:absolute; inset:0; padding:16px; display:flex; flex-direction:column; justify-content:space-between}
+  .badge{align-self:flex-end; padding:4px 10px; border-radius:6px; background:rgba(5,5,5,.55); border:1px solid rgba(212,175,55,.4); color:var(--brand); font-size:10px; letter-spacing:1.5px; font-weight:700}
+  .poster-title{font-family:var(--serif); font-size:24px; line-height:1.05}
+  .amb-label{color:var(--brand); font-size:10px; letter-spacing:2px; font-weight:600}
+  .fab{position:absolute; left:50%; transform:translateX(-50%); bottom:24px; display:flex; align-items:center; gap:8px; background:var(--brand); color:var(--onBrand); font-weight:700; font-size:14px; letter-spacing:1px; padding:14px 22px; border:none; border-radius:999px; cursor:pointer; box-shadow:0 8px 20px rgba(212,175,55,.4)}
+
+  .preview{margin-top:4px; height:360px; border-radius:var(--rlg); overflow:hidden; position:relative; background:var(--s2)}
+  .prev-play{width:72px; height:72px; border-radius:999px; background:var(--brand); color:var(--onBrand); display:flex; align-items:center; justify-content:center; font-size:26px; border:none; cursor:pointer; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%)}
+  .prev-bottom{position:absolute; left:14px; right:14px; bottom:14px; display:flex; align-items:center; gap:12px; font-size:11px}
+  .track{flex:1; height:2px; background:rgba(245,242,235,.2); border-radius:2px; overflow:hidden}
+  .track > i{display:block; height:100%; width:0; background:var(--brand)}
+  .track-chip{display:inline-flex; align-items:center; gap:8px; background:var(--s2); border:1px solid var(--border); padding:8px 12px; border-radius:999px; font-size:12px; margin:12px auto 0}
+  .beats{display:flex; align-items:flex-end; gap:6px; height:26px; padding:4px 0}
+  .beat{width:12px; border-radius:1px; background:rgba(212,175,55,.35); height:14px}
+  .beat.hi{background:var(--brand); height:22px}
+  .thumbs{display:flex; gap:8px; margin-top:14px; overflow-x:auto; padding-bottom:4px}
+  .thumb{width:56px; height:56px; border-radius:6px; overflow:hidden; border:1px solid var(--border); flex-shrink:0; background-size:cover; background-position:center; cursor:pointer; position:relative}
+  .thumb.excl{opacity:.3}
+  .amb-cards{display:flex; gap:10px; overflow-x:auto; padding:4px 0}
+  .amb-card{width:200px; height:130px; border-radius:12px; overflow:hidden; position:relative; flex-shrink:0; cursor:pointer; background:var(--s2)}
+  .amb-card.active{outline:2px solid var(--brand); outline-offset:-2px}
+  .amb-inner{position:absolute; inset:0; padding:12px; display:flex; flex-direction:column; justify-content:flex-end}
+  .amb-inner h4{font-family:var(--serif); font-size:22px}
+  .amb-inner p{font-size:11px; color:var(--on2)}
+  .src-card{display:flex; align-items:center; gap:12px; background:var(--s2); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px}
+  .src-icon{width:44px; height:44px; border-radius:999px; background:var(--brand3); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0}
+  .src-card h4{font-family:var(--serif); font-size:18px}
+  .src-card p{font-size:11px; color:var(--on3)}
+  .src-cta{margin-left:auto; color:var(--brand); font-size:12px; letter-spacing:1px; cursor:pointer; white-space:nowrap}
+  .bottom-bar{position:absolute; left:0; right:0; bottom:0; padding:12px var(--xl) 20px; display:flex; gap:8px; align-items:center; background:rgba(5,5,5,.72); backdrop-filter:blur(20px); border-top:1px solid var(--border)}
+  .sm-btn{display:flex; align-items:center; gap:6px; padding:12px; border:1px solid var(--border); background:var(--s2); color:var(--on); border-radius:999px; font-size:12px; cursor:pointer}
+  .exp-btn{margin-left:auto; display:flex; align-items:center; gap:6px; padding:12px 18px; background:var(--brand); color:var(--onBrand); font-weight:700; font-size:13px; letter-spacing:1px; border:none; border-radius:999px; cursor:pointer}
+  .playhead{position:absolute; top:0; height:26px; width:2px; background:var(--on)}
+
+  .segment{display:flex; gap:4px; background:var(--s2); border:1px solid var(--border); border-radius:999px; padding:4px; margin:0 var(--xl) 16px}
+  .seg{flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:999px; font-size:13px; font-weight:600; color:var(--on2); cursor:pointer; border:none; background:none}
+  .seg.active{background:var(--brand); color:var(--onBrand)}
+  .mgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  @media(min-width:640px){ .mgrid{grid-template-columns:repeat(4,1fr)} }
+  .mcell{aspect-ratio:1; border-radius:6px; overflow:hidden; position:relative; background:var(--s2); background-size:cover; background-position:center; cursor:pointer}
+  .mcell.sel{outline:3px solid var(--brand); outline-offset:-3px}
+  .sel-badge{position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:999px; background:var(--brand); color:var(--onBrand); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center}
+  .trow{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--divider)}
+  .wave{display:flex; align-items:center; gap:3px; height:30px; width:48px}
+  .wave i{width:3px; border-radius:2px; background:var(--brand2)}
+  .trow h4{font-family:var(--serif); font-size:18px}
+  .trow p{font-size:11px; color:var(--on3)}
+  .mix-btn{width:40px; height:40px; border-radius:999px; border:1px solid var(--brand); color:var(--brand); background:none; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center}
+  .mix-btn.on{background:var(--brand); color:var(--onBrand)}
+
+  .exp-hero{height:240px; border-radius:var(--rlg); overflow:hidden; position:relative; background:var(--s2)}
+  .fmt-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .fmt{border:1px solid var(--border); background:var(--s2); border-radius:12px; padding:16px; position:relative; cursor:pointer}
+  .fmt.active{border-color:var(--brand); background:rgba(212,175,55,.06)}
+  .fmt-shape{margin:8px auto 12px; border:2px solid var(--borderStrong); border-radius:4px}
+  .fmt.active .fmt-shape{border-color:var(--brand); background:rgba(212,175,55,.15)}
+  .fmt h4{font-family:var(--serif); font-size:22px}
+  .fmt p{font-size:10px; color:var(--on3)}
+  .fmt-check{position:absolute; top:10px; right:10px; color:var(--brand); display:none}
+  .fmt.active .fmt-check{display:block}
+  .toggle-card{display:flex; align-items:center; gap:12px; background:var(--s2); border:1px solid var(--border); border-radius:12px; padding:16px}
+  .switch{width:48px; height:28px; border-radius:999px; background:var(--s3); padding:3px; cursor:pointer; flex-shrink:0; transition:background .2s}
+  .switch.on{background:var(--brand)}
+  .knob{width:22px; height:22px; border-radius:999px; background:var(--on3); transition:transform .2s, background .2s}
+  .switch.on .knob{background:var(--onBrand); transform:translateX(20px)}
+
+  .profile-card{display:flex; align-items:center; gap:16px; background:var(--s2); border:1px solid var(--border); border-radius:var(--rlg); padding:16px; margin-top:8px}
+  .avatar{width:68px; height:68px; border-radius:999px; background-size:cover; background-position:center; flex-shrink:0}
+  .profile-card h3{font-family:var(--serif); font-size:24px}
+  .profile-card .em{font-size:12px; color:var(--on3)}
+  .plan{display:inline-flex; align-items:center; gap:5px; background:var(--brand3); color:var(--brand); font-size:10px; letter-spacing:1px; font-weight:600; padding:4px 10px; border-radius:999px; margin-top:8px}
+  .stats{display:flex; gap:12px; margin-top:16px}
+  .stat{flex:1; background:var(--s2); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center}
+  .stat .n{font-family:var(--serif); font-size:28px; color:var(--brand)}
+  .stat .l{font-size:11px; letter-spacing:1px; color:var(--on3); margin-top:2px}
+  .set-head{color:var(--brand); font-size:10px; letter-spacing:3px; margin:24px 0 12px 4px}
+  .set-card{background:var(--s2); border:1px solid var(--border); border-radius:12px; overflow:hidden}
+  .set-row{display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--divider); cursor:pointer}
+  .set-row:last-child{border-bottom:none}
+  .set-row h4{font-size:15px; font-weight:400}
+  .set-row p{font-size:11px; color:var(--on3)}
+  .chev{margin-left:auto; color:var(--on3)}
+  .signout{margin-top:24px; padding:16px; border:1px solid var(--border); border-radius:12px; text-align:center; color:var(--on2); font-size:14px; cursor:pointer}
+  .version{text-align:center; color:var(--on3); font-size:11px; letter-spacing:1px; margin-top:16px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section class="screen active" id="onboarding">
+    <div class="ob-bg"></div><div class="ob-scrim"></div>
+    <div class="ob-top">
+      <div class="brand-row"><span class="dot"></span><span class="brand-name">STUDIO MAGOT</span></div>
+      <span class="year">MMXXVI</span>
+    </div>
+    <div class="ob-bottom fade-in">
+      <div class="eyebrow">UN FILM · UN SOUVENIR · UNE VIE</div>
+      <h1 class="ob-headline serif">Vos voyages,<br><em>en cinéma.</em></h1>
+      <p class="ob-body">Photos, clips vidéo, musique. Studio Magot cale chaque coupe sur le tempo pour un film souvenir cinématographique — prêt à partager.</p>
+      <button class="btn-primary" onclick="go('library')">Entrer dans le studio →</button>
+      <div class="ob-foot"><span>Détection des temps par Essentia</span><span style="color:var(--brand)">·</span><span>Export 9:16 · 4:5 · 1:1 · 16:9</span></div>
+    </div>
+  </section>
+
+  <section class="screen" id="library">
+    <div class="hdr">
+      <div><div class="eyebrow">STUDIO MAGOT</div><div class="hdr-title" style="font-size:40px">Vos films</div></div>
+      <button class="icon-btn" onclick="go('profile')">☺</button>
+    </div>
+    <div class="content">
+      <div class="hero" onclick="go('editor')">
+        <div class="hero-img" style="background-image:url('https://images.unsplash.com/photo-1597434002293-fc9bb06371d8?w=900&q=85')"></div>
+        <div class="hero-scrim"></div>
+        <div class="hero-inner">
+          <div class="meta-row"><span class="chip">DERNIER FILM</span><span class="chip-ghost">Cinéma</span></div>
+          <h2 class="hero-title">Mont<br>Saint-Michel</h2>
+          <div class="meta-row"><span>◫ 24 photos</span><span style="color:var(--brand)">·</span><span>▶ 4 clips</span><span style="color:var(--brand)">·</span><span>◷ 1:02</span></div>
+          <button class="play-btn" onclick="event.stopPropagation();go('editor')">▶ Lire le film</button>
+        </div>
+      </div>
+      <div class="section-head">
+        <div><div class="eyebrow">BIBLIOTHÈQUE</div><div class="section-title serif">Tous vos films</div></div>
+        <div class="serif" style="color:var(--on3); font-size:20px">4</div>
+      </div>
+      <div class="grid" id="poster-grid"></div>
+    </div>
+    <button class="fab" onclick="go('editor')">＋ Nouveau film</button>
+  </section>
+
+  <section class="screen" id="editor">
+    <div class="hdr">
+      <button class="icon-btn" onclick="go('library')">‹</button>
+      <div style="text-align:center"><div class="eyebrow">PROJET · JOUR 2</div><div class="hdr-title" style="font-size:20px">Mont Saint-Michel</div></div>
+      <button class="icon-btn gold" onclick="go('export')">⇪</button>
+    </div>
+    <div class="content" style="padding-bottom:140px">
+      <div class="preview">
+        <div class="hero-img" style="background-image:url('https://images.unsplash.com/photo-1747751593259-6a10e36d50ee?w=900&q=85')"></div>
+        <div class="hero-scrim" style="background:linear-gradient(180deg,rgba(5,5,5,.05) 40%,rgba(5,5,5,.75) 100%)"></div>
+        <div style="position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:6px"><span class="dot"></span><span style="font-size:10px;letter-spacing:2px">APERÇU</span></div>
+        <button class="prev-play" id="prevPlay" onclick="togglePlay()">▶</button>
+        <div class="prev-bottom"><span id="curTime">00:00</span><div class="track"><i id="prog"></i></div><span>01:02</span></div>
+      </div>
+      <div style="text-align:center"><span class="track-chip">♪ Nocturne · Emil Rottmayer</span></div>
+
+      <div style="margin-top:32px;display:flex;justify-content:space-between;align-items:center">
+        <div class="eyebrow">SÉQUENCE</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:11px"><span style="color:var(--on3);letter-spacing:2px">SYNC</span><span style="color:var(--brand)">0 ms</span><span style="text-decoration:underline;color:var(--on2);cursor:pointer">Reset</span></div>
+      </div>
+      <div style="position:relative;overflow-x:auto;margin-top:12px">
+        <div class="beats" id="beats"></div>
+        <div class="playhead" style="left:108px"></div>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+      <p style="color:var(--on3);font-size:11px;line-height:1.5;margin-top:16px">Tape une vignette pour l'écarter du montage. La tête de lecture blanche croise une coupe au changement de photo.</p>
+
+      <div style="margin-top:32px">
+        <div class="eyebrow">AMBIANCE</div>
+        <div class="section-title serif" id="ambTitle" style="margin-top:4px">Cinéma</div>
+        <div style="color:var(--on3);font-size:12px" id="ambSub">Posé, élégant, cinématographique</div>
+        <div class="amb-cards" id="ambCards" style="margin-top:12px"></div>
+      </div>
+
+      <div style="margin-top:32px">
+        <div class="eyebrow" style="margin-bottom:12px">SOURCES</div>
+        <div class="src-card"><div class="src-icon">♪</div><div><h4>Musique</h4><p>Nocturne · Emil Rottmayer</p></div><span class="src-cta" onclick="openPicker('music')">Changer ›</span></div>
+        <div class="src-card"><div class="src-icon">◫</div><div><h4>Photos</h4><p>6 sélectionnées</p></div><span class="src-cta" onclick="openPicker('photos')">Ajouter ›</span></div>
+        <div class="src-card"><div class="src-icon">▶</div><div><h4>Vidéo</h4><p>Optionnel — calé sur les temps forts</p></div><span class="src-cta" onclick="openPicker('video')">Ajouter ›</span></div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <button class="sm-btn" onclick="togglePlay()">▶ Lire</button>
+      <button class="sm-btn">↺ Recommencer</button>
+      <button class="exp-btn" onclick="go('export')">⇩ Exporter</button>
+    </div>
+  </section>
+
+  <section class="screen" id="picker">
+    <div class="hdr">
+      <button class="icon-btn" onclick="go('editor')">✕</button>
+      <div class="hdr-title">Sources</div>
+      <div style="width:44px"></div>
+    </div>
+    <div class="segment">
+      <button class="seg active" data-tab="photos" onclick="setTab('photos')">◫ Photos</button>
+      <button class="seg" data-tab="video" onclick="setTab('video')">▶ Clips</button>
+      <button class="seg" data-tab="music" onclick="setTab('music')">♪ Musique</button>
+    </div>
+    <div class="content" style="padding-bottom:120px">
+      <div id="mediaGrid" class="mgrid"></div>
+      <div id="musicList" style="display:none"></div>
+    </div>
+    <div class="bottom-bar" style="justify-content:center"><button class="btn-primary" style="flex:1" onclick="go('editor')" id="pickerConfirm">Ajouter 3 éléments →</button></div>
+  </section>
+
+  <section class="screen" id="export">
+    <div class="hdr">
+      <button class="icon-btn" onclick="go('editor')">‹</button>
+      <div class="hdr-title">Exporter</div>
+      <div style="width:44px"></div>
+    </div>
+    <div class="content" style="padding-bottom:140px">
+      <div class="exp-hero">
+        <div class="hero-img" style="background-image:url('https://images.unsplash.com/photo-1747751593259-6a10e36d50ee?w=900&q=85')"></div>
+        <div class="hero-scrim" style="background:linear-gradient(180deg,rgba(5,5,5,.1) 40%,rgba(5,5,5,.9) 100%)"></div>
+        <div class="hero-inner"><div class="eyebrow">PRÊT À EXPORTER</div><h2 class="serif" style="font-size:34px" id="expTitle">Mont Saint-Michel</h2><p style="font-size:12px;color:var(--on2)" id="expMeta">Cinéma · 01:02 · 9:16</p></div>
+      </div>
+      <div style="margin:32px 0 16px"><div class="eyebrow">FORMAT</div><div class="section-title serif">Choisis ton cadre</div></div>
+      <div class="fmt-grid" id="fmtGrid"></div>
+      <div style="margin:32px 0 16px"><div class="eyebrow">FINITIONS</div></div>
+      <div class="toggle-card">
+        <div class="src-icon">✦</div>
+        <div style="flex:1"><h4 class="serif" style="font-size:18px">Signature Magot</h4><p style="font-size:11px;color:var(--on3)">Intro + fin cinématiques · au premier export</p></div>
+        <div class="switch on" id="sigSwitch" onclick="this.classList.toggle('on')"><div class="knob"></div></div>
+      </div>
+    </div>
+    <div class="bottom-bar"><button class="btn-primary" style="flex:1" id="expBtn" onclick="runExport()">⇩ Exporter en 9:16</button></div>
+  </section>
+
+  <section class="screen" id="profile">
+    <div class="hdr">
+      <button class="icon-btn" onclick="go('library')">‹</button>
+      <div class="hdr-title">Profil</div>
+      <div style="width:44px"></div>
+    </div>
+    <div class="content" style="padding-bottom:60px">
+      <div class="profile-card">
+        <div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80')"></div>
+        <div><h3>Camille Magot</h3><div class="em">camille@studiomagot.fr</div><span class="plan">◆ Membre · Essentia</span></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="n">4</div><div class="l">Films</div></div>
+        <div class="stat"><div class="n">75</div><div class="l">Photos</div></div>
+        <div class="stat"><div class="n">3:20</div><div class="l">Durée</div></div>
+      </div>
+      <div class="set-head">STUDIO</div>
+      <div class="set-card">
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">✦</div><div style="flex:1"><h4>Ambiance par défaut</h4><p>Cinéma</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">♪</div><div style="flex:1"><h4>Bibliothèque musicale</h4><p>12 pistes</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">▭</div><div style="flex:1"><h4>Format d'export</h4><p>9:16 · Vertical</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">✦</div><div style="flex:1"><h4>Signature Magot</h4></div><div class="switch on" onclick="this.classList.toggle('on')"><div class="knob"></div></div></div>
+      </div>
+      <div class="set-head">COMPTE</div>
+      <div class="set-card">
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">◆</div><div style="flex:1"><h4>Passer à Magot Premium</h4><p>Export 4K · sans filigrane</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">☁</div><div style="flex:1"><h4>Stockage cloud</h4><p>4 films · 320 Mo</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">⇩</div><div style="flex:1"><h4>Qualité d'export</h4><p>Haute</p></div><span class="chev">›</span></div>
+      </div>
+      <div class="set-head">PRÉFÉRENCES</div>
+      <div class="set-card">
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">▤</div><div style="flex:1"><h4>Retour haptique</h4></div><div class="switch on" onclick="this.classList.toggle('on')"><div class="knob"></div></div></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">⌘</div><div style="flex:1"><h4>Langue</h4><p>Français</p></div><span class="chev">›</span></div>
+        <div class="set-row"><div class="src-icon" style="width:40px;height:40px">?</div><div style="flex:1"><h4>Aide & support</h4></div><span class="chev">›</span></div>
+      </div>
+      <div class="signout">Se déconnecter</div>
+      <div class="version">Studio Magot · v1.0 · MMXXVI</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const FILMS = [
+  {title:"Ballons d'Annecy", amb:"Voyage", fmt:"16:9", img:"photo-1747751593259-6a10e36d50ee", meta:"18 · 3 · 0:48"},
+  {title:"Nuit à Palace", amb:"Dynamique", fmt:"1:1", img:"photo-1761769828786-ceed0b0af562", meta:"12 · 2 · 0:35"},
+  {title:"Chemin de Provence", amb:"Doux", fmt:"4:5", img:"photo-1452587925148-ce544e77e70d", meta:"21 · 1 · 0:54"},
+];
+const AMB = [
+  {key:"Cinéma", sub:"Posé, élégant", img:"photo-1489599849927-2ee91cede3ba"},
+  {key:"Doux", sub:"Calme, tendre", img:"photo-1470252649378-9c29740c9fa8"},
+  {key:"Voyage", sub:"Vivant, lumineux", img:"photo-1452587925148-ce544e77e70d"},
+  {key:"Dynamique", sub:"Rythmé, puissant", img:"photo-1761769828786-ceed0b0af562"},
+];
+const PHOTOS = ["photo-1747751593259-6a10e36d50ee","photo-1597434002293-fc9bb06371d8","photo-1452587925148-ce544e77e70d","photo-1470252649378-9c29740c9fa8","photo-1489599849927-2ee91cede3ba","photo-1761769828786-ceed0b0af562"];
+const POOL = [...PHOTOS,"photo-1500534623283-312aade485b7","photo-1476514525535-07fb3b4ae5f1","photo-1439066615861-d1af74d74000","photo-1501785888041-af3ef285b470","photo-1454496522488-7a8e488e8606","photo-1533105079780-92b9be482077"];
+const TRACKS = [
+  {t:"Nocturne", a:"Emil Rottmayer", d:"3:12", b:82},
+  {t:"L'Envol", a:"Lyra", d:"2:48", b:96},
+  {t:"Lavande", a:"Solene", d:"3:40", b:74},
+  {t:"Neon Drift", a:"VÖ", d:"3:05", b:124},
+  {t:"Horizon", a:"Adrift", d:"4:02", b:88},
+];
+const FORMATS = [
+  {k:"9:16", s:"Vertical · Stories, Reels", w:9, h:16},
+  {k:"4:5", s:"Portrait · fil Instagram", w:4, h:5},
+  {k:"1:1", s:"Carré · fil Instagram", w:1, h:1},
+  {k:"16:9", s:"Paysage · YouTube", w:16, h:9},
+];
+const uns = id => `https://images.unsplash.com/${id}?w=600&q=75`;
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id); el.classList.add('active'); el.scrollTop=0;
+  const c=el.querySelector('.content')||el; c.classList.remove('fade-in'); void c.offsetWidth; c.classList.add('fade-in');
+}
+
+document.getElementById('poster-grid').innerHTML = FILMS.map(f=>`
+  <div class="poster" onclick="go('editor')">
+    <div class="hero-img" style="background-image:url('${uns(f.img)}')"></div>
+    <div class="poster-scrim"></div>
+    <div class="poster-inner">
+      <span class="badge">${f.fmt}</span>
+      <div><div class="amb-label">${f.amb.toUpperCase()}</div><div class="poster-title serif">${f.title}</div><div style="color:var(--on3);font-size:11px;margin-top:4px">${f.meta}</div></div>
+    </div>
+  </div>`).join('');
+
+document.getElementById('beats').innerHTML = Array.from({length:48}).map((_,i)=>`<div class="beat ${[4,12,20,28,36,44].includes(i)?'hi':''}"></div>`).join('');
+let excluded=new Set();
+function renderThumbs(){
+  document.getElementById('thumbs').innerHTML = PHOTOS.map((id,i)=>`<div class="thumb ${excluded.has(i)?'excl':''}" style="background-image:url('${uns(id)}')" onclick="toggleThumb(${i})">${excluded.has(i)?'<div style="position:absolute;inset:0;background:rgba(5,5,5,.6);display:flex;align-items:center;justify-content:center">✕</div>':''}</div>`).join('');
+}
+function toggleThumb(i){ excluded.has(i)?excluded.delete(i):excluded.add(i); renderThumbs(); }
+renderThumbs();
+let curAmb=0;
+function renderAmb(){
+  document.getElementById('ambCards').innerHTML = AMB.map((a,i)=>`
+    <div class="amb-card ${i===curAmb?'active':''}" onclick="setAmb(${i})">
+      <div class="hero-img" style="background-image:url('${uns(a.img)}')"></div>
+      <div class="hero-scrim" style="background:linear-gradient(180deg,rgba(5,5,5,.1),rgba(5,5,5,.9))"></div>
+      <div class="amb-inner"><h4 class="serif" style="${i===curAmb?'color:var(--brand)':''}">${a.key}</h4><p>${a.sub}</p></div>
+    </div>`).join('');
+  document.getElementById('ambTitle').textContent = AMB[curAmb].key;
+  document.getElementById('ambSub').textContent = AMB[curAmb].sub + ', cinématographique';
+  document.getElementById('expMeta').textContent = AMB[curAmb].key + ' · 01:02 · ' + curFmt;
+}
+function setAmb(i){ curAmb=i; renderAmb(); }
+renderAmb();
+
+let playing=false, playTimer=null, prog=0;
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('prevPlay').textContent = playing?'❚❚':'▶';
+  if(playing){ playTimer=setInterval(()=>{ prog=(prog+2)%100; document.getElementById('prog').style.width=prog+'%'; const s=Math.floor(prog*62/100); document.getElementById('curTime').textContent='00:'+String(s).padStart(2,'0'); },200); }
+  else clearInterval(playTimer);
+}
+
+let tab='photos', selected=new Set([0,1,2]), mix=new Set([0]);
+function openPicker(t){ setTab(t); go('picker'); }
+function setTab(t){
+  tab=t;
+  document.querySelectorAll('.seg').forEach(s=>s.classList.toggle('active', s.dataset.tab===t));
+  const grid=document.getElementById('mediaGrid'), music=document.getElementById('musicList');
+  if(t==='music'){ grid.style.display='none'; music.style.display='block'; renderMusic(); document.getElementById('pickerConfirm').textContent='Valider le mix ('+mix.size+')'; }
+  else{ grid.style.display='grid'; music.style.display='none'; renderMedia(); }
+}
+function renderMedia(){
+  document.getElementById('mediaGrid').innerHTML = POOL.map((id,i)=>{
+    const n=[...selected].indexOf(i);
+    return `<div class="mcell ${selected.has(i)?'sel':''}" style="background-image:url('${uns(id)}')" onclick="toggleSel(${i})">${selected.has(i)?`<div class="sel-badge">${n+1}</div>`:''}${tab==='video'?`<div style="position:absolute;bottom:6px;left:6px;background:rgba(5,5,5,.6);padding:3px 6px;border-radius:6px;font-size:10px">▶ 0:${10+i}</div>`:''}</div>`;
+  }).join('');
+}
+function toggleSel(i){ selected.has(i)?selected.delete(i):selected.add(i); renderMedia(); document.getElementById('pickerConfirm').textContent='Ajouter '+selected.size+' éléments →'; }
+function renderMusic(){
+  document.getElementById('musicList').innerHTML = `<p style="color:var(--on3);font-size:12px;line-height:1.5;margin-bottom:16px">Ajoutez jusqu'à 4 pistes au mix DJ ( <span style="color:var(--brand)">+</span> ). Le réalisateur cale les coupes sur le tempo.</p>` +
+    TRACKS.map((t,i)=>`<div class="trow"><div class="wave">${Array.from({length:7}).map((_,w)=>`<i style="height:${6+((i+w)%4)*6}px"></i>`).join('')}</div><div style="flex:1"><h4>${t.t}</h4><p>${t.a} · ${t.d} · ${t.b} BPM</p></div><button class="mix-btn ${mix.has(i)?'on':''}" onclick="toggleMix(${i})">${mix.has(i)?'✓':'+'}</button></div>`).join('') +
+    `<div style="margin-top:24px;padding:16px;border:1px dashed var(--border);border-radius:12px;text-align:center;color:var(--brand);font-size:13px">⇪ Importer une musique</div>`;
+}
+function toggleMix(i){ if(mix.has(i))mix.delete(i); else if(mix.size<4)mix.add(i); renderMusic(); document.getElementById('pickerConfirm').textContent='Valider le mix ('+mix.size+')'; }
+
+let curFmt='9:16';
+function renderFmt(){
+  document.getElementById('fmtGrid').innerHTML = FORMATS.map(f=>{
+    const w = f.w>=f.h?46:46*(f.w/f.h), h = f.h>=f.w?46:46*(f.h/f.w);
+    return `<div class="fmt ${f.k===curFmt?'active':''}" onclick="setFmt('${f.k}')"><div class="fmt-check">✓</div><div class="fmt-shape" style="width:${w}px;height:${h}px"></div><h4 style="${f.k===curFmt?'color:var(--brand)':''}">${f.k}</h4><p>${f.s}</p></div>`;
+  }).join('');
+}
+function setFmt(k){ curFmt=k; renderFmt(); document.getElementById('expBtn').textContent='⇩ Exporter en '+k; document.getElementById('expMeta').textContent=AMB[curAmb].key+' · 01:02 · '+k; }
+renderFmt();
+function runExport(){
+  const bar=document.querySelector('#export .bottom-bar'); let p=0;
+  bar.innerHTML=`<div style="flex:1"><div style="font-size:13px;margin-bottom:8px" id="expPct">Export en cours… 0%</div><div class="track" style="height:4px"><i id="expFill" style="background:var(--brand)"></i></div></div>`;
+  const t=setInterval(()=>{ p+=4; document.getElementById('expFill').style.width=p+'%'; document.getElementById('expPct').textContent='Export en cours… '+p+'%';
+    if(p>=100){ clearInterval(t); bar.innerHTML=`<div class="src-icon" style="background:var(--brand);color:var(--onBrand)">✓</div><div style="flex:1;margin:0 12px"><h4 class="serif" style="font-size:18px">Ta vidéo est prête</h4><p style="font-size:11px;color:var(--on3)">Enregistrée en ${curFmt}</p></div><button class="exp-btn" onclick="resetExport();go('library')">⇩ Enregistrer</button>`; }
+  },120);
+}
+function resetExport(){ const bar=document.querySelector('#export .bottom-bar'); bar.innerHTML=`<button class="btn-primary" style="flex:1" id="expBtn" onclick="runExport()">⇩ Exporter en ${curFmt}</button>`; }
+</script>
+</body>
+</html>
