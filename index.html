@@ -624,6 +624,9 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .te-apply2{ margin-top:14px; padding:12px 14px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); border-radius:14px; }
   .te-apply2-tt{ color:#dbe4f0; font:700 14px system-ui; }
   .vtog.on{ background:#e3a531; }
+  .signrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin:2px 0 12px; padding:11px 13px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:13px; }
+  .signrow-t{ font:700 13.5px system-ui; color:#eaf1fb; line-height:1.3; }
+  .signrow-t em{ display:block; font:400 11.5px system-ui; font-style:normal; color:#93a1b8; margin-top:2px; }
   /* ============================================================
      BIBLIOTHÈQUE MUSICALE — façon appli musicale (recherche + pochettes)
      ============================================================ */
@@ -641,6 +644,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .mt-ph{ color:#cfe0ff; font-size:22px; }
   .mt-covplay{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:30px; height:30px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:11px; background:rgba(6,10,20,.5); box-shadow:0 2px 8px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.18); transition:background .15s; }
   .mtrack.on .mt-covplay{ background:rgba(244,189,74,.85); color:#1a1206; }
+  .mt-prog{ position:absolute; left:0; right:0; bottom:0; height:3px; background:rgba(0,0,0,.45); overflow:hidden; }
+  .mt-prog>i{ display:block; height:100%; width:0%; background:#f4bd4a; }
   [data-bg="music"] .sh-top b{ font-family:"Playfair Display",Georgia,serif; font-weight:800; font-size:21px; color:#fdf3df; letter-spacing:.2px; }
   .mt-meta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
   .mt-meta b{ font-size:14.5px; font-weight:700; color:#f4f7fc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -666,7 +671,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C180</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C184</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -800,6 +805,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
       <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span>Carré · fil Instagram</span></div></button>
       <button class="efmt on" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
     </div>
+    <div class="signrow"><div class="signrow-t">Signature Magot<em>Intro + fin cinématiques · au premier export</em></div><button class="vtog on" id="signTog" type="button" aria-label="Signature" onclick="try{SIGN.on=!SIGN.on;this.classList.toggle('on',SIGN.on);this.setAttribute('aria-checked',SIGN.on?'true':'false');}catch(e){}"><i class="vtog-dot"></i></button></div>
+
     <button class="doexp" id="doExport"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Exporter en 9:16</button>
   </div>
 </div></div>
@@ -881,7 +888,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <script>
 "use strict";
 /* ================= État ================= */
-var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05;
+var A=null, PHOTOS=[], SEGS=[], MOOD="cinema", raf=0, playing=false, LEAD=0.05, _sigPhase=null;
 var mBase=0, waMt0=0, waCtxT0=0;
 function _perfNow(){ return (typeof performance!=="undefined"&&performance.now)?performance.now()/1000:Date.now()/1000; }
 function audioAt(mt){ if(!window.LOOP_ON) return mt; var le=window.LOOP_END||(A?A.dur:mt); if(mt<=le) return mt; var ls=window.LOOP_START||0, ll=window.LOOP_LEN||1; return ls + ((mt - le) % ll); }
@@ -7950,7 +7957,8 @@ function loop(){
   try{
   if(window.LOOP_ON && !WA.on && audioEl){ var _le=window.LOOP_END||window.MUSIC_DUR||(A?A.dur:0); if(_le>0 && audioEl.currentTime>=_le-0.06){ try{ audioEl.currentTime=window.LOOP_START||0; }catch(e){} } }
   var t=visualTime(); if(t<0) t=0;
-  if(!window.LOOP_ON && window.MONTAGE_DUR && t>=window.MONTAGE_DUR-0.02){ stopPlay(); resetBtn(); return; }
+  if(!window.LOOP_ON && window.MONTAGE_DUR){ var _mf=Math.min(9,Math.max(4,window.MONTAGE_DUR*0.16)); if(t>window.MONTAGE_DUR-_mf){ try{ masterVol(Math.pow(Math.max(0,(window.MONTAGE_DUR-t)/_mf),0.7)); }catch(e){} } }
+  if(!window.LOOP_ON && window.MONTAGE_DUR && t>=window.MONTAGE_DUR-0.02){ if(SIGN.on){ _sigStartOutro(); return; } stopPlay(); resetBtn(); return; }
   if(window.MULTI){ var _cti=_curPlanTrackIdx(); if(_cti!==window._lastCti){ window._lastCti=_cti; try{ updateBadge(); }catch(e){} try{ if(typeof syncLabel==="function") syncLabel(); }catch(e){} } }
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
@@ -7982,12 +7990,44 @@ function loop(){
   }catch(_lerr){}
   if(playing) raf=requestAnimationFrame(loop);
 }
+/* Phase outro de l'aperçu : coupe le son, joue la carte de fin, puis arrête. */
+function _sigStartOutro(){
+  try{ waStop(); }catch(e){} if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} }
+  _sigPhase="outro"; var _s0=_perfNow(); cancelAnimationFrame(raf);
+  (function _outroLoop(){
+    if(!playing || _sigPhase!=="outro") return;
+    var e=(_perfNow()-_s0)/1000;
+    if(e>=SIGN.outroDur){ _sigPhase=null; stopPlay(); resetBtn(); try{ renderMontageAt(0); }catch(_x){} return; }
+    try{ drawSignatureCard("outro", e/Math.max(0.1,SIGN.outroDur)); }catch(_x){}
+    raf=requestAnimationFrame(_outroLoop);
+  })();
+}
 function startPlay(){
   _iosUnlock();
   if(!A){ setState("Choisis d'abord une musique."); return; }
   if(!PHOTOS.length && !clipVidReady){ setState("Ajoute des photos ou des vid\u00e9os."); return; }
   if(!audioEl){ setState("Musique non chargée."); return; }
+  /* Signature : page d'intro AVANT le montage, uniquement au démarrage (pas au reprise de pause). */
+  if(SIGN.on && (pausedOffset||0)<=0.05){
+    try{ _signBuild(); }catch(e){}
+    playing=true; _sigPhase="intro";
+    try{ document.getElementById("play").textContent="\u23F8 Pause"; }catch(e){}
+    try{ document.getElementById("empty").style.display="none"; }catch(e){}
+    var _s0=_perfNow(); cancelAnimationFrame(raf);
+    (function _introLoop(){
+      if(!playing || _sigPhase!=="intro") return;
+      var e=(_perfNow()-_s0)/1000;
+      if(e>=SIGN.introDur){ _sigPhase=null; _startPlayCore(); return; }
+      try{ drawSignatureCard("intro", e/Math.max(0.1,SIGN.introDur)); }catch(_x){}
+      raf=requestAnimationFrame(_introLoop);
+    })();
+    return;
+  }
+  _startPlayCore();
+}
+function _startPlayCore(){
   buildPartition();
+  try{ masterVol(1); }catch(e){}
   try{ if(ctx&&ctx.state==="suspended"&&ctx.resume) ctx.resume(); }catch(e){}
   try{ for(var _wc=0;_wc<CLIPS.length;_wc++){ if(CLIPS[_wc]&&CLIPS[_wc].ready){ var _we=CLIPS[_wc].el; try{ _we.muted=true; _we.preload="auto"; }catch(_e){} var _wp=_we.play(); if(_wp&&_wp.then){ _wp.then(function(){}).catch(function(){}); } _we.pause(); } } }catch(e){}
   document.getElementById("empty").style.display="none";
@@ -7999,7 +8039,7 @@ function startPlay(){
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ go(); setState("Si pas de son, retape « Lire »."); }); else go();
 }
-function stopPlay(){ if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
+function stopPlay(){ _sigPhase=null; if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
 function resetBtn(){ pausedOffset=0; document.getElementById("play").textContent="▶ Lire le film"; }
 
 /* ================= UI ================= */
@@ -8427,7 +8467,7 @@ async function exportStudio(){
   _setStage("Pr\u00e9paration\u2026"); await _paint();
   try{
     var FPS=30;
-    var W=EXPFMT.w, H=EXPFMT.h, cap=1280, mx=Math.max(W,H);
+    var W=EXPFMT.w, H=EXPFMT.h, cap=(clipVidReady?1280:1920), mx=Math.max(W,H);
     if(mx>cap){ var s=cap/mx; W=Math.max(2,Math.round(W*s/2)*2); H=Math.max(2,Math.round(H*s/2)*2); }
     /* NB : pas de réordonnancement ici — SEGS[i].img est déjà défini par buildPartition().
        L'ancien code référençait _PORDER (variable LOCALE à buildPartition) -> ReferenceError
@@ -8501,13 +8541,16 @@ async function exportStudio(){
     if(INTRO>0){ try{ drawSignatureCard("intro",0); }catch(e){} } else { _renderFrameTo(0); }
     try{ rec.start(1000); }catch(e){ try{ rec.start(); }catch(e2){ EXPORTING=false; _cleanup(); _expMsg("Démarrage impossible : "+((e2&&e2.message)||e2)); return; } }
     var t0=performance.now();
-    if(audioSrc){ try{ var ac0=audioCtx.currentTime;
-        audioSrc.start(ac0+INTRO);                                     /* la musique démarre avec les photos (après l'intro) */
-        if(_sgain){ _sgain.gain.setValueAtTime(0.0001, ac0+INTRO);
-          _sgain.gain.exponentialRampToValueAtTime(1, ac0+INTRO+0.6);  /* fondu d'entrée doux */
-          _sgain.gain.setValueAtTime(1, ac0+INTRO+Math.max(0.7,DUR-1.6));
-          _sgain.gain.linearRampToValueAtTime(0.0001, ac0+INTRO+DUR); } /* fin en douceur : la musique s'éteint avant l'outro */
-      }catch(e){ try{ audioSrc.start(); }catch(_){} } }
+    var _audioStarted=false;
+    function _startExpAudio(){ if(_audioStarted||!audioSrc) return; _audioStarted=true;
+      try{ var acN=audioCtx.currentTime; audioSrc.start(acN);
+        if(_sgain){ _sgain.gain.setValueAtTime(0.0001, acN);
+          _sgain.gain.linearRampToValueAtTime(1, acN+0.5);                   /* fondu d'entrée doux */
+          var _FADE=Math.min(9,Math.max(4,DUR*0.16)), _fs=acN+Math.max(0.6,DUR-_FADE);   /* fin en douceur : sur 16% de la durée (4–9 s) */
+          _sgain.gain.setValueAtTime(1, _fs);
+          for(var _fi=1;_fi<=12;_fi++){ var _ff=1-_fi/12; _sgain.gain.linearRampToValueAtTime(Math.max(0.0001,Math.pow(_ff,0.7)), _fs+_FADE*(_fi/12)); } }
+      }catch(e){ try{ audioSrc.start(); }catch(_){} }
+    }
     _hardStop=setTimeout(function(){ try{ if(rec.state!=="inactive")rec.stop(); }catch(e){} }, Math.round(TOT*1000)+700);
 
     var _rafLoop=(typeof requestAnimationFrame==="function");
@@ -8516,7 +8559,7 @@ async function exportStudio(){
       var t=(performance.now()-t0)/1000;
       if(t>=TOT){ try{ drawSignatureCard("outro",1); }catch(e){} return; }
       if(INTRO>0 && t<INTRO){ try{ drawSignatureCard("intro", t/INTRO); }catch(e){} }
-      else if(t < INTRO+DUR){ _renderFrameTo(t-INTRO); }
+      else if(t < INTRO+DUR){ _startExpAudio(); _renderFrameTo(t-INTRO); }
       else { try{ drawSignatureCard("outro", (t-INTRO-DUR)/Math.max(0.1,OUTRO)); }catch(e){} }
       try{ expShow(Math.min(0.99,t/TOT)); }catch(e){}
       try{ var st=document.getElementById("expStage"); if(st) st.textContent="Enregistrement\u2026 "+Math.round(t)+"/"+Math.round(TOT)+" s"+(_bytes?(" · "+(_bytes/1048576).toFixed(1)+" Mo"):""); }catch(e){}
@@ -8877,14 +8920,16 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   function coverHTML(t){ return t.cover ? '<img src="'+esc(t.cover)+'" alt="" onerror="this.remove()">' : '<span class="mt-ph">\u266A</span>'; }
   function byId(id){ return LIB.filter(function(x){return x.id===id;})[0]; }
-  var PREV=null;
+  var PREV=null, MUS_PREVIEW=20;
+  function _prevTick(){ if(!PREV||!PREV.audio) return; try{ var id=(window.CSS&&CSS.escape)?CSS.escape(PREV.id):PREV.id; var el=document.querySelector('.mtrack[data-id="'+id+'"] .mt-prog>i'); if(el) el.style.width=Math.max(0,Math.min(100,(PREV.audio.currentTime/MUS_PREVIEW)*100))+"%"; }catch(e){} }
   function stopPreview(){ if(PREV){ try{PREV.audio.pause();}catch(e){} if(PREV.revoke){ try{URL.revokeObjectURL(PREV.src);}catch(e){} } PREV=null; renderLib(); } }
   function togglePreview(t){
     if(PREV && PREV.id===t.id){ if(PREV.audio.paused){ PREV.audio.play().catch(function(){}); } else { PREV.audio.pause(); } renderLib(); return; }
     stopPreview();
     var revoke=false, src=t.url||(t.file?(revoke=true,URL.createObjectURL(t.file)):null); if(!src) return;
     var a=new Audio(); a.src=src; a.preload="auto";
-    a.onended=function(){ renderLib(); }; a.onpause=function(){ renderLib(); }; a.onplay=function(){ renderLib(); };
+    a.onended=function(){ stopPreview(); }; a.onpause=function(){ renderLib(); }; a.onplay=function(){ renderLib(); };
+    a.ontimeupdate=function(){ if(!PREV) return; if(a.currentTime>=MUS_PREVIEW){ stopPreview(); return; } _prevTick(); };   /* on écoute les 20 premières secondes : de quoi juger le rythme */
     PREV={ id:t.id, audio:a, revoke:revoke, src:src };
     a.play().catch(function(){});
     renderLib();
@@ -8917,7 +8962,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Dans le mix">'+_mp+'</span>':'<span class="mt-add" title="Ajouter au mix">\uFF0B</span>');
       return '<div class="mtrack'+(act?' on':'')+'" data-id="'+t.id+'">'
         +'<button class="mt-main" data-id="'+t.id+'">'
-          +'<span class="mt-cov">'+coverHTML(t)+'<span class="mt-covplay">'+(playing?'\u23F8':'\u25B6')+'</span></span>'
+          +'<span class="mt-cov">'+coverHTML(t)+'<span class="mt-covplay">'+(playing?'\u23F8':'\u25B6')+'</span>'+(playing?'<span class="mt-prog"><i></i></span>':'')+'</span>'
           +'<span class="mt-meta"><b>'+esc(t.title)+'</b><small>'+esc(trackMeta(t))+'</small></span>'
         +'</button>'
         +'<button class="mt-addbtn" data-id="'+t.id+'">'+addBtn+'</button>'
