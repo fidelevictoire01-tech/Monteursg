@@ -671,7 +671,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C188</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C190</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1414,6 +1414,9 @@ function buildPartition(){
     if(PHOTOS.length>0){ for(var _mv=SEGS.length-2; _mv>=0; _mv--){ if(SEGS[_mv].video && SEGS[_mv+1] && !SEGS[_mv+1].video){ SEGS[_mv].end=SEGS[_mv+1].end; SEGS.splice(_mv+1,1); } } }
   }
   for(var _es=0; _es<SEGS.length; _es++){ if(!SEGS[_es].video && SEGS[_es].img!=null && SEGS[_es].img>=0){ var _en=_capNeeded(SEGS[_es].img); if(_en>0){ while((SEGS[_es].end-SEGS[_es].start) < _en-0.01 && _es+1<SEGS.length && !SEGS[_es+1].video){ SEGS[_es].end=SEGS[_es+1].end; SEGS.splice(_es+1,1); } } } }
+  /* Repères de jour : les photos sont déjà triées par journée (computePhotoOrder).
+     On marque le 1er plan de chaque journée pour y afficher "JOUR N". */
+  (function(){ var _ld=null; for(var _dm=0; _dm<SEGS.length; _dm++){ var _sgd=SEGS[_dm]; if(_sgd.sign||_sgd.video||_sgd.img==null||_sgd.img<0){ continue; } var _dv=(PHOTOS[_sgd.img]&&PHOTOS[_sgd.img]._day!=null)?PHOTOS[_sgd.img]._day:null; if(_dv==null){ continue; } _sgd._dayStart=(_dv!==_ld)?_dv:null; _ld=_dv; } })();
   /* SIGNATURE : intro au tout début, outro à la toute fin -> plans à part entière de la timeline.
      La musique joue par-dessus (elle démarre sur l'intro, se termine sur l'outro). */
   if((typeof SIGN!=="undefined"&&SIGN.on) && SEGS.length){
@@ -1783,6 +1786,19 @@ function drawSegAt(sg,t,ox,smul){
   bctx.drawImage(img,-wf/2,-hf/2,wf,hf);
   bctx.restore();
   if(sg && sg.img>=0 && PHOTOS[sg.img] && PHOTOS[sg.img]._cap){ var _cp=(""+PHOTOS[sg.img]._cap).trim(); if(_cp){ try{ var _cs=PHOTOS[sg.img]._capStyle||(typeof window!=="undefined"&&window.CAPPRESET)||"auto"; var _ca=PHOTOS[sg.img]._capAnim||(typeof window!=="undefined"&&window.CAPANIM)||"auto"; drawCaption(bctx,Wd,Hd,_cp,ox,(t-sg.start),(sg.end-sg.start),t,_cs,_ca,PHOTOS[sg.img]._capColor,PHOTOS[sg.img]._capBand,PHOTOS[sg.img]._capFont,PHOTOS[sg.img]._capSize,PHOTOS[sg.img]._capPos,PHOTOS[sg.img]._capAlign); }catch(_ce){} } }
+  if(sg && sg._dayStart!=null && (typeof window==="undefined"||window.DAY_MARKERS!==false)){ try{ drawDayMarker(bctx,Wd,Hd,sg._dayStart,(t-sg.start)); }catch(_de){} }
+}
+/* Repère de chapitre "JOUR N" : haut de l'image, en fondu, sur la 1re photo de chaque journée. */
+function drawDayMarker(ctx,Wd,Hd,day,into){
+  var HOLD=2.6; if(into>HOLD||into<0) return;
+  var a=1; if(into<0.4) a=into/0.4; else if(into>HOLD-0.6) a=Math.max(0,(HOLD-into)/0.6); a=Math.max(0,Math.min(1,a));
+  var S=Wd/1080, cx=Wd/2, y=Hd*0.12;
+  ctx.save(); ctx.globalAlpha=a; ctx.textAlign="center"; ctx.textBaseline="middle";
+  var g=ctx.createLinearGradient(0,0,0,y+70*S); g.addColorStop(0,"rgba(0,0,0,0.5)"); g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g; ctx.fillRect(0,0,Wd,y+70*S);
+  ctx.fillStyle="#f4bd4a"; ctx.font="700 "+(15*S)+"px system-ui,-apple-system,sans-serif";
+  ctx.fillText("\u2014  JOUR  "+day+"  \u2014", cx, y);
+  ctx.restore();
 }
 function renderBaseFrame(t){
   var Wd=base.width,Hd=base.height;
@@ -8053,6 +8069,9 @@ document.getElementById("pickPhotos").onclick=function(){ document.getElementByI
 document.getElementById("play").onclick=function(){ var self=this; ensureAudio(); if(playing){ stopPlay(); self.textContent="▶ Reprendre"; } else { startPlay(); } };
 document.getElementById("restart").onclick=function(){ if(!A||(!PHOTOS.length&&!clipVidReady)) return; pausedOffset=0; buildPartition(); stopPlay(); startPlay(); setTimeout(function(){ if(playing) document.getElementById("play").textContent="⏸ Pause"; },30); };
 document.getElementById("clear").onclick=function(){ stopPlay(); PHOTOS.forEach(function(p){ try{URL.revokeObjectURL(p.url);}catch(e){} }); PHOTOS=[]; SEGS=[]; A=null; AUDIOBUF=null; pausedOffset=0; stripDirty=true; (function(){ var te=document.getElementById("thumbs"); if(te) te.innerHTML=""; })(); document.getElementById("empty").style.display="flex"; resetBtn(); setState(""); updateBadge(); paintStrip(0); bctx.clearRect(0,0,base.width,base.height); if(glReady){ gl.clear(gl.COLOR_BUFFER_BIT); } };
+/* TEST (préparation greffe) : simuler des jours de voyage sur les photos chargées.
+   studioTestDays(3) -> jour 1 aux 3 premières photos, jour 2 aux 3 suivantes, etc. studioTestDays(0) annule. */
+window.studioTestDays=function(g){ g=(g==null)?3:g; for(var i=0;i<PHOTOS.length;i++){ if(PHOTOS[i]){ if(g>0) PHOTOS[i]._day=Math.floor(i/g)+1; else delete PHOTOS[i]._day; } } try{ if(A&&(PHOTOS.length||clipVidReady)){ buildPartition(); paintStrip(playing?visualTime():0); } }catch(e){} return "jours simulés (g="+g+")"; };
 ovVid=document.getElementById("ovlVid");
 var ovlFile=document.getElementById("ovlFile"), ovlAmt=document.getElementById("ovlAmt");
 document.getElementById("ovlLoad").onclick=function(){ ovlFile.click(); };
@@ -9176,7 +9195,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       +'<div class="prg-prev"><canvas class="prg-cv"></canvas></div>'
       +'<div class="cp-title">Retouche <small>Photo '+(i+1)+'</small></div>'
       +'<div class="cp-sec" style="margin:2px 2px 8px">Dur\u00e9e du plan</div><select class="te-sel" id="prgDur" style="width:100%;margin-bottom:8px">'+DURS.map(function(o){ var sel=(Math.abs((+o[0])-(p._dur||0))<0.1)?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
-      +'<div class="cp-sec" style="margin:2px 2px 8px">Cadrage</div><select class="te-sel" id="prgFit" style="width:100%;margin-bottom:6px">'+FITS.map(function(o){ var sel=((p._fit||"fit")===o[0])?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
+      +''
       +'<div class="cp-color"><div class="cp-sec">Ambiance</div>'
         +'<div class="cp-presets" id="prgPre">'+VPRESETS.map(function(pp,pi){ return '<button class="cp-pre" data-pre="'+pi+'">'+esc(pp.n)+'</button>'; }).join("")+'</div>'
         +'<div class="cp-adj">'
@@ -9456,7 +9475,7 @@ function renderVNav(){
     ov.innerHTML='<div class="cp-card" role="dialog">'
       +'<div class="cp-vidwrap"><video class="cp-vid" playsinline webkit-playsinline loop></video></div>'
       +'<div class="cp-title">Clip '+(ci+1)+' <small>'+clock(c.dur||0)+'</small></div>'
-      +'<div class="cp-sec" style="margin:2px 2px 8px">Cadrage</div><select class="te-sel" id="cpFit" style="width:100%;margin-bottom:8px"><option value="fit"'+(((c._fit||"fit")==="fit")?" selected":"")+'>Ajust\u00e9 (fond flou)</option></select>'
+      +''
       +'<div class="cp-trim"><div class="cp-sec">Moment de d\u00e9part <b id="cpTrimT">'+clock(c.trimStart||0)+'</b></div><input type="range" id="cpTrim" min="0" max="'+Math.round((c.dur||1)*100)+'" value="'+Math.round((c.trimStart||0)*100)+'"><div class="vsb-hint">Fais glisser pour choisir le meilleur passage \u2014 c\u2019est de l\u00e0 que le clip d\u00e9marre dans le montage.</div></div>'
       +'<div class="cp-speed"><div class="cp-sec">Vitesse</div><div class="cp-spd-seg" id="cpSpd"><button data-s="0.5">Ralenti</button><button data-s="1">Normal</button><button data-s="1.5">Rapide</button><button data-s="2">\u00d72</button></div></div>'
       +'<div class="cp-color"><div class="cp-sec">Couleur & teinte</div>'
