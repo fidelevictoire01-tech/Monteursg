@@ -177,7 +177,10 @@ body{display:flex;justify-content:center}
 .chev{font-size:20px;color:#d7dde6}
 
 /* Actions — bouton lecture + IA integree a droite */
-.actions-wrap{display:flex;align-items:center;gap:0;position:relative}
+.actions-wrap{display:flex;align-items:center;gap:8px;position:relative}
+.films-btn{flex:0 0 auto;height:48px;padding:0 14px;border-radius:14px;display:flex;align-items:center;gap:6px;font:800 14px system-ui;border:1px solid rgba(244,189,74,.4);background:linear-gradient(180deg,#1b2a45,#0e1626);color:#f4bd4a;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.films-btn:active{transform:translateY(1px)}
+.films-btn svg{width:17px;height:17px}
 .watch{
   flex:1;
   height:48px;
@@ -190,8 +193,7 @@ body{display:flex;justify-content:center}
   gap:7px;
   border:0;
   color:#171006;
-  background:linear-gradient(135deg,#f4bd45,#d99a22);
-  padding-right:52px
+  background:linear-gradient(135deg,#f4bd45,#d99a22)
 }
 .watch svg{width:16px;height:16px}
 .ia-on-btn{
@@ -283,6 +285,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   .info{flex-basis:62px}.actions-wrap{flex-basis:46px}.hero{min-height:100px}
   .hero-copy h2{font-size:17px}.brand h1{font-size:20px}
   .watch{height:44px;font-size:14px}
+  .films-btn{height:44px;font-size:13px;padding:0 11px}
   .ia-on-btn{width:36px;height:36px}
   .ia-on-btn svg{width:18px;height:18px}
 }
@@ -671,7 +674,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C193</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C195</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -744,8 +747,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </section>
 
   <div class="actions-wrap">
+    <button class="films-btn" id="filmsBtn" title="Mes films"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 5l1.5 4M13 5l1.5 4"/></svg> Films</button>
     <button class="watch" id="watchBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5l14 7-14 7z"/></svg> Lire le film</button>
-    <button class="ia-on-btn" id="iaBtn" title="IA"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
   </div>
 </main>
 
@@ -8235,8 +8238,7 @@ function renderFilms(){ var el=document.getElementById("filmsList"); if(!el) ret
 try{ window.openFilms=openFilms; }catch(e){}
 /* auto-save quand on quitte / masque la page */
 try{ window.addEventListener("visibilitychange", function(){ if(document.visibilityState==="hidden") studioSaveLocal(); }); window.addEventListener("pagehide", studioSaveLocal); }catch(e){}
-/* bouton "Mes films" injecté dans l'entête */
-try{ window.addEventListener("load", function(){ setTimeout(function(){ try{ if(document.getElementById("filmsBtn")) return; var host=document.querySelector(".hero-top")||document.querySelector("header")||document.body; var b=document.createElement("button"); b.id="filmsBtn"; b.textContent="\uD83C\uDFAC Mes films"; b.style.cssText="position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9000;background:linear-gradient(180deg,#1b2a45,#0e1626);color:#f4bd4a;border:1px solid rgba(244,189,74,.4);border-radius:20px;font:700 13px system-ui;padding:9px 14px;box-shadow:0 6px 18px rgba(0,0,0,.4)"; b.onclick=openFilms; document.body.appendChild(b); }catch(e){} }, 600); }); }catch(e){}
+
 ovVid=document.getElementById("ovlVid");
 var ovlFile=document.getElementById("ovlFile"), ovlAmt=document.getElementById("ovlAmt");
 document.getElementById("ovlLoad").onclick=function(){ ovlFile.click(); };
@@ -9005,6 +9007,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   function relayPlay(){ var p=$("play"); if(p) p.click(); setTimeout(function(){ refreshPlay(); if((typeof playing!=="undefined")&&playing) armHide(); else forceChrome(); },40); }
   ["heroPlay","watchBtn"].forEach(function(id){ var b=$(id); if(b) b.onclick=relayPlay; });
+  try{ var _fb=$("filmsBtn"); if(_fb) _fb.onclick=function(){ try{ openFilms(); }catch(e){} }; }catch(e){}
 
   /* ---------- 3b) Contrôles vidéo qui s'auto-masquent (comme un lecteur) ---------- */
   var _chromeT=null, _wasPlaying=false;
