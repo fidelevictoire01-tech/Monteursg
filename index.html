@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C248</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C251</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8038,7 +8038,7 @@ ATMO_SHADERS["fog"]=ATMO_PRE+`void main(){ vec2 uv=v_texCoord; vec3 col=texture2
  float n=0.0, a=0.5; for(int i=0;i<4;i++){ vec2 ip=floor(p), fp=fract(p); fp=fp*fp*(3.0-2.0*fp);
   float v=mix(mix(h21(ip),h21(ip+vec2(1.0,0.0)),fp.x), mix(h21(ip+vec2(0.0,1.0)),h21(ip+vec2(1.0,1.0)),fp.x), fp.y); n+=v*a; a*=0.5; p*=2.0; }
  float fog=smoothstep(0.3,0.9,n)*uAmt*0.5; col=mix(col, vec3(0.8,0.82,0.86), fog); gl_FragColor=vec4(col,1.0); }`;
-var ATMO_NAMES=["snow","rain","golddust","godrays","embers","fireflies","fog"];
+var ATMO_NAMES=["godrays","fog"];   /* seulement lumière/brume : plus de particules (neige/pluie/golddust/braises/lucioles) */
 var ATMO_FREQ={cinema:0.0,doux:0.0,dynamique:0.0,voyage:0.0};  /* couche bricolee desactivee -> remplacee par tsParticles */
 var ATMO_AMT={cinema:1.0,doux:0.9,dynamique:1.4,voyage:1.2};
 var ATMO={ready:false,progs:{},okNames:null,okCount:0,fbo:null};
@@ -8425,7 +8425,7 @@ function _restorePhotoFromBlob(id, blob, meta, maxD){ return new Promise(functio
     if(meta.capColor)p._capColor=meta.capColor; if(meta.capBand)p._capBand=meta.capBand; if(meta.capFont)p._capFont=meta.capFont; if(meta.capSize!=null)p._capSize=meta.capSize;
     if(meta.capPos)p._capPos=meta.capPos; if(meta.capAlign)p._capAlign=meta.capAlign; if(meta.grade)p._grade=meta.grade; if(meta.fit)p._fit=meta.fit; if(meta.dur!=null)p._dur=meta.dur;
     PHOTOS.push(p);
-    var _th=null; try{ var _tel=document.getElementById("thumbs"), _tw=108, _thh=Math.max(1,Math.round(_tw*(cv.height||1)/(cv.width||1))); var _tc=document.createElement("canvas"); _tc.width=_tw; _tc.height=_thh; _tc.getContext("2d").drawImage(cv,0,0,_tw,_thh); _tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4);cursor:pointer"; if(_tel) _tel.appendChild(_tc); _th=_tc; }catch(e){}
+    var _th=null; try{ var _tel=document.getElementById("thumbs"), _tw=280, _thh=Math.max(1,Math.round(_tw*(cv.height||1)/(cv.width||1))); var _tc=document.createElement("canvas"); _tc.width=_tw; _tc.height=_thh; _tc.getContext("2d").drawImage(cv,0,0,_tw,_thh); _tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4);cursor:pointer"; if(_tel) _tel.appendChild(_tc); _th=_tc; }catch(e){}
     p._thumb=_th; if(_th){ _th.addEventListener("click",function(){ toggleSkip(p,_th); }); }
     try{ if(typeof _touchDec==="function") _touchDec(PHOTOS.length-1); }catch(e){}   /* cache LRU : ne garde que ~14 photos décodées, re-décode le reste à la demande (plein qualité, mémoire faible) */
     if((""+id).indexOf("p")===0){ var _n=parseInt((""+id).slice(1),10); if(_n>_PSEQ)_PSEQ=_n; }
@@ -9583,7 +9583,12 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }, true);
   }
   try{ window.__useTrack=useTrack; }catch(e){}
-  try{ window.__loadMusicBlob=function(blob,title){ if(!blob) return; try{ useTrack({ id:"restored", title:title||"Musique", file:blob, _file:blob, remote:false }); }catch(e){} }; }catch(e){}
+  try{ window.__loadMusicBlob=function(blob,title){ if(!blob) return; try{
+    var t={ id:"restored"+(++LIB_SEQ), title:title||"Musique", artist:"Ce montage", file:blob, _file:blob, remote:false };
+    LIB.unshift(t); renderLib(); probeDur(t);
+    try{ _readID3(blob, function(meta){ if(!meta) return; if(meta.title)t.title=meta.title; if(meta.type)t.type=meta.type; if(meta.cover)t.cover=meta.cover; renderLib(); }); }catch(e){}
+    useTrack(t);
+  }catch(e){ try{ useTrack({ id:"restored", title:title||"Musique", file:blob, _file:blob, remote:false }); }catch(_){} } }; }catch(e){}
   function downloadThenLoad(t){
     _mLoading=true; showProg(true,"T\u00e9l\u00e9chargement\u2026 0%"); setProgPct(0);
     fetch(t.url).then(function(r){
