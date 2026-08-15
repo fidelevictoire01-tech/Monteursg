@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C241</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C242</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -9324,6 +9324,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     if(wb) wb.innerHTML=pl?(PAUSE_S+" Pause"):(PLAY_S+" Lire le film");
   }
   function relayPlay(){ var p=$("play"); if(p) p.click(); setTimeout(function(){ refreshPlay(); if((typeof playing!=="undefined")&&playing) armHide(); else forceChrome(); },40); }
+  try{ window._refreshPlayUI=refreshPlay; }catch(e){}
   ["heroPlay","watchBtn"].forEach(function(id){ var b=$(id); if(b) b.onclick=relayPlay; });
   try{ var _fb=$("filmsBtn"); if(_fb) _fb.onclick=function(e){ try{ e.stopPropagation(); }catch(_x){} try{ _toggleFilmsMenu(_fb); }catch(_x){} }; }catch(e){}
 
@@ -9342,7 +9343,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
 
   /* ---------- 4) Feuilles (sources / ambiance / export) ---------- */
-  function openSheet(n){ try{ if(typeof stopPlay==="function"){ stopPlay(); resetBtn(); } }catch(e){} try{ if(typeof _hideClipOverlay==="function") _hideClipOverlay(); }catch(e){} var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
+  function openSheet(n){ try{ if(typeof stopPlay==="function"){ stopPlay(); } }catch(e){} try{ var _pp=document.getElementById("play"); if(_pp) _pp.textContent="\u25B6 Lire le film"; }catch(e){} try{ if(window._refreshPlayUI) window._refreshPlayUI(); }catch(e){} try{ if(typeof _hideClipOverlay==="function") _hideClipOverlay(); }catch(e){} var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
   function closeSheets(){ qa(".sheet-bg").forEach(function(e){ e.classList.remove("show"); }); if(typeof stopPreview==="function") stopPreview(); }
   qa(".source[data-sheet]").forEach(function(b){ b.onclick=function(){ var n=b.getAttribute("data-sheet"); openSheet(n); if(n==="photos"&&typeof renderPGrid==="function"){ try{ renderPGrid(); }catch(e){} } if(n==="video"&&typeof renderVideoSheet==="function"){ try{ renderVideoSheet(); }catch(e){} } }; });
   var oa=$("openAmbience"); if(oa) oa.onclick=function(){ openSheet("amb"); };
