@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C251</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C254</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -904,7 +904,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     <div class="title"><h3 data-i18n="AMBIANCE">AMBIANCE</h3></div>
     <div class="ambience" id="openAmbience">
       <div class="ambicon" id="ambIcon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20l-3-3m3 3l-3 3M2 12l4-2 3-6 3 8"/></svg></div>
-      <div class="ambtext"><b>Ambiance : <span id="ambName">Cinéma</span></b><small id="ambDesc">Posé, élégant, cinématographique</small></div>
+      <div class="ambtext"><b><span data-i18n="Ambiance">Ambiance</span> : <span id="ambName" data-i18n="Cinéma">Cinéma</span></b><small id="ambDesc" data-i18n="Posé, élégant, cinématographique">Posé, élégant, cinématographique</small></div>
       <div class="chev">›</div>
     </div>
   </section>
@@ -943,11 +943,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="sh-body">
     <div class="choice active" data-name="Cinéma" data-desc="Posé, élégant, cinématographique" data-icon="cinema" data-short="Posé">
       <span class="cem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l2-6h12l2 6H4zm0 0v8h16v-8"/><path d="M8 4l-2 6M16 4l2 6"/></svg></span>
-      <div class="cbd"><b>Cinéma</b><small>Posé, élégant</small></div>
+      <div class="cbd"><b>Cinéma</b><small data-i18n="Posé, élégant">Posé, élégant</small></div>
     </div>
     <div class="choice" data-name="Doux" data-desc="Calme, tendre, émotionnel" data-icon="heart" data-short="Calme">
       <span class="cem"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21l-1.5-1.5C6 15 3 12 3 8.5 3 6 5 4 7.5 4c1.5 0 3 1 4.5 2.5C13.5 5 15 4 16.5 4 19 4 21 6 21 8.5c0 3.5-3 6.5-7.5 11L12 21z"/></svg></span>
-      <div class="cbd"><b>Doux</b><small>Calme, tendre</small></div>
+      <div class="cbd"><b>Doux</b><small data-i18n="Calme, tendre">Calme, tendre</small></div>
     </div>
     <div class="choice" data-name="Voyage" data-desc="Vivant, lumineux, aventureux" data-icon="plane" data-short="Aventureux">
       <span class="cem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20l-3-3m3 3l-3 3M2 12l4-2 3-6 3 8"/></svg></span>
@@ -955,7 +955,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     </div>
     <div class="choice" data-name="Dynamique" data-desc="Rythmé, puissant, énergique" data-icon="bolt" data-short="Énergique">
       <span class="cem"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
-      <div class="cbd"><b>Dynamique</b><small>Rythmé, puissant</small></div>
+      <div class="cbd"><b>Dynamique</b><small data-i18n="Rythmé, puissant">Rythmé, puissant</small></div>
     </div>
   </div>
 </div></div>
@@ -966,11 +966,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="sh-body">
     <p class="sh-note">Choisis le format, puis lance l'export. Par défaut : <b>9:16</b> (vertical).</p>
     <div class="efmts">
-      <button class="efmt" data-ef="orig"><div class="ef-sh ef-v" style="width:15px;background:linear-gradient(135deg,#e6c25f,#8a6d1f)"></div><div class="ef-tx"><b>Origine</b><span>Format d'origine · comme filmé/pris</span></div></button>
-      <button class="efmt on" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
-      <button class="efmt" data-ef="f"><div class="ef-sh ef-v" style="width:14px"></div><div class="ef-tx"><b>4:5</b><span>Portrait · fil Instagram</span></div></button>
-      <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span>Carré · fil Instagram</span></div></button>
-      <button class="efmt" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
+      <button class="efmt" data-ef="orig"><div class="ef-sh ef-v" style="width:15px;background:linear-gradient(135deg,#e6c25f,#8a6d1f)"></div><div class="ef-tx"><b>Origine</b><span data-i18n="Format d'origine · comme filmé/pris">Format d'origine · comme filmé/pris</span></div></button>
+      <button class="efmt on" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span data-i18n="Vertical · Stories, Reels, TikTok">Vertical · Stories, Reels, TikTok</span></div></button>
+      <button class="efmt" data-ef="f"><div class="ef-sh ef-v" style="width:14px"></div><div class="ef-tx"><b>4:5</b><span data-i18n="Portrait · fil Instagram">Portrait · fil Instagram</span></div></button>
+      <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span data-i18n="Carré · fil Instagram">Carré · fil Instagram</span></div></button>
+      <button class="efmt" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span data-i18n="Paysage · YouTube">Paysage · YouTube</span></div></button>
     </div>
     <div class="signrow"><div class="signrow-t">Signature Magot<em>Intro + fin cinématiques · au premier export</em></div><button class="vtog on" id="signTog" type="button" aria-label="Signature" onclick="try{SIGN.on=!SIGN.on;this.classList.toggle('on',SIGN.on);this.setAttribute('aria-checked',SIGN.on?'true':'false');}catch(e){}"><i class="vtog-dot"></i></button></div>
 
@@ -8232,8 +8232,8 @@ function loop(){
 /* Phase outro de l'aperçu : coupe le son, joue la carte de fin, puis arrête. */
 function startPlay(){
   _iosUnlock();
-  if(!A){ setState("Choisis d'abord une musique."); return; }
-  if(!PHOTOS.length && !clipVidReady){ setState("Ajoute des photos ou des vid\u00e9os."); return; }
+  if(!A){ setState(_st("Choisis d'abord une musique.")); return; }
+  if(!PHOTOS.length && !clipVidReady){ setState(_st("Ajoute des photos ou des vid\u00e9os.")); return; }
   if(!audioEl){ setState("Musique non chargée."); return; }
   buildPartition();
   try{ masterVol(1); }catch(e){}
@@ -8324,7 +8324,7 @@ function studioAutoMontage(input){
       if(it.blob) vgot(it.blob); else if(it.file) vgot(it.file); else if(it.url){ fetch(it.url).then(function(r){ return r.blob(); }).then(vgot).catch(function(){ _one(); }); } else _one();
       return;
     }
-    try{ setState("Préparation du montage\u2026 "+idx+"/"+items.length); }catch(e){}
+    try{ setState(_st("Préparation du montage\u2026")+" "+idx+"/"+items.length); }catch(e){}
     var got=function(blob){ if(!blob){ _one(); return; } _restorePhotoFromBlob(it.id||("p"+idx), blob, { day:it.day, cap:it.caption||null }, _amax).then(function(){ setTimeout(_one,4); }); };
     if(it.blob) got(it.blob);
     else if(it.file) got(it.file);
@@ -8342,14 +8342,14 @@ function studioAutoMontage(input){
     if(input.music && input.music.url && window.__useTrack){ try{ window.__useTrack({ id:input.music.id||"auto", title:input.music.title||"Musique", url:input.music.url, type:input.music.type||"", cover:input.music.cover||"" }); }catch(e){} }
     var n=0, _iv=setInterval(function(){ n++;
       if(A && (PHOTOS.length||clipVidReady)){ clearInterval(_iv); try{ buildPartition(); paintStrip(0); setState((PHOTOS.length+(clipVidReady?CLIPS.filter(function(c){return c.ready;}).length:0))+" éléments · montage prêt"); if(input.autoplay) startPlay(); }catch(e){} }
-      else if(n>80){ clearInterval(_iv); try{ setState("Choisis une musique pour lancer le montage."); }catch(e){} }
+      else if(n>80){ clearInterval(_iv); try{ setState(_st("Choisis une musique pour lancer le montage.")); }catch(e){} }
     }, 200);
   }
   _one();
   return true;
 }
 /* Test standalone : transforme les photos déjà chargées en "voyage" (jours + légendes bidon). */
-window.studioTestAuto=function(){ var items=[]; for(var i=0;i<PHOTOS.length;i++){ if(!PHOTOS[i]) continue; if(!PHOTOS[i]._jpgBlob){ setState("Attends 1s que les images soient prêtes, puis réessaie."); return; } items.push({ id:PHOTOS[i]._id, blob:PHOTOS[i]._jpgBlob, day:Math.floor(i/3)+1, caption:"Jour "+(Math.floor(i/3)+1)+" — souvenir "+((i%3)+1) }); } return studioAutoMontage({ items:items, mood:MOOD, sign:true, dayMarkers:true, autoplay:false }); };
+window.studioTestAuto=function(){ var items=[]; for(var i=0;i<PHOTOS.length;i++){ if(!PHOTOS[i]) continue; if(!PHOTOS[i]._jpgBlob){ setState(_st("Attends 1s que les images soient prêtes, puis réessaie.")); return; } items.push({ id:PHOTOS[i]._id, blob:PHOTOS[i]._jpgBlob, day:Math.floor(i/3)+1, caption:"Jour "+(Math.floor(i/3)+1)+" — souvenir "+((i%3)+1) }); } return studioAutoMontage({ items:items, mood:MOOD, sign:true, dayMarkers:true, autoplay:false }); };
 
 window.studioTestDays=function(g){ g=(g==null)?3:g; for(var i=0;i<PHOTOS.length;i++){ if(PHOTOS[i]){ if(g>0) PHOTOS[i]._day=Math.floor(i/g)+1; else delete PHOTOS[i]._day; } } try{ if(A&&(PHOTOS.length||clipVidReady)){ buildPartition(); paintStrip(playing?visualTime():0); } }catch(e){} return "jours simulés (g="+g+")"; };
 
@@ -8441,7 +8441,7 @@ function studioOpenFilm(id){ try{ stopPlay(); }catch(e){}
   var list=proj.photos||[], i=0;
   var _rmax=(window._PMAX||1200);   /* pleine qualité : le cache LRU borne la mémoire */
   (function next(){ if(i>=list.length){ _afterOpenFilm(proj); return; } var meta=list[i++];
-    try{ setState("Chargement du montage\u2026 "+i+"/"+list.length); }catch(e){}
+    try{ setState(_st("Chargement du montage\u2026")+" "+i+"/"+list.length); }catch(e){}
     _pget(id+":"+meta.id).then(function(b){ if(b){ _restorePhotoFromBlob(meta.id,b,meta,_rmax).then(function(){ setTimeout(next,4); }); } else setTimeout(next,0); }).catch(function(){ setTimeout(next,0); }); })();
 }
 function _afterOpenFilm(proj){ try{
@@ -8449,9 +8449,9 @@ function _afterOpenFilm(proj){ try{
   if(proj.mood)MOOD=proj.mood; window.DAY_MARKERS=(proj.dayMarkers!==false);
   if(proj.sign){ if(typeof SIGN!=="undefined")SIGN.on=!!proj.sign.on; if(proj.sign.text)window.SIGN_TEXT=proj.sign.text; }
   try{ updateBadge(); paintStrip(0); }catch(e){}
-  _pget(_curFilmId+":music").then(function(mb){ if(mb && window.__loadMusicBlob){ window.__loadMusicBlob(mb,(proj.music&&proj.music.title)||"Musique"); var n=0,_iv=setInterval(function(){ n++; if(A&&PHOTOS.length){ clearInterval(_iv); try{ buildPartition(); paintStrip(0); setState("Montage rechargé ("+PHOTOS.length+" photos)."); }catch(e){} } else if(n>90){ clearInterval(_iv); } },200); } else { try{ if(PHOTOS.length) setState(PHOTOS.length+" photos rechargées \u00b7 remets une musique."); }catch(e){} } }).catch(function(){});
+  _pget(_curFilmId+":music").then(function(mb){ if(mb && window.__loadMusicBlob){ window.__loadMusicBlob(mb,(proj.music&&proj.music.title)||"Musique"); var n=0,_iv=setInterval(function(){ n++; if(A&&PHOTOS.length){ clearInterval(_iv); try{ buildPartition(); paintStrip(0); setState(_st("Montage rechargé")+" ("+PHOTOS.length+" photos)."); }catch(e){} } else if(n>90){ clearInterval(_iv); } },200); } else { try{ if(PHOTOS.length) setState(PHOTOS.length+" photos rechargées \u00b7 remets une musique."); }catch(e){} } }).catch(function(){});
 }catch(e){} }
-function studioNewFilm(){ try{ studioSaveLocal(); }catch(e){} _curFilmId=null; try{ closeFilms(); }catch(e){} try{ document.getElementById("clear").click(); }catch(e){} try{ setState("Nouveau montage \u2014 ajoute des photos et une musique."); }catch(e){} }
+function studioNewFilm(){ try{ studioSaveLocal(); }catch(e){} _curFilmId=null; try{ closeFilms(); }catch(e){} try{ document.getElementById("clear").click(); }catch(e){} try{ setState(_st("Nouveau montage \u2014 ajoute des photos et une musique.")); }catch(e){} }
 function studioDeleteFilm(id){ try{ var idx=_filmsIndex().filter(function(f){ return f.id!==id; }); _filmsIndexSave(idx); localStorage.removeItem(_filmKey(id)); }catch(e){} if(_curFilmId===id)_curFilmId=null; try{ renderFilms(); }catch(e){} }
 
 /* ---- UI : galerie de films (overlay injecté) ---- */
@@ -8528,6 +8528,20 @@ var _STR2={
  de:{ "Photos du voyage":"Reisefotos","Valider":"Fertig","Clips vidéo":"Videoclips","Bibliothèque musicale":"Musikbibliothek","Fermer":"Schließen","Choisir une ambiance":"Stimmung wählen","Exporter la vidéo":"Video exportieren","Annuler":"Abbrechen","Vos films":"Deine Filme","DERNIER FILM":"LETZTER FILM","ENREGISTRÉ":"GESPEICHERT","EN COURS":"IN ARBEIT","À RÉALISER":"ZU ERSTELLEN","Ouvrir le film":"Film öffnen","Nouveau film":"Neuer Film","Tous vos films":"Alle deine Filme","BIBLIOTHÈQUE":"BIBLIOTHEK","Supprimer ce film ?":"Diesen Film löschen?","photos":"Fotos","ph":"F" }
 };
 try{ for(var _L in _STR2){ if(_STR[_L]){ for(var _k in _STR2[_L]){ _STR[_L][_k]=_STR2[_L][_k]; } } } }catch(e){}
+var _STR3={
+ en:{ "Choisis une musique pour lancer le montage.":"Choose music to start the montage.","Choisis d'abord une musique.":"Choose music first.","Ajoute des photos ou des vidéos.":"Add photos or videos.","Musique non chargée.":"Music not loaded.","Fichier audio illisible (essaie un MP3/M4A/WAV).":"Audio file unreadable (try MP3/M4A/WAV).","Maximum 10 clips vidéo (limite iOS des décodeurs).":"Max 10 video clips (iOS decoder limit).","Rien à enregistrer pour l'instant.":"Nothing to save yet.","\u2713 Montage enregistré dans « Mes films ».":"\u2713 Montage saved to \u201cMy films\u201d.","Nouveau montage — ajoute des photos et une musique.":"New montage — add photos and music.","Chargement du montage\u2026":"Loading montage\u2026","Préparation du montage\u2026":"Preparing montage\u2026","Attends 1s que les images soient prêtes, puis réessaie.":"Wait 1s for images to be ready, then retry.","Si pas de son, retape « Lire ».":"If no sound, tap \u201cPlay\u201d again.","Import photos":"Importing photos","photos chargées":"photos loaded","doublon(s) ignoré(s)":"duplicate(s) skipped","écartée(s)":"skipped","Montage rechargé":"Montage reloaded","photos rechargées · remets une musique.":"photos reloaded · add music again." },
+ es:{ "Choisis une musique pour lancer le montage.":"Elige música para iniciar el montaje.","Choisis d'abord une musique.":"Elige primero una música.","Ajoute des photos ou des vidéos.":"Añade fotos o vídeos.","Musique non chargée.":"Música no cargada.","Fichier audio illisible (essaie un MP3/M4A/WAV).":"Archivo de audio ilegible (prueba MP3/M4A/WAV).","Maximum 10 clips vidéo (limite iOS des décodeurs).":"Máx. 10 clips de vídeo (límite iOS).","Rien à enregistrer pour l'instant.":"Nada que guardar por ahora.","\u2713 Montage enregistré dans « Mes films ».":"\u2713 Montaje guardado en «Mis películas».","Nouveau montage — ajoute des photos et une musique.":"Nuevo montaje — añade fotos y música.","Chargement du montage\u2026":"Cargando montaje\u2026","Préparation du montage\u2026":"Preparando montaje\u2026","Attends 1s que les images soient prêtes, puis réessaie.":"Espera 1s a que las imágenes estén listas y reintenta.","Si pas de son, retape « Lire ».":"Si no hay sonido, pulsa «Reproducir» otra vez.","Import photos":"Importando fotos","photos chargées":"fotos cargadas","doublon(s) ignoré(s)":"duplicado(s) omitido(s)","écartée(s)":"descartada(s)","Montage rechargé":"Montaje recargado","photos rechargées · remets une musique.":"fotos recargadas · vuelve a poner música." },
+ it:{ "Choisis une musique pour lancer le montage.":"Scegli una musica per avviare il montaggio.","Choisis d'abord une musique.":"Scegli prima una musica.","Ajoute des photos ou des vidéos.":"Aggiungi foto o video.","Musique non chargée.":"Musica non caricata.","Fichier audio illisible (essaie un MP3/M4A/WAV).":"File audio illeggibile (prova MP3/M4A/WAV).","Maximum 10 clips vidéo (limite iOS des décodeurs).":"Max 10 clip video (limite iOS).","Rien à enregistrer pour l'instant.":"Niente da salvare per ora.","\u2713 Montage enregistré dans « Mes films ».":"\u2713 Montaggio salvato in «I miei film».","Nouveau montage — ajoute des photos et une musique.":"Nuovo montaggio — aggiungi foto e musica.","Chargement du montage\u2026":"Caricamento montaggio\u2026","Préparation du montage\u2026":"Preparazione montaggio\u2026","Attends 1s que les images soient prêtes, puis réessaie.":"Attendi 1s che le immagini siano pronte, poi riprova.","Si pas de son, retape « Lire ».":"Se non c'è audio, tocca di nuovo «Riproduci».","Import photos":"Importazione foto","photos chargées":"foto caricate","doublon(s) ignoré(s)":"duplicato/i ignorato/i","écartée(s)":"scartata/e","Montage rechargé":"Montaggio ricaricato","photos rechargées · remets une musique.":"foto ricaricate · rimetti una musica." },
+ de:{ "Choisis une musique pour lancer le montage.":"Wähle Musik, um die Montage zu starten.","Choisis d'abord une musique.":"Wähle zuerst Musik.","Ajoute des photos ou des vidéos.":"Füge Fotos oder Videos hinzu.","Musique non chargée.":"Musik nicht geladen.","Fichier audio illisible (essaie un MP3/M4A/WAV).":"Audiodatei unlesbar (versuche MP3/M4A/WAV).","Maximum 10 clips vidéo (limite iOS des décodeurs).":"Max. 10 Videoclips (iOS-Limit).","Rien à enregistrer pour l'instant.":"Noch nichts zu speichern.","\u2713 Montage enregistré dans « Mes films ».":"\u2713 Montage in \u201eMeine Filme\u201c gespeichert.","Nouveau montage — ajoute des photos et une musique.":"Neue Montage — füge Fotos und Musik hinzu.","Chargement du montage\u2026":"Montage wird geladen\u2026","Préparation du montage\u2026":"Montage wird vorbereitet\u2026","Attends 1s que les images soient prêtes, puis réessaie.":"Warte 1s, bis die Bilder bereit sind, dann erneut.","Si pas de son, retape « Lire ».":"Kein Ton? Tippe erneut auf \u201eAbspielen\u201c.","Import photos":"Fotos importieren","photos chargées":"Fotos geladen","doublon(s) ignoré(s)":"Duplikat(e) übersprungen","écartée(s)":"übersprungen","Montage rechargé":"Montage neu geladen","photos rechargées · remets une musique.":"Fotos neu geladen · Musik wieder hinzufügen." }
+};
+try{ for(var _L3 in _STR3){ if(_STR[_L3]){ for(var _k3 in _STR3[_L3]){ _STR[_L3][_k3]=_STR3[_L3][_k3]; } } } }catch(e){}
+var _STR4={
+ en:{ "Posé, élégant, cinématographique":"Calm, elegant, cinematic","Calme, tendre, émotionnel":"Calm, tender, emotional","Rythmé, puissant, énergique":"Rhythmic, powerful, energetic","Vivant, lumineux, aventureux":"Vivid, bright, adventurous","Posé, élégant":"Calm, elegant","Calme, tendre":"Calm, tender","Rythmé, puissant":"Rhythmic, powerful","Vivant, lumineux":"Vivid, bright","Posé":"Calm","Calme":"Calm","Énergique":"Energetic","Aventureux":"Adventurous","Format d'origine · comme filmé/pris":"Original format · as shot","Vertical · Stories, Reels, TikTok":"Vertical · Stories, Reels, TikTok","Portrait · fil Instagram":"Portrait · Instagram feed","Carré · fil Instagram":"Square · Instagram feed","Paysage · YouTube":"Landscape · YouTube","Rechercher un titre, un style…":"Search a title, a style…","Importer une musique":"Import music","Écris ton texte…":"Write your text…","Ajouter un texte…":"Add text…","Ambiance":"Mood" },
+ es:{ "Posé, élégant, cinématographique":"Sereno, elegante, cinematográfico","Calme, tendre, émotionnel":"Tranquilo, tierno, emotivo","Rythmé, puissant, énergique":"Rítmico, potente, enérgico","Vivant, lumineux, aventureux":"Vivo, luminoso, aventurero","Posé, élégant":"Sereno, elegante","Calme, tendre":"Tranquilo, tierno","Rythmé, puissant":"Rítmico, potente","Vivant, lumineux":"Vivo, luminoso","Posé":"Sereno","Calme":"Tranquilo","Énergique":"Enérgico","Aventureux":"Aventurero","Format d'origine · comme filmé/pris":"Formato original · como se grabó","Vertical · Stories, Reels, TikTok":"Vertical · Stories, Reels, TikTok","Portrait · fil Instagram":"Retrato · feed de Instagram","Carré · fil Instagram":"Cuadrado · feed de Instagram","Paysage · YouTube":"Horizontal · YouTube","Rechercher un titre, un style…":"Buscar un título, un estilo…","Importer une musique":"Importar música","Écris ton texte…":"Escribe tu texto…","Ajouter un texte…":"Añadir texto…","Ambiance":"Ambiente" },
+ it:{ "Posé, élégant, cinématographique":"Posato, elegante, cinematografico","Calme, tendre, émotionnel":"Calmo, tenero, emotivo","Rythmé, puissant, énergique":"Ritmato, potente, energico","Vivant, lumineux, aventureux":"Vivace, luminoso, avventuroso","Posé, élégant":"Posato, elegante","Calme, tendre":"Calmo, tenero","Rythmé, puissant":"Ritmato, potente","Vivant, lumineux":"Vivace, luminoso","Posé":"Posato","Calme":"Calmo","Énergique":"Energico","Aventureux":"Avventuroso","Format d'origine · comme filmé/pris":"Formato originale · come ripreso","Vertical · Stories, Reels, TikTok":"Verticale · Stories, Reels, TikTok","Portrait · fil Instagram":"Verticale · feed Instagram","Carré · fil Instagram":"Quadrato · feed Instagram","Paysage · YouTube":"Orizzontale · YouTube","Rechercher un titre, un style…":"Cerca un titolo, uno stile…","Importer une musique":"Importa musica","Écris ton texte…":"Scrivi il tuo testo…","Ajouter un texte…":"Aggiungi testo…","Ambiance":"Atmosfera" },
+ de:{ "Posé, élégant, cinématographique":"Ruhig, elegant, filmisch","Calme, tendre, émotionnel":"Ruhig, zärtlich, emotional","Rythmé, puissant, énergique":"Rhythmisch, kraftvoll, energisch","Vivant, lumineux, aventureux":"Lebendig, hell, abenteuerlich","Posé, élégant":"Ruhig, elegant","Calme, tendre":"Ruhig, zärtlich","Rythmé, puissant":"Rhythmisch, kraftvoll","Vivant, lumineux":"Lebendig, hell","Posé":"Ruhig","Calme":"Ruhig","Énergique":"Energisch","Aventureux":"Abenteuerlich","Format d'origine · comme filmé/pris":"Originalformat · wie aufgenommen","Vertical · Stories, Reels, TikTok":"Hochformat · Stories, Reels, TikTok","Portrait · fil Instagram":"Hochformat · Instagram-Feed","Carré · fil Instagram":"Quadrat · Instagram-Feed","Paysage · YouTube":"Querformat · YouTube","Rechercher un titre, un style…":"Titel oder Stil suchen…","Importer une musique":"Musik importieren","Écris ton texte…":"Schreibe deinen Text…","Ajouter un texte…":"Text hinzufügen…","Ambiance":"Stimmung" }
+};
+try{ for(var _L4 in _STR4){ if(_STR[_L4]){ for(var _k4 in _STR4[_L4]){ _STR[_L4][_k4]=_STR4[_L4][_k4]; } } } }catch(e){}
 function _applyStudioLang(lang){ try{ if(lang) window.STUDIO_LANG=lang;
   var els=document.querySelectorAll("[data-i18n]"); for(var i=0;i<els.length;i++){ var k=els[i].getAttribute("data-i18n"); if(k) els[i].textContent=_st(k); }
   var hs=document.querySelectorAll("[data-i18n-html]"); for(var j=0;j<hs.length;j++){ var kk=hs[j].getAttribute("data-i18n-html"); if(kk) hs[j].innerHTML=_st(kk); }
@@ -8556,8 +8570,8 @@ function _toggleFilmsMenu(anchor){
     document.body.appendChild(m);
     Array.prototype.forEach.call(m.querySelectorAll(".fm-i"), function(it){ it.onclick=function(ev){ ev.stopPropagation(); var a=it.getAttribute("data-a"); m.style.display="none";
       if(a==="open"){ try{ openFilms(); }catch(e){} }
-      else if(a==="save"){ try{ if(!PHOTOS.length && !clipVidReady){ setState("Rien \u00e0 enregistrer pour l\'instant."); return; } studioSaveLocal(); setState("\u2713 Montage enregistr\u00e9 dans \u00ab Mes films \u00bb."); }catch(e){} }
-      else if(a==="new"){ if(confirm("Enregistrer le montage en cours puis repartir \u00e0 z\u00e9ro ?")){ try{ if(PHOTOS.length||clipVidReady) studioSaveLocal(); }catch(e){} try{ _curFilmId=null; document.getElementById("clear").click(); setState("Nouveau montage \u2014 ajoute des photos et une musique."); }catch(e){} } }
+      else if(a==="save"){ try{ if(!PHOTOS.length && !clipVidReady){ setState(_st("Rien \u00e0 enregistrer pour l\'instant.")); return; } studioSaveLocal(); setState(_st("\u2713 Montage enregistr\u00e9 dans \u00ab Mes films \u00bb.")); }catch(e){} }
+      else if(a==="new"){ if(confirm("Enregistrer le montage en cours puis repartir \u00e0 z\u00e9ro ?")){ try{ if(PHOTOS.length||clipVidReady) studioSaveLocal(); }catch(e){} try{ _curFilmId=null; document.getElementById("clear").click(); setState(_st("Nouveau montage \u2014 ajoute des photos et une musique.")); }catch(e){} } }
     }; });
     document.addEventListener("click", function(ev){ var mm=document.getElementById("filmsMenu"); if(mm && mm.style.display!=="none" && !mm.contains(ev.target) && ev.target!==anchor && !anchor.contains(ev.target)) mm.style.display="none"; });
   }
@@ -8608,7 +8622,7 @@ document.getElementById("fMusic").onchange=function(e){
           setTimeout(function(){ A=analyzeCustom(buf); finishAnalyze(); }, 30); }
       });
     };
-    var fail=function(){ setState("Fichier audio illisible (essaie un MP3/M4A/WAV)."); };
+    var fail=function(){ setState(_st("Fichier audio illisible (essaie un MP3/M4A/WAV).")); };
     var p; try{ p=ctx.decodeAudioData(reader.result, onBuf, fail); }catch(err){ fail(); return; }
     if(p&&p.then) p.then(onBuf,fail);
   };
@@ -8661,7 +8675,7 @@ document.getElementById("fPhotos").onchange=function(e){
       var _asp=c.width/(c.height||1);
       if(_asp<0.50 || _asp>2.1){ _ft.skip=true; _ft.label="format écran"; if(_th){ try{ _th.style.opacity="0.28"; _th.style.filter="grayscale(1)"; _th.title="écartée : format écran"; }catch(e){} } }
     }catch(x){} }
-  function finishOne(){ done++; var _pct=Math.round(done*100/total); setState("Import photos \u00b7 "+done+"/"+total+" ("+_pct+"%)"); if(done>=total){ after(); } else { startNext(); } }
+  function finishOne(){ done++; var _pct=Math.round(done*100/total); setState(_st("Import photos")+" \u00b7 "+done+"/"+total+" ("+_pct+"%)"); if(done>=total){ after(); } else { startNext(); } }
   function startNext(){
     if(idx>=total) return; var file=files[idx++];
     var _fsig=_sigOf(file); if(_fsig && _sigSet[_fsig]){ _dupSkipped++; finishOne(); return; } if(_fsig) _sigSet[_fsig]=1;
@@ -8859,7 +8873,7 @@ async function _turboExport(){
     await _expRace(venc.flush(), 25000, "flush"); try{ venc.close(); }catch(_c){}
   }catch(e){ try{ venc.close(); }catch(_c){} _restore(); if(_aborted||EXPORT_ABORT) return "abort"; return "fail"; }
   if(useAudio){ try{ _expStage("Turbo : audio\u2026");
-    var _srcBuf=AUDIOBUF; if(window.MULTI){ try{ var _pb=renderPlanToBuffer(DUR, Asr); if(_pb) _srcBuf=_pb; }catch(e){} }
+    var _srcBuf=(await _buildExportAudio(DUR, Asr))||AUDIOBUF;
     var _Lc=_srcBuf.getChannelData(0), _Rc=(_srcBuf.numberOfChannels>1)?_srcBuf.getChannelData(1):_srcBuf.getChannelData(0);
     var tot=Math.min(_srcBuf.length, Math.floor(DUR*Asr));
     var Lc=new Float32Array(_Lc.subarray(0,tot)), Rc=new Float32Array(_Rc.subarray(0,tot));
@@ -8958,6 +8972,24 @@ function drawSignatureCard(kind,prog){
 
 function _fadeBlackOverlay(alpha){ try{ if(!base||!bctx) return; bctx.save(); bctx.globalAlpha=Math.max(0,Math.min(1,alpha)); bctx.fillStyle="#000"; bctx.fillRect(0,0,base.width,base.height); bctx.restore(); _atmo=null; if(glReady){ drawGL(performance.now()/1000,0); } }catch(e){} }
 
+async function _buildExportAudio(dur, sr){
+  try{
+    if(!AUDIOBUF) return null; sr=sr||AUDIOBUF.sampleRate;
+    if(window.MULTI){ try{ var pb=renderPlanToBuffer(dur, sr); if(pb) return pb; }catch(e){} }
+    if(!window.LOOP_ON) return AUDIOBUF;   /* pas de boucle -> musique telle quelle */
+    var OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OAC) return AUDIOBUF;
+    var ls=window.LOOP_START||0, le=window.LOOP_END||AUDIOBUF.duration, loopLen=Math.max(0.5, le-ls);
+    var XF=Math.min(WA.XF||2.0, loopLen*0.45);
+    var frames=Math.ceil((dur+0.3)*sr), oc=new OAC(2, frames, sr);
+    function seg(from,len,at,fin,fout){ var s=oc.createBufferSource(); s.buffer=AUDIOBUF; var g=oc.createGain(); s.connect(g); g.connect(oc.destination);
+      g.gain.setValueAtTime(fin?0.0001:1, Math.max(0,at)); if(fin) g.gain.linearRampToValueAtTime(1, at+XF);
+      if(fout){ g.gain.setValueAtTime(1, Math.max(at, at+len-XF)); g.gain.linearRampToValueAtTime(0.0001, at+len); }
+      try{ s.start(Math.max(0,at), from, len+0.06); }catch(e){} }
+    var at=0; seg(0, le, at, false, true); at += le - XF;                 /* 1er passage : intro -> fin de boucle */
+    var guard=0; while(at < dur && guard++<5000){ seg(ls, loopLen, at, true, true); at += loopLen - XF; }   /* boucles enchaînées */
+    var out=await oc.startRendering(); return out||AUDIOBUF;
+  }catch(e){ return AUDIOBUF; }
+}
 async function exportStudio(){ try{ _reqWake(); }catch(e){} try{ _hideClipOverlay(); }catch(e){}
   if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
@@ -9010,7 +9042,7 @@ async function exportStudio(){ try{ _reqWake(); }catch(e){} try{ _hideClipOverla
 
     _setStage("Audio\u2026"); await _paint();
     var audioCtx=null,audioSrc=null,audioAdded=false,_sgain=null;
-    try{ if(AUDIOBUF){ var AC=window.AudioContext||window.webkitAudioContext; audioCtx=new AC(); var _buf=AUDIOBUF; try{ if(window.MULTI){ var _pb=renderPlanToBuffer(DUR,AUDIOBUF.sampleRate); if(_pb)_buf=_pb; } }catch(e){} audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf; var _dest=audioCtx.createMediaStreamDestination(); _sgain=audioCtx.createGain(); audioSrc.connect(_sgain); _sgain.connect(_dest); var _atk=_dest.stream.getAudioTracks()[0]; if(_atk){ stream.addTrack(_atk); audioAdded=true; } } }catch(e){ try{audioCtx&&audioCtx.close();}catch(_){} audioCtx=null;audioSrc=null; }
+    try{ if(AUDIOBUF){ var AC=window.AudioContext||window.webkitAudioContext; audioCtx=new AC(); var _buf=(await _buildExportAudio(DUR, AUDIOBUF.sampleRate))||AUDIOBUF; audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf; var _dest=audioCtx.createMediaStreamDestination(); _sgain=audioCtx.createGain(); audioSrc.connect(_sgain); _sgain.connect(_dest); var _atk=_dest.stream.getAudioTracks()[0]; if(_atk){ stream.addTrack(_atk); audioAdded=true; } } }catch(e){ try{audioCtx&&audioCtx.close();}catch(_){} audioCtx=null;audioSrc=null; }
 
     _setStage("Encodeur\u2026"); await _paint();
     var mimes=["video/mp4","video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
@@ -9104,7 +9136,7 @@ async function exportRecorderFallback(){
       if(AUDIOBUF){
         var _AC=window.AudioContext||window.webkitAudioContext;
         audioCtx=new _AC();
-        var _buf=AUDIOBUF; try{ if(window.MULTI){ var _pb=renderPlanToBuffer(DUR, AUDIOBUF.sampleRate); if(_pb) _buf=_pb; } }catch(e){}
+        var _buf=(await _buildExportAudio(DUR, AUDIOBUF.sampleRate))||AUDIOBUF;
         audioSrc=audioCtx.createBufferSource(); audioSrc.buffer=_buf;
         var _dest=audioCtx.createMediaStreamDestination();
         audioSrc.connect(_dest);   /* pas de connexion aux HP : évite de crier pendant l'export */
@@ -9612,12 +9644,12 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   if(msBody){
     msBody.innerHTML=
-      '<div class="msearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><input id="mSearch" type="search" placeholder="Rechercher un titre, un style\u2026" autocomplete="off" spellcheck="false"></div>'
+      '<div class="msearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><input id="mSearch" type="search" placeholder="'+_st("Rechercher un titre, un style\u2026")+'" autocomplete="off" spellcheck="false"></div>'
      +'<div id="mCats" class="mcats"></div>'
      +'<p class="sh-note">Choisis un morceau (<b>\uFF0B</b> pour l\'ajouter au <b>mix DJ</b>, jusqu\u2019\u00e0 4). Le r\u00e9alisateur cale les coupes sur son tempo.'+((typeof window!=="undefined"&&window.STUDIO_ADMIN!==false)?' Ou importe le tien.':'')+'</p>'
      +'<div id="mLib" class="mlib"></div>'
      +'<div id="mProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
-     +((typeof window!=="undefined"&&window.STUDIO_ADMIN!==false)?'<button class="doexp" id="mImport">\uFF0B Importer une musique</button>':'');
+     +((typeof window!=="undefined"&&window.STUDIO_ADMIN!==false)?'<button class="doexp" id="mImport">\uFF0B '+_st("Importer une musique")+'</button>':'');
     var myMusicIn=document.createElement("input"); myMusicIn.type="file"; myMusicIn.style.display="none"; /* pas d'accept : iOS grise les MP3 avec audio/* — comme le champ du moteur */
     try{ (document.body||document.documentElement).appendChild(myMusicIn); }catch(e){}
     myMusicIn.onchange=function(){ var f=this.files&&this.files[0]; if(!f) return; this.value=""; addImport(f); };
@@ -9684,7 +9716,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     ov.innerHTML='<div class="cp-card te-card">'
       +'<div class="te-head"><span class="te-title">Texte</span><div class="te-tools"><button class="te-tool" id="teAI" aria-label="Fid\u00e8le : g\u00e9n\u00e9rer"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 21.5l-2-2 11-11 2 2-11 11zM17.6 5.1l1.1-1.1 1.4 1.4-1.1 1.1 1.1 1.1-1.4 1.4-1.1-1.1-1.1 1.1-1.4-1.4 1.1-1.1-1.1-1.1 1.4-1.4z"/><circle cx="20.5" cy="12" r="1.1"/><circle cx="12.5" cy="3.5" r="1.1"/></svg></button><button class="te-doneb" id="teDone" aria-label="Termin\u00e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></button></div></div>'
       +'<div class="te-prevwrap"><canvas class="te-cv" width="360" height="640"></canvas></div>'
-      +'<div class="te-inputwrap"><textarea class="te-input" id="teInput" maxlength="'+MAXLEN+'" rows="2" placeholder="\u00c9cris ton texte\u2026">'+esc(p._cap||"")+'</textarea><span class="te-count" id="teCount">'+(""+(p._cap||"")).length+'/'+MAXLEN+'</span></div>'
+      +'<div class="te-inputwrap"><textarea class="te-input" id="teInput" maxlength="'+MAXLEN+'" rows="2" placeholder="'+_st("\u00c9cris ton texte\u2026")+'">'+esc(p._cap||"")+'</textarea><span class="te-count" id="teCount">'+(""+(p._cap||"")).length+'/'+MAXLEN+'</span></div>'
       +'<div class="te-bar"><select class="te-sel" id="teStyle">'+opts(STYLES,p._capStyle||"auto")+'</select><select class="te-sel" id="teAnim">'+opts(ANIMS,p._capAnim||"auto")+'</select><select class="te-sel" id="tePos">'+opts(POSIT,p._capPos||"bottom")+'</select><select class="te-sel" id="teAlign">'+opts(ALIGN,p._capAlign||"center")+'</select></div>'
       +'<div class="te-bar"><select class="te-sel te-selfont" id="teFont">'+opts(FONTS,p._capFont||"")+'</select>'
         +'<select class="te-sel te-selsize" id="teSize">'+SIZES.map(function(o){ var sel=(Math.abs((+o[0])-(p._capSize||1))<0.06)?" selected":""; return '<option value="'+o[0]+'"'+sel+'>'+o[1]+'</option>'; }).join("")+'</select>'
@@ -9873,7 +9905,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       +'<div class="pr-num">'+num+'</div>'
       +'<div class="pr-thumb">'+(u?'<img src="'+u+'" alt="">':'')+'</div>'
       +'<div class="pr-body">'
-        +'<input class="pr-cap" type="text" value="'+esc(capOf(p))+'" placeholder="Ajouter un texte\u2026">'
+        +'<input class="pr-cap" type="text" value="'+esc(capOf(p))+'" placeholder="'+_st("Ajouter un texte\u2026")+'">'
         +'<div class="pr-meta">'+(dtxt?'<span class="pr-dur">'+dtxt+'</span>':'')+(tag?(dtxt?' \u00b7 ':'')+'<span class="pr-tag">'+esc(tag)+'</span>':'')+(p&&p._capStyle?' \u00b7 <span class="pr-style">'+esc(styleLabel(p._capStyle))+'</span>':'')+'</div>'
       +'</div>'
       +'<button class="pr-fx" aria-label="Retouche"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><circle cx="9" cy="7" r="2.4" fill="#0e1a30"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="15" cy="17" r="2.4" fill="#0e1a30"/></svg></button>'+'<button class="pr-drag" aria-label="D\u00e9placer">\u2261</button>'
@@ -10136,8 +10168,8 @@ function renderVNav(){
     if(desc) desc.textContent=shortD||fullD;
     /* bandeau Ambiance du bas */
     var aN=$("ambName"), aD=$("ambDesc"), aI=$("ambIcon");
-    if(aN) aN.textContent=nm;
-    if(aD) aD.textContent=fullD;
+    if(aN){ aN.setAttribute("data-i18n",nm); aN.textContent=_st(nm); }
+    if(aD){ aD.setAttribute("data-i18n",fullD); aD.textContent=_st(fullD); }
     if(aI&&icoSpan) aI.innerHTML=icoSpan.innerHTML;
   }
   qa(".choice").forEach(function(ch){
