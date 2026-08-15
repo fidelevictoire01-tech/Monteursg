@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C239</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C241</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1479,8 +1479,8 @@ function buildPartition(){
       avail=want; bdur=want; window.DUR_FIT=1;
     }
     window.DUR_NP=(_nP||1); }
-  bdur=Math.max(1,Math.min(bdur,avail));
   var _iD=(typeof SIGN!=="undefined"&&SIGN.on)?SIGN.introDur:0, _oD=(typeof SIGN!=="undefined"&&SIGN.on)?SIGN.outroDur:0;
+  bdur=Math.max(1,Math.min(bdur, avail - _iD - _oD));   /* réserve intro + OUTRO dans la musique -> l'outro tombe avant la fin, toujours atteinte */
   var pStart=MST+_iD, pEnd=pStart+bdur, wEnd=pEnd+_oD;   /* la musique joue sur TOUT : intro + photos + outro */
   window.MONTAGE_DUR=wEnd; window.MSTART_EFF=MST; window.SIGN_PS=pStart; window.SIGN_PE=pEnd;
   /* INVERSION : parmi les temps de [min,max] secondes, on prend le PLUS FORT.
@@ -8851,7 +8851,7 @@ async function _turboExport(){
    Texte écrit par Mistral une fois greffé (via window.SIGN_TEXT) ; en attendant,
    proverbes variés tirés d'une petite bibliothèque locale + texte par défaut.
    =================================================================== */
-var SIGN={ on:true, introDur:3.6, outroDur:3.8, data:null };
+var SIGN={ on:true, introDur:4.8, outroDur:5.2, data:null };   /* plus long -> temps de lire l'intro/outro */
 try{ if(typeof window.STUDIO_ADMIN==="undefined") window.STUDIO_ADMIN=true; }catch(e){}   /* greffe : MagotVoyage le met à isAdmin() */var SIGN_PROVERBS=[
   "Le vrai voyage ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux.",
   "On ne part jamais vraiment : on emporte les lieux avec soi.",
