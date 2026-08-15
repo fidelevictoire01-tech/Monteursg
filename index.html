@@ -734,6 +734,14 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .fmtbar-l{ color:#6f6d68; font:700 9px system-ui; letter-spacing:2px; margin-right:2px; }
   .fmc{ flex:0 0 auto; padding:6px 13px; border-radius:999px; border:1px solid #282622; background:#151413; color:#A8A6A1; font:700 12px system-ui; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .fmc.on{ border-color:#D4AF37; color:#D4AF37; background:rgba(212,175,55,.12); }
+  /* Aperçu plus grand : on compacte les sections du bas pour donner de la hauteur au hero */
+  .app{ gap:5px !important; }
+  .info{ flex-basis:46px !important; }
+  .info b{ font-size:12px !important; line-height:1.05 !important; }
+  .info small{ font-size:9px !important; }
+  .info .ico svg{ width:14px !important; height:14px !important; }
+  .s-amb{ flex-basis:42px !important; }
+  .fmtbar{ padding:1px 0 0 !important; }
   /* État vide de l'aperçu — accueillant et de marque */
   #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(30,44,74,.55), rgba(10,16,28,.25) 58%, transparent 100%) !important; }
   .empty-in{ display:flex; flex-direction:column; align-items:center; gap:13px; }
@@ -787,7 +795,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C216</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C217</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -808,6 +816,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 
   <div class="fmtbar" id="fmtBar">
     <span class="fmtbar-l">FORMAT</span>
+    <button class="fmc" data-n="orig">Origine</button>
     <button class="fmc on" data-n="9:16">9:16</button>
     <button class="fmc" data-n="4:5">4:5</button>
     <button class="fmc" data-n="1:1">1:1</button>
@@ -9129,7 +9138,18 @@ async function exportFast(){ return exportStudio(); /* MOTEUR UNIFIÉ : tout pas
     var eb=document.getElementById("exportBtn"); if(eb) eb.textContent="⚡ Exporter la vidéo ("+name+")";
   }
   for(var i=0;i<bs.length;i++){ (function(b){ b.onclick=function(){ setFormat(+b.getAttribute("data-w"),+b.getAttribute("data-h"),b.getAttribute("data-n"),b); }; })(bs[i]); }
+  try{ window._setFormat=setFormat; }catch(e){}
 })();
+/* Format d'origine : ratio dominant des photos/vidéos, tel que filmé/pris (comme CapCut). */
+function _origFmt(){ try{
+  var ars=[]; for(var i=0;i<PHOTOS.length;i++){ var p=PHOTOS[i]; if(p&&!(p.feat&&p.feat.skip)){ var w=p._w||(p.c&&p.c.width)||0, h=p._h||(p.c&&p.c.height)||0; if(w&&h) ars.push(w/h); } }
+  try{ for(var j=0;j<CLIPS.length;j++){ var cl=CLIPS[j]; if(cl&&cl.ready&&cl.el&&cl.el.videoWidth){ ars.push(cl.el.videoWidth/cl.el.videoHeight); } } }catch(e){}
+  if(!ars.length) return {w:1080,h:1920};
+  ars.sort(function(a,b){return a-b;}); var med=ars[Math.floor(ars.length/2)];
+  med=Math.max(0.42,Math.min(2.4,med)); var L=1440, w,h;
+  if(med>=1){ w=L; h=Math.round(L/med); } else { h=L; w=Math.round(L*med); }
+  w=Math.max(2,Math.round(w/2)*2); h=Math.max(2,Math.round(h/2)*2); return {w:w,h:h};
+}catch(e){ return {w:1080,h:1920}; } }
 var _eb=document.getElementById("exportBtn"); if(_eb) _eb.onclick=function(){ exportStudio(); };
 /* Bouton Annuler : sortie de secours immédiate — même si un await encodeur reste figé,
    ceci réarme l'UI (le bouton s'exécute dans une tâche séparée) et libère l'utilisateur. */
@@ -10022,7 +10042,9 @@ function renderVNav(){
     var ev=q('.efmt[data-ef="'+(_efRev[name]||"v")+'"]'); if(ev) ev.classList.add("on");
     var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter en "+name; }
   }catch(e){} }
-  qa(".fmc").forEach(function(c){ c.onclick=function(){ var name=c.getAttribute("data-n"); var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click(); _syncFmtUI(name); }; });
+  qa(".fmc").forEach(function(c){ c.onclick=function(){ var name=c.getAttribute("data-n");
+    if(name==="orig"){ var f=(typeof _origFmt==="function")?_origFmt():{w:1080,h:1920}; try{ if(window._setFormat) window._setFormat(f.w,f.h,"Origine"); }catch(e){} qa(".fmc").forEach(function(x){ x.classList.toggle("on", x===c); }); var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter (origine)"; } return; }
+    var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click(); _syncFmtUI(name); }; });
   qa(".efmt").forEach(function(b){
     b.onclick=function(){
       qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
