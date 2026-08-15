@@ -809,7 +809,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C228</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C229</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8251,7 +8251,12 @@ document.getElementById("pickMusic").onclick=function(){ ensureAudio(); document
 document.getElementById("pickPhotos").onclick=function(){ document.getElementById("fPhotos").click(); };
 document.getElementById("play").onclick=function(){ var self=this; ensureAudio(); if(playing){ stopPlay(); self.textContent="▶ Reprendre"; } else { startPlay(); } };
 document.getElementById("restart").onclick=function(){ if(!A||(!PHOTOS.length&&!clipVidReady)) return; pausedOffset=0; buildPartition(); stopPlay(); startPlay(); setTimeout(function(){ if(playing) document.getElementById("play").textContent="⏸ Pause"; },30); };
-document.getElementById("clear").onclick=function(){ stopPlay(); PHOTOS.forEach(function(p){ try{URL.revokeObjectURL(p.url);}catch(e){} }); PHOTOS=[]; SEGS=[]; A=null; AUDIOBUF=null; pausedOffset=0; stripDirty=true; (function(){ var te=document.getElementById("thumbs"); if(te) te.innerHTML=""; })(); document.getElementById("empty").style.display="flex"; resetBtn(); setState(""); updateBadge(); paintStrip(0); bctx.clearRect(0,0,base.width,base.height); if(glReady){ gl.clear(gl.COLOR_BUFFER_BIT); } try{ _curFilmId=null; }catch(e){} };
+document.getElementById("clear").onclick=function(){ stopPlay(); PHOTOS.forEach(function(p){ try{URL.revokeObjectURL(p.url);}catch(e){} }); PHOTOS=[]; SEGS=[]; A=null; AUDIOBUF=null; pausedOffset=0; stripDirty=true;
+  try{ if(typeof CLIPS!=="undefined"){ CLIPS.forEach(function(c){ try{ c.el.pause(); if(c.el._u) URL.revokeObjectURL(c.el._u); c.el.remove(); }catch(e){} }); CLIPS.length=0; } clipVidReady=false; }catch(e){}
+  try{ _hideClipOverlay(); }catch(e){}
+  try{ window.USER_ORDER=null; window.SIGN_TEXT=null; window._restSeen={}; window.__activeMusicFile=null; }catch(e){}
+  try{ var _sm=document.getElementById("srcMus"); if(_sm)_sm.textContent="Choisir"; var _sp=document.getElementById("srcPho"); if(_sp)_sp.textContent="Ajouter"; var _sv=document.getElementById("srcVid"); if(_sv)_sv.textContent="Optionnel"; }catch(e){}
+  (function(){ var te=document.getElementById("thumbs"); if(te) te.innerHTML=""; })(); document.getElementById("empty").style.display="flex"; resetBtn(); setState(""); updateBadge(); paintStrip(0); bctx.clearRect(0,0,base.width,base.height); if(glReady){ gl.clear(gl.COLOR_BUFFER_BIT); } try{ _curFilmId=null; }catch(e){} };
 /* TEST (préparation greffe) : simuler des jours de voyage sur les photos chargées.
    studioTestDays(3) -> jour 1 aux 3 premières photos, jour 2 aux 3 suivantes, etc. studioTestDays(0) annule. */
 /* ===================================================================
@@ -8450,6 +8455,7 @@ function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) ret
   }
   var latest=idx[0], rest=idx.slice(1);
   var hero='<div class="film-open" data-id="'+latest.id+'" style="height:400px;border-radius:20px;overflow:hidden;position:relative;margin-top:10px;background:#151413 center/cover no-repeat'+(latest.thumb?(";background-image:url("+latest.thumb+")"):"")+';cursor:pointer">'
+    +'<button class="film-del" data-id="'+latest.id+'" style="position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(5,5,5,.55);border:1px solid rgba(255,255,255,.16);color:#ece9e3;font-size:17px;cursor:pointer;z-index:4">\u2715</button>'
     +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,5,.05),rgba(5,5,5,.35) 40%,rgba(5,5,5,.98))"></div>'
     +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;gap:11px">'
       +'<div style="display:flex;gap:8px;align-items:center"><span style="background:#D4AF37;color:#050505;font:700 10px system-ui;letter-spacing:2px;padding:6px 12px;border-radius:999px">DERNIER FILM</span><span style="border:1px solid rgba(212,175,55,.5);color:#D4AF37;font:700 9px system-ui;letter-spacing:1px;padding:5px 10px;border-radius:999px">'+_stLabel(latest.status)+'</span></div>'
