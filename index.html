@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C244</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C245</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -966,6 +966,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="sh-body">
     <p class="sh-note">Choisis le format, puis lance l'export. Par défaut : <b>9:16</b> (vertical).</p>
     <div class="efmts">
+      <button class="efmt" data-ef="orig"><div class="ef-sh ef-v" style="width:15px;background:linear-gradient(135deg,#e6c25f,#8a6d1f)"></div><div class="ef-tx"><b>Origine</b><span>Format d'origine · comme filmé/pris</span></div></button>
       <button class="efmt on" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
       <button class="efmt" data-ef="f"><div class="ef-sh ef-v" style="width:14px"></div><div class="ef-tx"><b>4:5</b><span>Portrait · fil Instagram</span></div></button>
       <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span>Carré · fil Instagram</span></div></button>
@@ -10160,13 +10161,15 @@ function renderVNav(){
     var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter en "+name; }
   }catch(e){} }
   qa(".fmc").forEach(function(c){ c.onclick=function(){ var name=c.getAttribute("data-n");
-    if(name==="orig"){ var f=(typeof _origFmt==="function")?_origFmt():{w:1080,h:1920}; try{ if(window._setFormat) window._setFormat(f.w,f.h,"Origine"); }catch(e){} qa(".fmc").forEach(function(x){ x.classList.toggle("on", x===c); }); var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter (origine)"; } return; }
+    if(name==="orig"){ var f=(typeof _origFmt==="function")?_origFmt():{w:1080,h:1920}; try{ if(window._setFormat) window._setFormat(f.w,f.h,"Origine"); }catch(e){} qa(".fmc").forEach(function(x){ x.classList.toggle("on", x===c); }); try{ qa(".efmt").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-ef")==="orig"); }); }catch(e){} var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter (origine)"; } return; }
     var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click(); _syncFmtUI(name); }; });
   qa(".efmt").forEach(function(b){
     b.onclick=function(){
       qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
       b.classList.add("on");
-      var name=efMap[b.getAttribute("data-ef")]||"9:16";
+      var _ef=b.getAttribute("data-ef");
+      if(_ef==="orig"){ var f=(typeof _origFmt==="function")?_origFmt():{w:1080,h:1920}; try{ if(window._setFormat) window._setFormat(f.w,f.h,"Origine"); }catch(e){} try{ qa(".fmc").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-n")==="orig"); }); }catch(e){} var deo=$("doExport"); if(deo){ var lo=deo.lastChild; if(lo&&lo.nodeType===3) lo.textContent=" Exporter (origine)"; } return; }
+      var name=efMap[_ef]||"9:16";
       var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click();
       try{ qa(".fmc").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-n")===name); }); }catch(e){}
       var de=$("doExport");
