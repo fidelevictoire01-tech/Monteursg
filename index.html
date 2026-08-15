@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C242</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C243</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8392,17 +8392,22 @@ function studioApplyProject(proj){ if(!proj) return; try{
     if(m.skip&&p.feat) p.feat.skip=true; });
 }catch(e){} }
 
-function studioSaveLocal(){ try{ if(!PHOTOS.length) return; if(!_curFilmId) _curFilmId=_newFilmId();
-  var proj=studioExportProject();
-  try{ localStorage.setItem(_filmKey(_curFilmId), JSON.stringify(proj)); }catch(e){}
-  for(var i=0;i<PHOTOS.length;i++){ var p=PHOTOS[i]; if(p&&p._id&&p._jpgBlob){ try{ _pput(_curFilmId+":"+p._id, p._jpgBlob); }catch(e){} } }
-  try{ if(window.__activeMusicFile) _pput(_curFilmId+":music", window.__activeMusicFile); }catch(e){}
+function studioSaveLocal(){ try{
+  if(!PHOTOS.length && !clipVidReady) return false;
+  if(!_curFilmId) _curFilmId=_newFilmId();
+  /* 1) Entrée dans la bibliothèque D'ABORD -> le film apparaît toujours, même si une étape échoue */
   var idx=_filmsIndex(), f=null; for(var k=0;k<idx.length;k++){ if(idx[k].id===_curFilmId){ f=idx[k]; break; } }
   if(!f){ f={ id:_curFilmId, name:"Montage "+(idx.length+1), status:"en_cours" }; idx.unshift(f); }
-  f.updated=Date.now(); f.count=PHOTOS.length; var _th=_filmThumb(); if(_th)f.thumb=_th; if(f.status!=="enregistre") f.status="en_cours";
-  if(proj.music&&proj.music.title) f.music=proj.music.title;
+  f.updated=Date.now(); f.count=(PHOTOS.length||(typeof CLIPS!=="undefined"?CLIPS.length:0)); if(f.status!=="enregistre") f.status="en_cours";
+  try{ var _th=_filmThumb(); if(_th)f.thumb=_th; }catch(e){}
+  /* 2) Projet + musique (protégés) */
+  try{ var proj=studioExportProject(); if(proj){ localStorage.setItem(_filmKey(_curFilmId), JSON.stringify(proj)); if(proj.music&&proj.music.title) f.music=proj.music.title; } }catch(e){}
   _filmsIndexSave(idx);
-}catch(e){} }
+  /* 3) Blobs photos + musique (protégés) */
+  try{ for(var i=0;i<PHOTOS.length;i++){ var p=PHOTOS[i]; if(p&&p._id&&p._jpgBlob){ _pput(_curFilmId+":"+p._id, p._jpgBlob); } } }catch(e){}
+  try{ if(window.__activeMusicFile) _pput(_curFilmId+":music", window.__activeMusicFile); }catch(e){}
+  return true;
+}catch(e){ return false; } }
 function _projSaveSoon(){ try{ clearTimeout(_projT); }catch(e){} _projT=setTimeout(studioSaveLocal,1200); }
 function studioMarkExported(){ try{ if(!_curFilmId){ studioSaveLocal(); } if(!_curFilmId) return; var idx=_filmsIndex(); for(var k=0;k<idx.length;k++){ if(idx[k].id===_curFilmId){ idx[k].status="enregistre"; idx[k].updated=Date.now(); break; } } _filmsIndexSave(idx); }catch(e){} }
 
@@ -8558,7 +8563,7 @@ function syncApply(){ var _sv=Math.round((SYNC_M[MOOD]||0)*1000); if(syncEl) syn
 if(syncEl) syncEl.oninput=function(){ SYNC_M[MOOD]=(+syncEl.value)/1000; syncLabel(); if(A){ paintStrip(playing?visualTime():0); try{ if(SEGS&&SEGS.length) renderMontageAt(playing?visualTime():0); }catch(e){} } };
 var srst=document.getElementById("syncReset"); if(srst) srst.onclick=function(){ SYNC_M[MOOD]=autoSync(MOOD,(A&&A.bpmFelt)?A.bpmFelt:((A&&A.bpm)?A.bpm:120)); syncApply(); };
 syncApply();
-document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); try{ if(_ovEl) _ovEl._flt=null; }catch(e){} if(A&&(PHOTOS.length||clipVidReady)){ if(playing){ /* LECTURE EN COURS : couleur + synchro s'appliquent à la volée, on NE reconstruit PAS -> la vidéo continue */ } else { buildPartition(); updateBadge(); paintStrip(0); try{ renderMontageAt(0); }catch(e){} } } setState("Ambiance : <b>"+btn.textContent+"</b> · sync "+Math.round(curSync()*1000)+" ms"); }; });
+document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); try{ if(_ovEl) _ovEl._flt=null; }catch(e){} if(A&&(PHOTOS.length||clipVidReady)){ var _wasP=playing, _pos=(playing?montageNow():pausedOffset)||0; buildPartition(); updateBadge(); if(_wasP){ try{ var _mx=(window.MONTAGE_DUR||_pos)-0.05; seekMontageTo(Math.max(0,Math.min(_pos,_mx))); }catch(e){} paintStrip(visualTime()); } else { paintStrip(0); try{ renderMontageAt(0); }catch(e){} } } setState("Ambiance : <b>"+btn.textContent+"</b> · "+(A?( (SEGS.length)+" plans"):"")); }; });
 
 document.getElementById("fMusic").onchange=function(e){
   var file=e.target.files&&e.target.files[0]; if(!file) return; setMusicEl(file);
