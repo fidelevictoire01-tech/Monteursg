@@ -803,7 +803,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C223</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C224</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8860,9 +8860,10 @@ async function exportStudio(){ try{ _hideClipOverlay(); }catch(e){}
   /* Watchdog global couvrant Turbo + repli : rend la main au bout de 5 min si tout se fige. */
   try{ if(_expWatch) clearTimeout(_expWatch); }catch(e){}
   _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu (trop long)."); } }, 300000);
-  /* 1) TURBO (WebCodecs) — DÉSACTIVÉ par défaut : sur iPhone l'encodeur est plus lent que le
-     temps réel. Réactivable via window._MAGOT_TURBO=true (utile surtout sur ordinateur). */
-  if(window._MAGOT_TURBO===true && typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined"){
+  /* 1) TURBO (WebCodecs, image-exacte) : activé AUTOMATIQUEMENT dès qu'il y a des clips vidéo
+     (le temps réel y saccade à ~9 i/s). Reste dispo via window._MAGOT_TURBO=true pour le reste. */
+  if((window._MAGOT_TURBO===true || clipVidReady) && typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined"){
+    try{ _expStage("Rendu fluide image par image (un peu plus long)\u2026"); }catch(e){}
     var _tr="fail"; try{ _tr=await _turboExport(); }catch(e){ _tr="fail"; }
     if(_tr==="ok") return;
     if(_tr==="abort"||EXPORT_ABORT){ EXPORTING=false; try{ if(_expWatch){clearTimeout(_expWatch);_expWatch=null;} }catch(e){} expHide(); return; }
