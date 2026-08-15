@@ -742,14 +742,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .info .ico svg{ width:14px !important; height:14px !important; }
   .s-amb{ flex-basis:42px !important; }
   .fmtbar{ padding:1px 0 0 !important; }
-  /* Mode PAYSAGE : la mise en page portrait ne tient pas -> aperçu grand + défilement + barre du bas collante */
+  /* Mode PAYSAGE = visionnage plein écran (comme les apps : on tourne pour regarder, on remet en portrait pour éditer) */
   @media (orientation:landscape) and (max-height:640px){
-    html,body{ height:auto !important; }
-    .app{ height:auto !important; min-height:100svh; overflow-y:auto !important; -webkit-overflow-scrolling:touch; }
-    .hero{ flex:0 0 auto !important; height:84svh !important; }
-    .info,.section,.fmtbar{ flex:0 0 auto !important; }
-    .actions-wrap{ position:sticky; bottom:0; z-index:9; background:linear-gradient(180deg,rgba(5,5,5,0),#050505 32%) !important; padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important; }
-    .s-amb{ margin-bottom:56px; }
+    .app{ overflow:hidden !important; height:100svh !important; }
+    .header, .fmtbar, .info, .section, .actions-wrap{ display:none !important; }
+    .hero{ position:fixed !important; inset:0 !important; width:100vw !important; height:100svh !important; min-height:0 !important; border-radius:0 !important; margin:0 !important; z-index:100; background:#000 !important; }
+    .hero .veil, .apercu-lbl, .hero-top{ display:none !important; }
+    .play-main{ width:64px !important; height:64px !important; }
   }
   /* État vide de l'aperçu — accueillant et de marque */
   #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(30,44,74,.55), rgba(10,16,28,.25) 58%, transparent 100%) !important; }
@@ -804,7 +803,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C219</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C220</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
