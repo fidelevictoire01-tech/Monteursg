@@ -738,6 +738,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .hero.cinema{ height:100svh !important; top:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; }
   .hero.cinema canvas#base, .hero.cinema canvas#gl{ position:static !important; transform:none !important; left:auto !important; top:auto !important; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important; }
   .hero.cinema .hero-top, .hero.cinema .hero-copy{ z-index:70 !important; }
+  .hero-top{ justify-content:flex-end !important; }
+  .hero-top .iconbtn{ margin-left:auto !important; }   /* bouton plein écran toujours à droite */
   /* Aperçu plus grand : on compacte les sections du bas pour donner de la hauteur au hero */
   .app{ gap:5px !important; }
   .info{ flex-basis:46px !important; }
@@ -807,7 +809,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C225</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C226</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1239,10 +1241,10 @@ var essentiaReady=new Promise(function(resolve){
 
 /* ================= Ambiances (hold = nombre entier de temps) ================= */
 var MOODS={
-  cinema:{minSec:2.0, tgtSec:2.8, maxSec:4.0, accent:0.50, grade:{expo:0.02,contrast:0.12,sat:-0.04,temp:0.16,vig:0.36,grain:0.02,leak:0.10}, kb:0.10, punch:0.055, fx:{chromatic:0,bloom:0.10,halation:0.10,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
-  doux:{minSec:2.6, tgtSec:3.6, maxSec:5.0, accent:0.58, grade:{expo:0.05,contrast:0.02,sat:0.06,temp:0.22,vig:0.20,grain:0.02,leak:0.20}, kb:0.06, punch:0.035, fx:{chromatic:0,bloom:0.18,halation:0.15,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
-  dynamique:{minSec:1.4, tgtSec:1.9, maxSec:2.8, accent:0.42, grade:{expo:0.03,contrast:0.18,sat:0.14,temp:-0.06,vig:0.26,grain:0.02,leak:0.05}, kb:0.16, punch:0.090, fx:{chromatic:0,bloom:0.10,halation:0.06,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
-  voyage:{minSec:2.0, tgtSec:2.8, maxSec:4.0, accent:0.50, grade:{expo:0.04,contrast:0.08,sat:0.11,temp:0.10,vig:0.22,grain:0.02,leak:0.13}, kb:0.11, punch:0.060, fx:{chromatic:0,bloom:0.14,halation:0.10,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}}
+  cinema:{minSec:2.0, tgtSec:2.8, maxSec:4.0, accent:0.50, grade:{expo:0.01,contrast:0.19,sat:-0.02,temp:0.15,vig:0.42,grain:0.03,leak:0.12}, kb:0.10, punch:0.055, fx:{chromatic:0,bloom:0.10,halation:0.10,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
+  doux:{minSec:2.6, tgtSec:3.6, maxSec:5.0, accent:0.58, grade:{expo:0.06,contrast:-0.02,sat:0.08,temp:0.27,vig:0.16,grain:0.02,leak:0.24}, kb:0.06, punch:0.035, fx:{chromatic:0,bloom:0.18,halation:0.15,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
+  dynamique:{minSec:1.4, tgtSec:1.9, maxSec:2.8, accent:0.42, grade:{expo:0.03,contrast:0.25,sat:0.23,temp:-0.13,vig:0.24,grain:0.02,leak:0.04}, kb:0.16, punch:0.090, fx:{chromatic:0,bloom:0.10,halation:0.06,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}},
+  voyage:{minSec:2.0, tgtSec:2.8, maxSec:4.0, accent:0.50, grade:{expo:0.05,contrast:0.11,sat:0.19,temp:0.15,vig:0.18,grain:0.02,leak:0.14}, kb:0.11, punch:0.060, fx:{chromatic:0,bloom:0.14,halation:0.10,anamorphic:0,dust:0,scanlines:0,shutter:0,lensFlare:0}}
 };
 
 /* ================= Enveloppes (force des temps + énergie) ================= */
@@ -8750,7 +8752,7 @@ async function _turboExport(){
       renderMontageAt(_t);
       var frame=new VideoFrame(glReady?gl.canvas:base,{timestamp:Math.round(fnum*1000000/FPS), duration:Math.round(1000000/FPS)});
       venc.encode(frame,{keyFrame:(fnum%FPS===0)}); frame.close();
-      if((fnum&7)===0){ try{ expShow(fnum/N*0.92); var _st=document.getElementById("expStage"); if(_st) _st.textContent="Turbo\u2026 "+Math.round(fnum/N*100)+"%"; }catch(e){} await _expYield(); }
+      if((fnum&7)===0){ try{ expShow(fnum/N*0.92); var _st=document.getElementById("expStage"); if(_st) _st.textContent="Rendu image par image\u2026"; }catch(e){} await _expYield(); }
       var _qw=0; while(venc.encodeQueueSize>8){ if(_vencErr) throw new Error("venc:"+_vencErr); await new Promise(function(r){ setTimeout(r,6); }); if(++_qw>1500){ throw new Error("queue"); } }
       if((fnum&63)===63){ await new Promise(function(r){ setTimeout(r,0); }); }
     }
@@ -10285,7 +10287,7 @@ function renderVNav(){
 
 <!-- Overlays d'export sortis de .wrap (qui est en opacity:0) — enfants directs de body,
      z-index releve pour passer au-dessus de la facade Kimi. Feedback enfin visible. -->
-  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(4,8,16,.55);align-items:center;justify-content:flex-end;flex-direction:column;text-align:center;padding:24px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 34px)">
+  <div id="expProg" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(4,8,16,.55);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px">
     <div style="font:700 16px system-ui;color:#fff;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.6)">Export en cours…</div>
     <div style="font:12px system-ui;color:#c2ccdd;margin-bottom:14px;text-shadow:0 1px 4px rgba(0,0,0,.6)">Laisse l'écran allumé.</div>
     <button id="expCancel" onclick="try{_expForceReset('Export annulé.');}catch(e){}" style="border:1px solid #3b466b;background:rgba(19,29,56,.9);color:#dfe7f6;border-radius:12px;padding:11px 20px;font:600 13px system-ui;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4)">Annuler l'export</button>
