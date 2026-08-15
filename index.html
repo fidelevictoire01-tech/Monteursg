@@ -735,9 +735,9 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .fmc{ flex:0 0 auto; padding:6px 13px; border-radius:999px; border:1px solid #282622; background:#151413; color:#A8A6A1; font:700 12px system-ui; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .fmc.on{ border-color:#D4AF37; color:#D4AF37; background:rgba(212,175,55,.12); }
   /* Plein écran (agrandir) : contenu CENTRÉ et entièrement visible (corrige le contenu collé en haut) */
-  .hero.cinema{ height:100svh !important; top:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; }
-  .hero.cinema canvas#base, .hero.cinema canvas#gl{ position:static !important; transform:none !important; left:auto !important; top:auto !important; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important; }
-  .hero.cinema .hero-top, .hero.cinema .hero-copy{ z-index:70 !important; }
+  .hero.cinema{ height:100svh !important; top:0 !important; }
+  .hero.cinema canvas#base, .hero.cinema canvas#gl{ position:absolute !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important; }
+  .hero.cinema .hero-top, .hero.cinema .hero-copy, .hero.cinema .play-main{ z-index:80 !important; }
   .hero-top{ justify-content:flex-end !important; }
   .hero-top .iconbtn{ margin-left:auto !important; }   /* bouton plein écran toujours à droite */
   /* Aperçu plus grand : on compacte les sections du bas pour donner de la hauteur au hero */
@@ -809,7 +809,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C226</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C227</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8136,14 +8136,20 @@ function paintStrip(t){
 
 /* ===== Overlay vidéo native (aperçu fluide sans dessiner image par image) ===== */
 var _ovEl=null, _ovRect=null;
+function _moodFilter(){ var m=(typeof MOOD!=="undefined")?MOOD:"cinema";
+  if(m==="doux") return "contrast(0.97) saturate(1.10) brightness(1.06) sepia(0.16)";
+  if(m==="dynamique") return "contrast(1.20) saturate(1.34) brightness(1.00) hue-rotate(-7deg)";
+  if(m==="voyage") return "contrast(1.08) saturate(1.24) brightness(1.03) sepia(0.08)";
+  return "contrast(1.15) saturate(0.92) brightness(1.02) sepia(0.14)";   /* cinéma : chaud, contrasté */
+}
 function _hideEl(el){ try{ if(el) el.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1;"; }catch(e){} }
 function _hideClipOverlay(){ if(_ovEl){ _hideEl(_ovEl); _ovEl=null; _ovRect=null; } }
 function _showClipOverlay(el){ try{
   var gc=document.getElementById("gl")||document.getElementById("base"); if(!gc||!el) return;
-  var r=gc.getBoundingClientRect();
-  if(el!==_ovEl || !_ovRect || Math.abs(_ovRect.left-r.left)>1 || Math.abs(_ovRect.top-r.top)>1 || Math.abs(_ovRect.width-r.width)>1 || Math.abs(_ovRect.height-r.height)>1){
-    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;object-fit:contain;opacity:1;z-index:60;pointer-events:none;background:#000;border-radius:20px;";
-    _ovRect={left:r.left,top:r.top,width:r.width,height:r.height};
+  var r=gc.getBoundingClientRect(); var _flt=_moodFilter();
+  if(el!==_ovEl || el._flt!==_flt || !_ovRect || Math.abs(_ovRect.left-r.left)>1 || Math.abs(_ovRect.top-r.top)>1 || Math.abs(_ovRect.width-r.width)>1 || Math.abs(_ovRect.height-r.height)>1){
+    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;object-fit:contain;opacity:1;z-index:60;pointer-events:none;background:#000;border-radius:20px;filter:"+_flt+";-webkit-filter:"+_flt+";";
+    el._flt=_flt; _ovRect={left:r.left,top:r.top,width:r.width,height:r.height};
   }
   if(_ovEl && _ovEl!==el) _hideEl(_ovEl);
   _ovEl=el;
@@ -8490,7 +8496,7 @@ function syncApply(){ if(syncEl) syncEl.value=Math.round((SYNC_M[MOOD]||0)*1000)
 if(syncEl) syncEl.oninput=function(){ SYNC_M[MOOD]=(+syncEl.value)/1000; syncLabel(); if(A) paintStrip(playing?visualTime():0); };
 var srst=document.getElementById("syncReset"); if(srst) srst.onclick=function(){ SYNC_M[MOOD]=autoSync(MOOD,(A&&A.bpmFelt)?A.bpmFelt:((A&&A.bpm)?A.bpm:120)); syncApply(); };
 syncApply();
-document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); if(A&&(PHOTOS.length||clipVidReady)){ buildPartition(); updateBadge(); if(playing && window.LOOP_ON){ try{ seekMontageTo(montageNow()); }catch(e){} } paintStrip(playing?visualTime():0); } setState("Ambiance : <b>"+btn.textContent+"</b> · sync "+Math.round(curSync()*1000)+" ms"); }; });
+document.querySelectorAll(".mood").forEach(function(btn){ btn.onclick=function(){ document.querySelectorAll(".mood").forEach(function(x){ x.classList.remove("on"); }); btn.classList.add("on"); MOOD=btn.dataset.mood; syncApply(); if(A&&(PHOTOS.length||clipVidReady)){ buildPartition(); updateBadge(); if(playing && window.LOOP_ON){ try{ seekMontageTo(montageNow()); }catch(e){} } paintStrip(playing?visualTime():0); try{ renderMontageAt(playing?visualTime():0); }catch(e){} try{ if(_ovEl) _ovEl._flt=null; }catch(e){} } setState("Ambiance : <b>"+btn.textContent+"</b> · sync "+Math.round(curSync()*1000)+" ms"); }; });
 
 document.getElementById("fMusic").onchange=function(e){
   var file=e.target.files&&e.target.files[0]; if(!file) return; setMusicEl(file);
