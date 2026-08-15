@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia-wasm.web.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia.js-core.js"></script>
 <style>
-  :root{--gold:#E0A33E;}
+  :root{--gold:#D4AF37;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:#0a1024;color:#eef2f9;font:15px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
   .wrap{max-width:430px;margin:0 auto;padding:14px 14px 46px}
@@ -687,6 +687,53 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .trk{ background:rgba(255,255,255,.16) !important; }
   .trk>span{ background:#D4AF37 !important; }
   .progress-row{ color:#D1CFC9 !important; }
+  /* ============================================================
+     FEUILLES & PANNEAUX — thème Emergent (noir profond, or #D4AF37, Cormorant)
+     ============================================================ */
+  .sheet{ background:#0f0e0d !important; border-top:1px solid #232120 !important; }
+  .sh-top{ border-bottom:1px solid #232120 !important; }
+  .sh-note{ color:#A8A6A1 !important; }
+  .done{ background:#D4AF37 !important; color:#050505 !important; border:0 !important; }
+  .doexp{ background:#D4AF37 !important; color:#050505 !important; }
+  /* Bibliothèque musicale */
+  .msearch input{ background:#151413 !important; border-color:#282622 !important; color:#F5F2EB !important; }
+  .msearch input:focus{ border-color:rgba(212,175,55,.5) !important; box-shadow:0 0 0 3px rgba(212,175,55,.1) !important; }
+  .mcat.on{ border-color:#D4AF37 !important; }
+  .mtrack{ background:#151413 !important; border-color:#282622 !important; }
+  .mtrack.on{ border-color:#D4AF37 !important; background:linear-gradient(180deg,rgba(212,175,55,.12),#151413) !important; }
+  .mt-cov{ background:linear-gradient(158deg,#2a2620,#141210) !important; }
+  .mt-meta b{ color:#F5F2EB !important; }
+  .mtrack.on .mt-meta b{ color:#D4AF37 !important; }
+  .mt-add{ color:#D4AF37 !important; border-color:rgba(212,175,55,.55) !important; }
+  .mt-act{ background:linear-gradient(180deg,#e6c25f,#D4AF37) !important; color:#050505 !important; }
+  .mt-prog>i{ background:#D4AF37 !important; }
+  .mtrack.on .mt-covplay{ background:rgba(212,175,55,.85) !important; }
+  /* Panneau Texte */
+  .txtEd .te-card{ background:radial-gradient(130% 90% at 50% -12%,#211d16 0%,#131110 52%,#0c0b0a 100%) !important; border:1px solid rgba(212,175,55,.16) !important; }
+  .te-tool{ background:linear-gradient(180deg,#2b2620,#1a1712) !important; color:#D4AF37 !important; border:1px solid rgba(212,175,55,.28) !important; }
+  .te-doneb{ background:linear-gradient(180deg,#e6c25f,#D4AF37) !important; color:#050505 !important; }
+  .te-input{ background:#151413 !important; }
+  .te-input:focus, .te-sel:focus{ border-color:rgba(212,175,55,.5) !important; }
+  .te-sel{ background-color:#1b1813 !important; }
+  .te-cbtn{ background:#1b1813 !important; }
+  .te-cv{ box-shadow:0 10px 26px rgba(0,0,0,.5), inset 0 0 0 1px rgba(212,175,55,.12) !important; }
+  .vtog.on{ background:#D4AF37 !important; }
+  /* Panneau Clip */
+  .cp-card{ background:radial-gradient(130% 90% at 50% -12%,#211d16 0%,#131110 52%,#0c0b0a 100%) !important; border:1px solid rgba(212,175,55,.16) !important; }
+  .cp-done{ background:linear-gradient(180deg,#e6c25f,#D4AF37) !important; color:#050505 !important; }
+  /* Ambiance */
+  .choice{ background:#151413 !important; border-color:#282622 !important; }
+  .choice.active{ border-color:#D4AF37 !important; background:linear-gradient(180deg,rgba(212,175,55,.12),#151413) !important; }
+  .choice.active .cbd b{ color:#D4AF37 !important; }
+  /* Écran résultat + interrupteur signature (feuille export) */
+  .signrow{ background:rgba(212,175,55,.05) !important; border-color:#282622 !important; }
+  /* Photos du voyage : pastilles numéro dorées cohérentes (via --gold déjà) */
+  .mcats::-webkit-scrollbar{ display:none; }
+  /* Sélecteur de format sous l'aperçu */
+  .fmtbar{ display:flex; align-items:center; gap:7px; justify-content:center; padding:3px 0 1px; flex:0 0 auto; }
+  .fmtbar-l{ color:#6f6d68; font:700 9px system-ui; letter-spacing:2px; margin-right:2px; }
+  .fmc{ flex:0 0 auto; padding:6px 13px; border-radius:999px; border:1px solid #282622; background:#151413; color:#A8A6A1; font:700 12px system-ui; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .fmc.on{ border-color:#D4AF37; color:#D4AF37; background:rgba(212,175,55,.12); }
   /* État vide de l'aperçu — accueillant et de marque */
   #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(30,44,74,.55), rgba(10,16,28,.25) 58%, transparent 100%) !important; }
   .empty-in{ display:flex; flex-direction:column; align-items:center; gap:13px; }
@@ -740,7 +787,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C205</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C209</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -758,6 +805,14 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
       <div class="progress-row"><span>00:00</span><div class="trk"><span></span></div><span>—</span></div>
     </div>
   </section>
+
+  <div class="fmtbar" id="fmtBar">
+    <span class="fmtbar-l">FORMAT</span>
+    <button class="fmc on" data-n="9:16">9:16</button>
+    <button class="fmc" data-n="4:5">4:5</button>
+    <button class="fmc" data-n="1:1">1:1</button>
+    <button class="fmc" data-n="16:9">16:9</button>
+  </div>
 
   <section class="info">
     <div>
@@ -870,10 +925,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="sh-body">
     <p class="sh-note">Choisis le format, puis lance l'export. Par défaut : <b>9:16</b> (vertical).</p>
     <div class="efmts">
-      <button class="efmt" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
+      <button class="efmt on" data-ef="v"><div class="ef-sh ef-v"></div><div class="ef-tx"><b>9:16</b><span>Vertical · Stories, Reels, TikTok</span></div></button>
       <button class="efmt" data-ef="f"><div class="ef-sh ef-v" style="width:14px"></div><div class="ef-tx"><b>4:5</b><span>Portrait · fil Instagram</span></div></button>
       <button class="efmt" data-ef="c"><div class="ef-sh ef-c"></div><div class="ef-tx"><b>1:1</b><span>Carré · fil Instagram</span></div></button>
-      <button class="efmt on" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
+      <button class="efmt" data-ef="h"><div class="ef-sh ef-h"></div><div class="ef-tx"><b>16:9</b><span>Paysage · YouTube</span></div></button>
     </div>
     <div class="signrow"><div class="signrow-t">Signature Magot<em>Intro + fin cinématiques · au premier export</em></div><button class="vtog on" id="signTog" type="button" aria-label="Signature" onclick="try{SIGN.on=!SIGN.on;this.classList.toggle('on',SIGN.on);this.setAttribute('aria-checked',SIGN.on?'true':'false');}catch(e){}"><i class="vtog-dot"></i></button></div>
 
@@ -8661,7 +8716,7 @@ async function _turboExport(){
    proverbes variés tirés d'une petite bibliothèque locale + texte par défaut.
    =================================================================== */
 var SIGN={ on:true, introDur:3.6, outroDur:3.8, data:null };
-var SIGN_PROVERBS=[
+try{ if(typeof window.STUDIO_ADMIN==="undefined") window.STUDIO_ADMIN=true; }catch(e){}   /* greffe : MagotVoyage le met à isAdmin() */var SIGN_PROVERBS=[
   "Le vrai voyage ne consiste pas à chercher de nouveaux paysages, mais à avoir de nouveaux yeux.",
   "On ne part jamais vraiment : on emporte les lieux avec soi.",
   "Voyager, c'est vivre deux fois.",
@@ -9372,24 +9427,24 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     msBody.innerHTML=
       '<div class="msearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4-4"></path></svg><input id="mSearch" type="search" placeholder="Rechercher un titre, un style\u2026" autocomplete="off" spellcheck="false"></div>'
      +'<div id="mCats" class="mcats"></div>'
-     +'<p class="sh-note">Choisis un morceau (<b>\uFF0B</b> pour l\'ajouter au <b>mix DJ</b>, jusqu\u2019\u00e0 4). Le r\u00e9alisateur cale les coupes sur son tempo. Ou importe le tien.</p>'
+     +'<p class="sh-note">Choisis un morceau (<b>\uFF0B</b> pour l\'ajouter au <b>mix DJ</b>, jusqu\u2019\u00e0 4). Le r\u00e9alisateur cale les coupes sur son tempo.'+((typeof window!=="undefined"&&window.STUDIO_ADMIN!==false)?' Ou importe le tien.':'')+'</p>'
      +'<div id="mLib" class="mlib"></div>'
      +'<div id="mProg" class="mprog"><div class="mp-label">\u2026</div><div class="mp-bar"><span></span></div></div>'
-     +'<button class="doexp" id="mImport">\uFF0B Importer une musique</button>';
+     +((typeof window!=="undefined"&&window.STUDIO_ADMIN!==false)?'<button class="doexp" id="mImport">\uFF0B Importer une musique</button>':'');
     var myMusicIn=document.createElement("input"); myMusicIn.type="file"; myMusicIn.style.display="none"; /* pas d'accept : iOS grise les MP3 avec audio/* — comme le champ du moteur */
     try{ (document.body||document.documentElement).appendChild(myMusicIn); }catch(e){}
     myMusicIn.onchange=function(){ var f=this.files&&this.files[0]; if(!f) return; this.value=""; addImport(f); };
     var mi=$("mImport"); if(mi) mi.onclick=function(){ myMusicIn.click(); };
     var msrch=$("mSearch"); if(msrch) msrch.oninput=function(){ _mQuery=this.value||""; renderLib(); };
     renderLib();
-    try{
-      fetch("musics.json",{cache:"no-store"}).then(function(r){ return r&&r.ok?r.json():null; }).then(function(arr){
-        if(arr && arr.length){
-          arr.forEach(function(m){ var t={ id:"r"+(++LIB_SEQ), title:m.title||cleanName(m.file||m.url||""), artist:m.artist||"", type:m.type||m.genre||m.style||"", cover:m.cover||"", url:m.file||m.url, remote:true }; if(typeof m.duration==="string") t.durStr=m.duration; else if(typeof m.duration==="number") t.dur=m.duration; LIB.push(t); probeDur(t); });
-          renderLib();
-        }
-      }).catch(function(){});
-    }catch(e){}
+    function _addCatalog(arr){ if(!arr||!arr.length) return; arr.forEach(function(m){ var t={ id:"r"+(++LIB_SEQ), title:m.title||cleanName(m.file||m.url||""), artist:m.artist||"", type:m.type||m.genre||m.style||"", cover:m.cover||"", url:m.file||m.url, remote:true }; if(typeof m.duration==="string") t.durStr=m.duration; else if(typeof m.duration==="number") t.dur=m.duration; LIB.push(t); probeDur(t); }); renderLib(); }
+    function _loadCatalog(){ try{
+      var c=(typeof window!=="undefined")?window.STUDIO_CATALOG:null;              /* greffe : MagotVoyage fournit le catalogue depuis Supabase */
+      if(typeof c==="function"){ Promise.resolve().then(c).then(function(arr){ _addCatalog(arr); }).catch(function(){}); return; }
+      if(c && c.length){ _addCatalog(c); return; }
+      fetch("musics.json",{cache:"no-store"}).then(function(r){ return r&&r.ok?r.json():null; }).then(function(arr){ _addCatalog(arr); }).catch(function(){});   /* standalone : fichier local */
+    }catch(e){} }
+    _loadCatalog();
   }
   /* import & lecture pilotés par addImport()/useTrack() -> pas de dépendance à l'événement change du moteur */
 
@@ -9942,12 +9997,21 @@ function renderVNav(){
 
   /* ---------- 11) Export : format (dont 4:5) + lancement moteur ---------- */
   var efMap={ v:"9:16", f:"4:5", c:"1:1", h:"16:9" };
+  var _efRev={ "9:16":"v", "4:5":"f", "1:1":"c", "16:9":"h" };
+  function _syncFmtUI(name){ try{
+    qa(".fmc").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-n")===name); });
+    qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
+    var ev=q('.efmt[data-ef="'+(_efRev[name]||"v")+'"]'); if(ev) ev.classList.add("on");
+    var de=$("doExport"); if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter en "+name; }
+  }catch(e){} }
+  qa(".fmc").forEach(function(c){ c.onclick=function(){ var name=c.getAttribute("data-n"); var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click(); _syncFmtUI(name); }; });
   qa(".efmt").forEach(function(b){
     b.onclick=function(){
       qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
       b.classList.add("on");
       var name=efMap[b.getAttribute("data-ef")]||"9:16";
       var fb=q('.fmt[data-n="'+name+'"]'); if(fb) fb.click();
+      try{ qa(".fmc").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-n")===name); }); }catch(e){}
       var de=$("doExport");
       if(de){ var last=de.lastChild; if(last&&last.nodeType===3) last.textContent=" Exporter en "+name; }
     };
@@ -10055,12 +10119,12 @@ function renderVNav(){
     };
   }
 
-  /* ---------- 11b) Format par defaut : 16:9 (YouTube) ---------- */
-  (function default169(){
+  /* ---------- 11b) Format par défaut : 9:16 (vertical — standard mobile/réseaux) ---------- */
+  (function default916(){
     try{
-      var hf=q('.fmt[data-n="16:9"]'); if(hf) hf.click();
+      var vf=q('.fmt[data-n="9:16"]'); if(vf) vf.click();
       qa(".efmt").forEach(function(x){ x.classList.remove("on"); });
-      var eh=q('.efmt[data-ef="h"]'); if(eh) eh.classList.add("on");
+      var ev=q('.efmt[data-ef="v"]'); if(ev) ev.classList.add("on");
     }catch(e){}
   })();
 
