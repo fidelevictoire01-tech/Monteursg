@@ -734,6 +734,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .fmtbar-l{ color:#6f6d68; font:700 9px system-ui; letter-spacing:2px; margin-right:2px; }
   .fmc{ flex:0 0 auto; padding:6px 13px; border-radius:999px; border:1px solid #282622; background:#151413; color:#A8A6A1; font:700 12px system-ui; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .fmc.on{ border-color:#D4AF37; color:#D4AF37; background:rgba(212,175,55,.12); }
+  /* Plein écran (agrandir) : contenu CENTRÉ et entièrement visible (corrige le contenu collé en haut) */
+  .hero.cinema{ height:100svh !important; top:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; }
+  .hero.cinema canvas#base, .hero.cinema canvas#gl{ position:static !important; transform:none !important; left:auto !important; top:auto !important; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important; }
+  .hero.cinema .hero-top, .hero.cinema .hero-copy{ z-index:70 !important; }
   /* Aperçu plus grand : on compacte les sections du bas pour donner de la hauteur au hero */
   .app{ gap:5px !important; }
   .info{ flex-basis:46px !important; }
@@ -803,7 +807,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C224</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C225</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1580,9 +1584,9 @@ var _decLRU=[], _DEC_MAX=(function(){
   /* Photos gardées décodées en mémoire, adapté à l'appareil (Android, iPhone, entrée de gamme comme récent).
      Beaucoup de RAM -> plus fluide ; peu de RAM -> on protège pour ne jamais crasher. */
   try{ var dm=(typeof navigator!=="undefined"&&navigator.deviceMemory)||0;   /* Go de RAM (Android/Chrome ; absent sur iOS) */
-    if(dm){ if(dm>=8) return 44; if(dm>=6) return 34; if(dm>=4) return 24; if(dm>=2) return 16; return 10; }
+    if(dm){ if(dm>=8) return 52; if(dm>=6) return 40; if(dm>=4) return 30; if(dm>=2) return 22; return 12; }
   }catch(e){}
-  return 18;   /* iOS / navigateurs sans info RAM : valeur sûre sur ancien comme récent */
+  return 26;   /* iOS / navigateurs sans info RAM : réserve confortable (photos nettes) tout en restant sûr */
 })();
 try{ window._DEC_MAX=_DEC_MAX; }catch(e){}
 function _touchDec(i){ if(typeof PHOTOS==="undefined"||!PHOTOS[i]) return; var k=_decLRU.indexOf(i); if(k>=0) _decLRU.splice(k,1); _decLRU.push(i); while(_decLRU.length>_DEC_MAX){ var old=_decLRU.shift(); if(old!==i && PHOTOS[old] && (PHOTOS[old]._jpgBlob || PHOTOS[old]._file)){ PHOTOS[old].c=null; PHOTOS[old].img=null; PHOTOS[old]._durl=null; } } }
