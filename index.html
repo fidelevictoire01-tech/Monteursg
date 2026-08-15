@@ -742,6 +742,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .info .ico svg{ width:14px !important; height:14px !important; }
   .s-amb{ flex-basis:42px !important; }
   .fmtbar{ padding:1px 0 0 !important; }
+  /* Mode PAYSAGE : la mise en page portrait ne tient pas -> aperçu grand + défilement + barre du bas collante */
+  @media (orientation:landscape) and (max-height:640px){
+    html,body{ height:auto !important; }
+    .app{ height:auto !important; min-height:100svh; overflow-y:auto !important; -webkit-overflow-scrolling:touch; }
+    .hero{ flex:0 0 auto !important; height:84svh !important; }
+    .info,.section,.fmtbar{ flex:0 0 auto !important; }
+    .actions-wrap{ position:sticky; bottom:0; z-index:9; background:linear-gradient(180deg,rgba(5,5,5,0),#050505 32%) !important; padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important; }
+    .s-amb{ margin-bottom:56px; }
+  }
   /* État vide de l'aperçu — accueillant et de marque */
   #empty{ background:radial-gradient(120% 85% at 50% 38%, rgba(30,44,74,.55), rgba(10,16,28,.25) 58%, transparent 100%) !important; }
   .empty-in{ display:flex; flex-direction:column; align-items:center; gap:13px; }
@@ -795,16 +804,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C218</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C219</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
   <section class="hero">
     
     <div class="veil"></div>
-    <div class="hero-top">
-      <span class="apercu-lbl">APERÇU</span>
-      <button class="iconbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
+    <div class="hero-top" style="justify-content:flex-end">
+      <button class="iconbtn" title="Plein écran"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>
     </div>
     <button class="play-main" id="heroPlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5l14 7-14 7z"/></svg></button>
     <div class="hero-copy">
@@ -8376,7 +8384,7 @@ function _afterOpenFilm(proj){ try{
   try{ updateBadge(); paintStrip(0); }catch(e){}
   _pget(_curFilmId+":music").then(function(mb){ if(mb && window.__loadMusicBlob){ window.__loadMusicBlob(mb,(proj.music&&proj.music.title)||"Musique"); var n=0,_iv=setInterval(function(){ n++; if(A&&PHOTOS.length){ clearInterval(_iv); try{ buildPartition(); paintStrip(0); setState("Montage rechargé ("+PHOTOS.length+" photos)."); }catch(e){} } else if(n>90){ clearInterval(_iv); } },200); } else { try{ if(PHOTOS.length) setState(PHOTOS.length+" photos rechargées \u00b7 remets une musique."); }catch(e){} } }).catch(function(){});
 }catch(e){} }
-function studioNewFilm(){ _curFilmId=null; try{ closeFilms(); }catch(e){} try{ document.getElementById("clear").click(); }catch(e){} try{ setState("Nouveau montage \u2014 ajoute des photos et une musique."); }catch(e){} }
+function studioNewFilm(){ try{ studioSaveLocal(); }catch(e){} _curFilmId=null; try{ closeFilms(); }catch(e){} try{ document.getElementById("clear").click(); }catch(e){} try{ setState("Nouveau montage \u2014 ajoute des photos et une musique."); }catch(e){} }
 function studioDeleteFilm(id){ try{ var idx=_filmsIndex().filter(function(f){ return f.id!==id; }); _filmsIndexSave(idx); localStorage.removeItem(_filmKey(id)); }catch(e){} if(_curFilmId===id)_curFilmId=null; try{ renderFilms(); }catch(e){} }
 
 /* ---- UI : galerie de films (overlay injecté) ---- */
@@ -8398,7 +8406,7 @@ function _ensureFilmsOverlay(){ if(document.getElementById("filmsOv")) return;
   document.getElementById("filmsClose").onclick=closeFilms;
   document.getElementById("filmsNew").onclick=studioNewFilm;
 }
-function openFilms(){ _ensureFilmsOverlay(); renderFilms(); document.getElementById("filmsOv").style.display="block"; }
+function openFilms(){ try{ studioSaveLocal(); }catch(e){} _ensureFilmsOverlay(); renderFilms(); document.getElementById("filmsOv").style.display="block"; }
 function closeFilms(){ var o=document.getElementById("filmsOv"); if(o) o.style.display="none"; }
 function _stLabel(s){ return s==="enregistre"?"ENREGISTR\u00c9":(s==="a_realiser"?"\u00c0 R\u00c9ALISER":"EN COURS"); }
 function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) return; var idx=_filmsIndex();
