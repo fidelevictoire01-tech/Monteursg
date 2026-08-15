@@ -803,7 +803,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C222</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C223</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8128,6 +8128,21 @@ function paintStrip(t){
   paintZoom(t);
 }
 
+/* ===== Overlay vidéo native (aperçu fluide sans dessiner image par image) ===== */
+var _ovEl=null, _ovRect=null;
+function _hideEl(el){ try{ if(el) el.style.cssText="position:fixed;left:0;bottom:0;width:128px;height:72px;opacity:0.02;pointer-events:none;z-index:-1;"; }catch(e){} }
+function _hideClipOverlay(){ if(_ovEl){ _hideEl(_ovEl); _ovEl=null; _ovRect=null; } }
+function _showClipOverlay(el){ try{
+  var gc=document.getElementById("gl")||document.getElementById("base"); if(!gc||!el) return;
+  var r=gc.getBoundingClientRect();
+  if(el!==_ovEl || !_ovRect || Math.abs(_ovRect.left-r.left)>1 || Math.abs(_ovRect.top-r.top)>1 || Math.abs(_ovRect.width-r.width)>1 || Math.abs(_ovRect.height-r.height)>1){
+    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;object-fit:contain;opacity:1;z-index:60;pointer-events:none;background:#000;border-radius:20px;";
+    _ovRect={left:r.left,top:r.top,width:r.width,height:r.height};
+  }
+  if(_ovEl && _ovEl!==el) _hideEl(_ovEl);
+  _ovEl=el;
+}catch(e){} }
+
 /* ================= Horloge audio + boucle ================= */
 function _audioLat(){ try{ if(WA.on && ctx){ var l=(ctx.outputLatency!=null)?ctx.outputLatency:(ctx.baseLatency||0); return (l>0?l:0); } }catch(e){} return 0; }
 function visualTime(){ return montageNow() + ((window.LOOP_ON||window.MULTI)?0:LEAD) - _audioLat() + curSync(); }
@@ -8142,7 +8157,7 @@ function loop(){
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
-  if(sg&&sg.sign){ if(VIDACT>=0){ VIDACT=-1; for(var _c2s=0;_c2s<CLIPS.length;_c2s++){ try{ CLIPS[_c2s].el.pause(); }catch(e){} } } try{ drawSignatureCard(sg.sign, (t-sg.start)/Math.max(0.1,sg.end-sg.start)); }catch(e){} try{ paintStrip(t); }catch(e){} raf=requestAnimationFrame(loop); return; }
+  if(sg&&sg.sign){ try{ _hideClipOverlay(); }catch(e){} if(VIDACT>=0){ VIDACT=-1; for(var _c2s=0;_c2s<CLIPS.length;_c2s++){ try{ CLIPS[_c2s].el.pause(); }catch(e){} } } try{ drawSignatureCard(sg.sign, (t-sg.start)/Math.max(0.1,sg.end-sg.start)); }catch(e){} try{ paintStrip(t); }catch(e){} raf=requestAnimationFrame(loop); return; }
   /* Option A */
   var next=(idx>=0 && idx+1<SEGS.length)?SEGS[idx+1]:null;
   try{ if(SEGS && idx>=0){ for(var _pj=idx; _pj<SEGS.length && (SEGS[_pj].start - t)<6; _pj++){ if((window._decInFlight||0)>=2) break; var _sp=SEGS[_pj]; if(_sp && !_sp.video && _sp.img>=0 && PHOTOS[_sp.img] && !PHOTOS[_sp.img].c && !PHOTOS[_sp.img]._decoding){ ensurePhotoDecoded(_sp.img); } } } }catch(e){}
@@ -8157,14 +8172,19 @@ function loop(){
   try{ if(typeof SEGS!=="undefined"&&SEGS&&idx>=0){ var _primed=0; for(var _pi2=idx+1; _pi2<SEGS.length && (SEGS[_pi2].start-t)<2.8 && _primed<3; _pi2++){ var _ps=SEGS[_pi2]; if(_ps.video&&_ps.vclip!=null&&_ps.vclip!==sg.vclip&&CLIPS[_ps.vclip]&&CLIPS[_ps.vclip].ready){ var _pe=CLIPS[_ps.vclip].el; if(_pe.paused && Math.abs((_pe.currentTime||0)-(_ps.vstart||0))>0.12){ _pe.muted=true; try{ _pe.currentTime=_ps.vstart||0; }catch(_e){} } _primed++; } } } }catch(e){}
   var strongPulse=(sg&&sg.strong&&into<0.10)?(1-into/0.10):0;
   _atmo=sg?(sg.atmo||null):null; _atmoAmt=(ATMO_AMT[MOOD]!=null?ATMO_AMT[MOOD]:0.6);
-  if(glReady && TR.ready && inTrans){
-    drawSegAt(sg,t,0,1); trUpload(TR.texFrom);
-    drawSegAt(next,next.start,0,1); trUpload(TR.texTo);
-    trMix(trName,trProg,next);
-    drawGL(t,strongPulse,TR.fbo.tex);
-  } else {
-    var r=renderBaseFrame(t);
-    if(glReady) drawGL(t,r.strongPulse);
+  var _vidNow=(sg && sg.video && sg.vclip!=null && CLIPS[sg.vclip] && CLIPS[sg.vclip].ready && !inTrans);
+  if(_vidNow){ _showClipOverlay(CLIPS[sg.vclip].el); }
+  else {
+    _hideClipOverlay();
+    if(glReady && TR.ready && inTrans){
+      drawSegAt(sg,t,0,1); trUpload(TR.texFrom);
+      drawSegAt(next,next.start,0,1); trUpload(TR.texTo);
+      trMix(trName,trProg,next);
+      drawGL(t,strongPulse,TR.fbo.tex);
+    } else {
+      var r=renderBaseFrame(t);
+      if(glReady) drawGL(t,r.strongPulse);
+    }
   }
   if(window.SIGN_PE && t>window.SIGN_PE-1.5 && t<window.SIGN_PE){ try{ _fadeBlackOverlay((t-(window.SIGN_PE-1.5))/1.5); }catch(e){} }
   paintStrip(t);
@@ -8190,7 +8210,7 @@ function startPlay(){
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ go(); setState("Si pas de son, retape « Lire »."); }); else go();
 }
-function stopPlay(){ _sigPhase=null; if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
+function stopPlay(){ _sigPhase=null; try{ _hideClipOverlay(); }catch(e){} if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
 function resetBtn(){ pausedOffset=0; document.getElementById("play").textContent="▶ Lire le film"; }
 
 /* ================= UI ================= */
@@ -8832,7 +8852,7 @@ function drawSignatureCard(kind,prog){
 
 function _fadeBlackOverlay(alpha){ try{ if(!base||!bctx) return; bctx.save(); bctx.globalAlpha=Math.max(0,Math.min(1,alpha)); bctx.fillStyle="#000"; bctx.fillRect(0,0,base.width,base.height); bctx.restore(); _atmo=null; if(glReady){ drawGL(performance.now()/1000,0); } }catch(e){} }
 
-async function exportStudio(){
+async function exportStudio(){ try{ _hideClipOverlay(); }catch(e){}
   if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
   if(typeof MediaRecorder==="undefined"){ _expMsg("Enregistrement non supporté ici. Ouvre la page dans Safari (\u2197 en bas \u2192 \u00ab Ouvrir dans Safari \u00bb)."); return; }
