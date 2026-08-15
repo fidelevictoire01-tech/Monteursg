@@ -828,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C245</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C248</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -847,8 +847,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </section>
 
   <div class="fmtbar" id="fmtBar">
-    <span class="fmtbar-l">FORMAT</span>
-    <button class="fmc" data-n="orig">Origine</button>
+    <span class="fmtbar-l" data-i18n="FORMAT">FORMAT</span>
+    <button class="fmc" data-n="orig" data-i18n="Origine">Origine</button>
     <button class="fmc on" data-n="9:16">9:16</button>
     <button class="fmc" data-n="4:5">4:5</button>
     <button class="fmc" data-n="1:1">1:1</button>
@@ -862,20 +862,20 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     </div>
     <div>
       <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/></svg></span>
-      <b>—</b><small>Musique</small>
+      <b>—</b><small data-i18n="Musique">Musique</small>
     </div>
     <div>
       <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
-      <b>—</b><small>Séquence</small>
+      <b>—</b><small data-i18n="Séquence">Séquence</small>
     </div>
     <div>
       <span class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
-      <b>—</b><small>Durée</small>
+      <b>—</b><small data-i18n="Durée">Durée</small>
     </div>
   </section>
 
   <section class="section s-seq">
-    <div class="title"><h3>SÉQUENCE</h3><button>Afficher tout</button></div>
+    <div class="title"><h3 data-i18n="SÉQUENCE">SÉQUENCE</h3><button data-i18n="Afficher tout">Afficher tout</button></div>
     <div class="timeline">
       <div class="wave" id="wave"></div>
       <div class="syncline"><label>Sync</label><input type="range" min="-300" max="300" value="0" id="syncR"><span class="v" id="syncV">0 ms</span><button class="rs" id="syncRs">Reset</button></div>
@@ -883,25 +883,25 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </section>
 
   <section class="section s-src">
-    <div class="title"><h3>SOURCES</h3></div>
+    <div class="title"><h3 data-i18n="SOURCES">SOURCES</h3></div>
     <div class="sources">
       <article class="source" data-sheet="music">
         <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="15" r="3"/></svg></div>
-        <div class="tx"><h4>Musique</h4><p id="srcMus">Choisir</p></div><span class="chev">›</span>
+        <div class="tx"><h4 data-i18n="Musique">Musique</h4><p id="srcMus" data-i18n="Choisir">Choisir</p></div><span class="chev">›</span>
       </article>
       <article class="source" data-sheet="photos">
         <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
-        <div class="tx"><h4>Photos</h4><p id="srcPho">Ajouter</p></div><span class="chev">›</span>
+        <div class="tx"><h4 data-i18n="Photos">Photos</h4><p id="srcPho" data-i18n="Ajouter">Ajouter</p></div><span class="chev">›</span>
       </article>
       <article class="source" data-sheet="video">
         <div class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l2-6h12l2 6H4zm0 0v8h16v-8"/><path d="M8 4l-2 6M16 4l2 6"/></svg></div>
-        <div class="tx"><h4>Vidéo</h4><p id="srcVid">Optionnel</p></div><span class="chev">›</span>
+        <div class="tx"><h4 data-i18n="Vidéo">Vidéo</h4><p id="srcVid" data-i18n="Optionnel">Optionnel</p></div><span class="chev">›</span>
       </article>
     </div>
   </section>
 
   <section class="section s-amb">
-    <div class="title"><h3>AMBIANCE</h3></div>
+    <div class="title"><h3 data-i18n="AMBIANCE">AMBIANCE</h3></div>
     <div class="ambience" id="openAmbience">
       <div class="ambicon" id="ambIcon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20l-3-3m3 3l-3 3M2 12l4-2 3-6 3 8"/></svg></div>
       <div class="ambtext"><b>Ambiance : <span id="ambName">Cinéma</span></b><small id="ambDesc">Posé, élégant, cinématographique</small></div>
@@ -921,25 +921,25 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <!-- Photos -->
 <div class="sheet-bg" data-bg="photos"><div class="sheet" style="height:80svh">
   <div class="grip"></div>
-  <div class="sh-top"><b>Photos du voyage</b><button class="done" data-close>Valider</button></div>
+  <div class="sh-top"><b data-i18n="Photos du voyage">Photos du voyage</b><button class="done" data-close data-i18n="Valider">Valider</button></div>
   <div class="sh-body"><p class="sh-note">Tape une photo pour l'<b>écarter</b> (grisée) ou la <b>réinclure</b>. L'IA a déjà grisé les captures détectées — tu gardes le dernier mot.</p><div class="pgrid" id="pgrid"></div></div>
 </div></div>
 <!-- Video -->
 <div class="sheet-bg" data-bg="video"><div class="sheet" style="height:80svh">
   <div class="grip"></div>
-  <div class="sh-top"><b>Clips vidéo</b><button class="done" data-close>Valider</button></div>
+  <div class="sh-top"><b data-i18n="Clips vidéo">Clips vidéo</b><button class="done" data-close data-i18n="Valider">Valider</button></div>
   <div class="sh-body"><p class="sh-note">Le réalisateur intercale des bouts de tes clips sur les temps forts. Tape un clip pour l'écarter.</p><div class="pgrid" id="vgrid"></div></div>
 </div></div>
 <!-- Musique -->
 <div class="sheet-bg" data-bg="music"><div class="sheet" style="height:80svh">
   <div class="grip"></div>
-  <div class="sh-top"><b>Bibliothèque musicale</b><button class="cancel" data-close>Fermer</button></div>
+  <div class="sh-top"><b data-i18n="Bibliothèque musicale">Bibliothèque musicale</b><button class="cancel" data-close data-i18n="Fermer">Fermer</button></div>
   <div class="sh-body"><p class="sh-note">Bibliothèque Magot (déposée par l'administrateur). <b>Télécharge</b> un morceau, puis <b>Utilise-le</b> — le réalisateur cale les coupes sur son tempo.</p><div id="mlist"></div></div>
 </div></div>
 <!-- Ambiance -->
 <div class="sheet-bg" data-bg="amb"><div class="sheet">
   <div class="grip"></div>
-  <div class="sh-top"><b>Choisir une ambiance</b><button class="done" data-close>OK</button></div>
+  <div class="sh-top"><b data-i18n="Choisir une ambiance">Choisir une ambiance</b><button class="done" data-close>OK</button></div>
   <div class="sh-body">
     <div class="choice active" data-name="Cinéma" data-desc="Posé, élégant, cinématographique" data-icon="cinema" data-short="Posé">
       <span class="cem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l2-6h12l2 6H4zm0 0v8h16v-8"/><path d="M8 4l-2 6M16 4l2 6"/></svg></span>
@@ -962,7 +962,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <!-- Export -->
 <div class="sheet-bg" data-bg="export"><div class="sheet">
   <div class="grip"></div>
-  <div class="sh-top"><b>Exporter la vidéo</b><button class="cancel" data-close>Annuler</button></div>
+  <div class="sh-top"><b data-i18n="Exporter la vidéo">Exporter la vidéo</b><button class="cancel" data-close data-i18n="Annuler">Annuler</button></div>
   <div class="sh-body">
     <p class="sh-note">Choisis le format, puis lance l'export. Par défaut : <b>9:16</b> (vertical).</p>
     <div class="efmts">
@@ -989,7 +989,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     <canvas id="base" width="720" height="1280"></canvas>
     <canvas id="gl" width="720" height="1280"></canvas>
     <div class="badge" id="badge">—</div>
-    <div class="empty" id="empty"><div class="empty-in"><div class="empty-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="M2 8h20M7 4v4M17 4v4M2 12h20M2 16h20"/></svg></div><div class="empty-t">Crée ton film souvenir</div><div class="empty-s">Ajoute une musique et des photos,<br>puis appuie sur « Lire le film ».</div></div></div>
+    <div class="empty" id="empty"><div class="empty-in"><div class="empty-ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="M2 8h20M7 4v4M17 4v4M2 12h20M2 16h20"/></svg></div><div class="empty-t" data-i18n="Crée ton film souvenir">Crée ton film souvenir</div><div class="empty-s" data-i18n-html="empty_sub">Ajoute une musique et des photos,<br>puis appuie sur « Lire le film ».</div></div></div>
   </div>
 
   <canvas class="strip" id="strip" width="800" height="92"></canvas>
@@ -1012,10 +1012,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 
   <div class="lab">Ambiance — coupes toujours sur les temps</div>
   <div class="moods" id="moods">
-    <button class="mood on" data-mood="cinema">Cinéma</button>
-    <button class="mood" data-mood="doux">Doux</button>
-    <button class="mood" data-mood="dynamique">Dynamique</button>
-    <button class="mood" data-mood="voyage">Voyage</button>
+    <button class="mood on" data-mood="cinema" data-i18n="Cinéma">Cinéma</button>
+    <button class="mood" data-mood="doux" data-i18n="Doux">Doux</button>
+    <button class="mood" data-mood="dynamique" data-i18n="Dynamique">Dynamique</button>
+    <button class="mood" data-mood="voyage" data-i18n="Voyage">Voyage</button>
   </div>
 
   <div class="row">
@@ -8463,11 +8463,11 @@ function _ensureFilmsOverlay(){ if(document.getElementById("filmsOv")) return;
   o.style.cssText="display:none;position:fixed;inset:0;z-index:99998;background:#050505;overflow-y:auto;-webkit-overflow-scrolling:touch";
   o.innerHTML='<div style="max-width:520px;margin:0 auto;min-height:100%;position:relative;padding-bottom:120px">'
     +'<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 6px">'
-      +'<div><div style="color:#D4AF37;font:600 10px system-ui;letter-spacing:3px">STUDIO MAGOT</div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-weight:600;font-size:40px;color:#F5F2EB;line-height:1.02">Vos films</div></div>'
+      +'<div><div style="color:#D4AF37;font:600 10px system-ui;letter-spacing:3px">STUDIO MAGOT</div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-weight:600;font-size:40px;color:#F5F2EB;line-height:1.02">'+_st("Vos films")+'</div></div>'
       +'<button id="filmsClose" style="width:44px;height:44px;border-radius:50%;border:1px solid #282622;background:#151413;color:#F5F2EB;font-size:19px;cursor:pointer;flex-shrink:0">\u2715</button>'
     +'</div>'
     +'<div id="filmsBody" style="padding:0 22px"></div>'
-    +'<button id="filmsNew" style="position:fixed;left:50%;transform:translateX(-50%);bottom:26px;display:flex;align-items:center;gap:8px;background:#D4AF37;color:#050505;font:700 14px system-ui;letter-spacing:1px;padding:14px 24px;border:none;border-radius:999px;cursor:pointer;box-shadow:0 8px 22px rgba(212,175,55,.42);z-index:3">\uFF0B Nouveau film</button>'
+    +'<button id="filmsNew" style="position:fixed;left:50%;transform:translateX(-50%);bottom:26px;display:flex;align-items:center;gap:8px;background:#D4AF37;color:#050505;font:700 14px system-ui;letter-spacing:1px;padding:14px 24px;border:none;border-radius:999px;cursor:pointer;box-shadow:0 8px 22px rgba(212,175,55,.42);z-index:3">\uFF0B '+_st("Nouveau film")+'</button>'
     +'</div>';
   document.body.appendChild(o);
   document.getElementById("filmsClose").onclick=closeFilms;
@@ -8475,7 +8475,7 @@ function _ensureFilmsOverlay(){ if(document.getElementById("filmsOv")) return;
 }
 function openFilms(){ try{ studioSaveLocal(); }catch(e){} _ensureFilmsOverlay(); renderFilms(); document.getElementById("filmsOv").style.display="block"; }
 function closeFilms(){ var o=document.getElementById("filmsOv"); if(o) o.style.display="none"; }
-function _stLabel(s){ return s==="enregistre"?"ENREGISTR\u00c9":(s==="a_realiser"?"\u00c0 R\u00c9ALISER":"EN COURS"); }
+function _stLabel(s){ return s==="enregistre"?_st("ENREGISTR\u00c9"):(s==="a_realiser"?_st("\u00c0 R\u00c9ALISER"):_st("EN COURS")); }
 function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) return; var idx=_filmsIndex();
   if(!idx.length){
     el.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:70px 20px;text-align:center">'
@@ -8489,14 +8489,14 @@ function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) ret
     +'<button class="film-del" data-id="'+latest.id+'" style="position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(5,5,5,.55);border:1px solid rgba(255,255,255,.16);color:#ece9e3;font-size:17px;cursor:pointer;z-index:4">\u2715</button>'
     +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,5,.05),rgba(5,5,5,.35) 40%,rgba(5,5,5,.98))"></div>'
     +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:22px;gap:11px">'
-      +'<div style="display:flex;gap:8px;align-items:center"><span style="background:#D4AF37;color:#050505;font:700 10px system-ui;letter-spacing:2px;padding:6px 12px;border-radius:999px">DERNIER FILM</span><span style="border:1px solid rgba(212,175,55,.5);color:#D4AF37;font:700 9px system-ui;letter-spacing:1px;padding:5px 10px;border-radius:999px">'+_stLabel(latest.status)+'</span></div>'
+      +'<div style="display:flex;gap:8px;align-items:center"><span style="background:#D4AF37;color:#050505;font:700 10px system-ui;letter-spacing:2px;padding:6px 12px;border-radius:999px">'+_st("DERNIER FILM")+'</span><span style="border:1px solid rgba(212,175,55,.5);color:#D4AF37;font:700 9px system-ui;letter-spacing:1px;padding:5px 10px;border-radius:999px">'+_stLabel(latest.status)+'</span></div>'
       +'<div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-weight:600;font-size:42px;color:#F5F2EB;line-height:1">'+esc(latest.name||"Montage")+'</div>'
-      +'<div style="font:500 12px system-ui;color:#D1CFC9">'+((latest.count||0)+" photos")+(latest.music?(" \u00b7 "+esc(latest.music)):"")+" \u00b7 "+_fmtAgo(latest.updated)+'</div>'
-      +'<button class="film-open" data-id="'+latest.id+'" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:#D4AF37;color:#050505;font:700 13px system-ui;letter-spacing:1px;padding:12px 22px;border-radius:999px;border:none;cursor:pointer;margin-top:2px">\u25B6 Ouvrir le film</button>'
+      +'<div style="font:500 12px system-ui;color:#D1CFC9">'+((latest.count||0)+" "+_st("photos"))+(latest.music?(" \u00b7 "+esc(latest.music)):"")+" \u00b7 "+_fmtAgo(latest.updated)+'</div>'
+      +'<button class="film-open" data-id="'+latest.id+'" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;background:#D4AF37;color:#050505;font:700 13px system-ui;letter-spacing:1px;padding:12px 22px;border-radius:999px;border:none;cursor:pointer;margin-top:2px">\u25B6 '+_st("Ouvrir le film")+'</button>'
     +'</div></div>';
   var grid="";
   if(rest.length){
-    grid='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin:32px 0 14px"><div><div style="color:#D4AF37;font:600 10px system-ui;letter-spacing:3px">BIBLIOTH\u00c8QUE</div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-weight:600;font-size:26px;color:#F5F2EB">Tous vos films</div></div><div style="color:#A8A6A1;font-family:\'Cormorant Garamond\',serif;font-size:22px">'+idx.length+'</div></div>'
+    grid='<div style="display:flex;justify-content:space-between;align-items:flex-end;margin:32px 0 14px"><div><div style="color:#D4AF37;font:600 10px system-ui;letter-spacing:3px">'+_st("BIBLIOTH\u00c8QUE")+'</div><div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-weight:600;font-size:26px;color:#F5F2EB">'+_st("Tous vos films")+'</div></div><div style="color:#A8A6A1;font-family:\'Cormorant Garamond\',serif;font-size:22px">'+idx.length+'</div></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">'+rest.map(function(f){
         return '<div class="film-open" data-id="'+f.id+'" style="aspect-ratio:4/5;border-radius:16px;overflow:hidden;position:relative;background:#151413 center/cover no-repeat'+(f.thumb?(";background-image:url("+f.thumb+")"):"")+';cursor:pointer">'
           +'<div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(5,5,5,.92))"></div>'
@@ -8508,10 +8508,32 @@ function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) ret
   }
   el.innerHTML=hero+grid;
   Array.prototype.forEach.call(el.querySelectorAll(".film-open"),function(c){ c.onclick=function(e){ if(e.target.classList&&e.target.classList.contains("film-del"))return; studioOpenFilm(c.getAttribute("data-id")); }; });
-  Array.prototype.forEach.call(el.querySelectorAll(".film-del"),function(b){ b.onclick=function(e){ e.stopPropagation(); if(confirm("Supprimer ce film ?")) studioDeleteFilm(b.getAttribute("data-id")); }; });
+  Array.prototype.forEach.call(el.querySelectorAll(".film-del"),function(b){ b.onclick=function(e){ e.stopPropagation(); if(confirm(_st("Supprimer ce film ?"))) studioDeleteFilm(b.getAttribute("data-id")); }; });
 }
 
 try{ window.openFilms=openFilms; }catch(e){}
+/* ================= TRADUCTION (i18n) — hook greffe : window.STUDIO_LANG ================= */
+try{ if(!window.STUDIO_LANG) window.STUDIO_LANG="fr"; }catch(e){}
+var _STR={
+ en:{ "FORMAT":"FORMAT","Origine":"Original","Musique":"Music","Séquence":"Sequence","Durée":"Duration","SÉQUENCE":"SEQUENCE","Afficher tout":"Show all","Masquer":"Hide","SOURCES":"SOURCES","Photos":"Photos","Choisir":"Choose","Ajouter":"Add","Vidéo":"Video","Optionnel":"Optional","AMBIANCE":"MOOD","Lire le film":"Play film","Pause":"Pause","Exporter":"Export","Cinéma":"Cinema","Doux":"Soft","Dynamique":"Dynamic","Voyage":"Travel","Crée ton film souvenir":"Create your memory film","empty_sub":"Add music and photos,<br>then tap \u201cPlay film\u201d.","Mes films":"My films","Enregistrer le montage":"Save the montage","Nouveau montage":"New montage" },
+ es:{ "FORMAT":"FORMATO","Origine":"Original","Musique":"Música","Séquence":"Secuencia","Durée":"Duración","SÉQUENCE":"SECUENCIA","Afficher tout":"Mostrar todo","Masquer":"Ocultar","SOURCES":"FUENTES","Photos":"Fotos","Choisir":"Elegir","Ajouter":"Añadir","Vidéo":"Vídeo","Optionnel":"Opcional","AMBIANCE":"AMBIENTE","Lire le film":"Ver película","Pause":"Pausa","Exporter":"Exportar","Cinéma":"Cine","Doux":"Suave","Dynamique":"Dinámico","Voyage":"Viaje","Crée ton film souvenir":"Crea tu película de recuerdos","empty_sub":"Añade música y fotos,<br>luego pulsa «Ver película».","Mes films":"Mis películas","Enregistrer le montage":"Guardar el montaje","Nouveau montage":"Nuevo montaje" },
+ it:{ "FORMAT":"FORMATO","Origine":"Originale","Musique":"Musica","Séquence":"Sequenza","Durée":"Durata","SÉQUENCE":"SEQUENZA","Afficher tout":"Mostra tutto","Masquer":"Nascondi","SOURCES":"SORGENTI","Photos":"Foto","Choisir":"Scegli","Ajouter":"Aggiungi","Vidéo":"Video","Optionnel":"Opzionale","AMBIANCE":"ATMOSFERA","Lire le film":"Riproduci","Pause":"Pausa","Exporter":"Esporta","Cinéma":"Cinema","Doux":"Dolce","Dynamique":"Dinamico","Voyage":"Viaggio","Crée ton film souvenir":"Crea il tuo film ricordo","empty_sub":"Aggiungi musica e foto,<br>poi tocca «Riproduci».","Mes films":"I miei film","Enregistrer le montage":"Salva il montaggio","Nouveau montage":"Nuovo montaggio" },
+ de:{ "FORMAT":"FORMAT","Origine":"Original","Musique":"Musik","Séquence":"Sequenz","Durée":"Dauer","SÉQUENCE":"SEQUENZ","Afficher tout":"Alle anzeigen","Masquer":"Ausblenden","SOURCES":"QUELLEN","Photos":"Fotos","Choisir":"Wählen","Ajouter":"Hinzufügen","Vidéo":"Video","Optionnel":"Optional","AMBIANCE":"STIMMUNG","Lire le film":"Film abspielen","Pause":"Pause","Exporter":"Exportieren","Cinéma":"Kino","Doux":"Sanft","Dynamique":"Dynamisch","Voyage":"Reise","Crée ton film souvenir":"Erstelle deinen Erinnerungsfilm","empty_sub":"Füge Musik und Fotos hinzu,<br>tippe dann auf \u201eFilm abspielen\u201c.","Mes films":"Meine Filme","Enregistrer le montage":"Montage speichern","Nouveau montage":"Neue Montage" }
+};
+function _st(fr){ try{ var L=window.STUDIO_LANG||"fr"; if(L==="fr"||!_STR[L]) return fr; return _STR[L][fr]||fr; }catch(e){ return fr; } }
+var _STR2={
+ en:{ "Photos du voyage":"Trip photos","Valider":"Done","Clips vidéo":"Video clips","Bibliothèque musicale":"Music library","Fermer":"Close","Choisir une ambiance":"Choose a mood","Exporter la vidéo":"Export video","Annuler":"Cancel","Vos films":"Your films","DERNIER FILM":"LATEST FILM","ENREGISTRÉ":"SAVED","EN COURS":"IN PROGRESS","À RÉALISER":"TO MAKE","Ouvrir le film":"Open film","Nouveau film":"New film","Tous vos films":"All your films","BIBLIOTHÈQUE":"LIBRARY","Supprimer ce film ?":"Delete this film?","photos":"photos","ph":"ph" },
+ es:{ "Photos du voyage":"Fotos del viaje","Valider":"Aceptar","Clips vidéo":"Clips de vídeo","Bibliothèque musicale":"Biblioteca de música","Fermer":"Cerrar","Choisir une ambiance":"Elegir un ambiente","Exporter la vidéo":"Exportar vídeo","Annuler":"Cancelar","Vos films":"Tus películas","DERNIER FILM":"ÚLTIMA","ENREGISTRÉ":"GUARDADO","EN COURS":"EN CURSO","À RÉALISER":"POR HACER","Ouvrir le film":"Abrir película","Nouveau film":"Nueva película","Tous vos films":"Todas tus películas","BIBLIOTHÈQUE":"BIBLIOTECA","Supprimer ce film ?":"¿Eliminar esta película?","photos":"fotos","ph":"ft" },
+ it:{ "Photos du voyage":"Foto del viaggio","Valider":"Fatto","Clips vidéo":"Clip video","Bibliothèque musicale":"Libreria musicale","Fermer":"Chiudi","Choisir une ambiance":"Scegli un'atmosfera","Exporter la vidéo":"Esporta video","Annuler":"Annulla","Vos films":"I tuoi film","DERNIER FILM":"ULTIMO FILM","ENREGISTRÉ":"SALVATO","EN COURS":"IN CORSO","À RÉALISER":"DA FARE","Ouvrir le film":"Apri il film","Nouveau film":"Nuovo film","Tous vos films":"Tutti i tuoi film","BIBLIOTHÈQUE":"LIBRERIA","Supprimer ce film ?":"Eliminare questo film?","photos":"foto","ph":"ft" },
+ de:{ "Photos du voyage":"Reisefotos","Valider":"Fertig","Clips vidéo":"Videoclips","Bibliothèque musicale":"Musikbibliothek","Fermer":"Schließen","Choisir une ambiance":"Stimmung wählen","Exporter la vidéo":"Video exportieren","Annuler":"Abbrechen","Vos films":"Deine Filme","DERNIER FILM":"LETZTER FILM","ENREGISTRÉ":"GESPEICHERT","EN COURS":"IN ARBEIT","À RÉALISER":"ZU ERSTELLEN","Ouvrir le film":"Film öffnen","Nouveau film":"Neuer Film","Tous vos films":"Alle deine Filme","BIBLIOTHÈQUE":"BIBLIOTHEK","Supprimer ce film ?":"Diesen Film löschen?","photos":"Fotos","ph":"F" }
+};
+try{ for(var _L in _STR2){ if(_STR[_L]){ for(var _k in _STR2[_L]){ _STR[_L][_k]=_STR2[_L][_k]; } } } }catch(e){}
+function _applyStudioLang(lang){ try{ if(lang) window.STUDIO_LANG=lang;
+  var els=document.querySelectorAll("[data-i18n]"); for(var i=0;i<els.length;i++){ var k=els[i].getAttribute("data-i18n"); if(k) els[i].textContent=_st(k); }
+  var hs=document.querySelectorAll("[data-i18n-html]"); for(var j=0;j<hs.length;j++){ var kk=hs[j].getAttribute("data-i18n-html"); if(kk) hs[j].innerHTML=_st(kk); }
+}catch(e){} }
+try{ window._st=_st; window._applyStudioLang=_applyStudioLang; }catch(e){}
+try{ window.addEventListener("load", function(){ setTimeout(function(){ try{ if((window.STUDIO_LANG||"fr")!=="fr") _applyStudioLang(); }catch(e){} }, 400); }); }catch(e){}
 /* Regroupe les réglages dans un panneau (sidebar sur grand écran ; display:contents sur téléphone = aucun effet) */
 try{ window.addEventListener("load", function(){ setTimeout(function(){ try{
   var app=document.querySelector(".app"); if(!app || document.querySelector(".side-panel")) return;
@@ -8528,9 +8550,9 @@ function _toggleFilmsMenu(anchor){
     m=document.createElement("div"); m.id="filmsMenu";
     m.style.cssText="position:fixed;z-index:9002;background:#0f0e0d;border:1px solid #282622;border-radius:16px;padding:7px;min-width:236px;box-shadow:0 -6px 40px rgba(0,0,0,.6)";
     var _bs="display:block;width:100%;text-align:left;background:none;border:0;color:#f4f7fc;font:600 15px system-ui;padding:13px 14px;border-radius:11px;cursor:pointer";
-    m.innerHTML='<button class="fm-i" data-a="open" style="'+_bs+'">\uD83C\uDFAC Mes films</button>'
-      +'<button class="fm-i" data-a="save" style="'+_bs+'">\uD83D\uDCBE Enregistrer le montage</button>'
-      +'<button class="fm-i" data-a="new" style="'+_bs+';color:#e6c15a">\u2728 Nouveau montage</button>';
+    m.innerHTML='<button class="fm-i" data-a="open" style="'+_bs+'">\uD83C\uDFAC '+_st("Mes films")+'</button>'
+      +'<button class="fm-i" data-a="save" style="'+_bs+'">\uD83D\uDCBE '+_st("Enregistrer le montage")+'</button>'
+      +'<button class="fm-i" data-a="new" style="'+_bs+';color:#e6c15a">\u2728 '+_st("Nouveau montage")+'</button>';
     document.body.appendChild(m);
     Array.prototype.forEach.call(m.querySelectorAll(".fm-i"), function(it){ it.onclick=function(ev){ ev.stopPropagation(); var a=it.getAttribute("data-a"); m.style.display="none";
       if(a==="open"){ try{ openFilms(); }catch(e){} }
@@ -8729,7 +8751,11 @@ function _expSizeRing(){
 }
 function _expStage(msg){ try{ var e=document.getElementById("expProg"); if(!e) return; var st=document.getElementById("expStage"); if(!st){ st=document.createElement("div"); st.id="expStage"; st.style.cssText="font:600 12px ui-monospace,monospace;color:#9fb0d0;margin-top:8px;min-height:15px"; e.appendChild(st); } st.textContent=msg||""; }catch(_x){} }
 function _expYield(){ return new Promise(function(r){ setTimeout(r,0); }); }
-function expHide(){ var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
+var _wakeLock=null;
+async function _reqWake(){ try{ if(navigator.wakeLock && navigator.wakeLock.request && !_wakeLock){ _wakeLock=await navigator.wakeLock.request("screen"); document.addEventListener("visibilitychange", _reWake); } }catch(e){} }
+function _reWake(){ try{ if(document.visibilityState==="visible" && EXPORTING && !_wakeLock && navigator.wakeLock){ navigator.wakeLock.request("screen").then(function(w){ _wakeLock=w; }).catch(function(){}); } }catch(e){} }
+function _relWake(){ try{ if(_wakeLock){ _wakeLock.release(); _wakeLock=null; document.removeEventListener("visibilitychange", _reWake); } }catch(e){} }
+function expHide(){ _relWake(); var e=document.getElementById("expProg"); if(e) e.style.display="none"; }
 async function _mixVideoAudioExport(L, R, sr){
   if(typeof SEGS==="undefined"||!SEGS||!ctx) return;
   var vids=SEGS.filter(function(s){ return s.video && s.vclip!=null && CLIPS[s.vclip] && CLIPS[s.vclip].ready && CLIPS[s.vclip].file && CLIPS[s.vclip].sound; });
@@ -8932,7 +8958,7 @@ function drawSignatureCard(kind,prog){
 
 function _fadeBlackOverlay(alpha){ try{ if(!base||!bctx) return; bctx.save(); bctx.globalAlpha=Math.max(0,Math.min(1,alpha)); bctx.fillStyle="#000"; bctx.fillRect(0,0,base.width,base.height); bctx.restore(); _atmo=null; if(glReady){ drawGL(performance.now()/1000,0); } }catch(e){} }
 
-async function exportStudio(){ try{ _hideClipOverlay(); }catch(e){}
+async function exportStudio(){ try{ _reqWake(); }catch(e){} try{ _hideClipOverlay(); }catch(e){}
   if(EXPORTING){ try{ _expMsg("Un export est déjà en cours\u2026"); }catch(_x){} return; }
   if(!A||!SEGS.length||(!PHOTOS.length && !clipVidReady)){ _expMsg("Charge d'abord une musique + des photos ou des vidéos."); return; }
   if(typeof MediaRecorder==="undefined"){ _expMsg("Enregistrement non supporté ici. Ouvre la page dans Safari (\u2197 en bas \u2192 \u00ab Ouvrir dans Safari \u00bb)."); return; }
@@ -8942,7 +8968,7 @@ async function exportStudio(){ try{ _hideClipOverlay(); }catch(e){}
   _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu (trop long)."); } }, 300000);
   /* 1) TURBO (WebCodecs, image-exacte) : activé AUTOMATIQUEMENT dès qu'il y a des clips vidéo
      (le temps réel y saccade à ~9 i/s). Reste dispo via window._MAGOT_TURBO=true pour le reste. */
-  if((window._MAGOT_TURBO===true || clipVidReady) && typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined"){
+  if((window._MAGOT_TURBO!==false) && typeof VideoEncoder!=="undefined" && typeof VideoFrame!=="undefined" && typeof Mp4Muxer!=="undefined"){
     try{ _expStage("Rendu fluide image par image (un peu plus long)\u2026"); }catch(e){}
     var _tr="fail"; try{ _tr=await _turboExport(); }catch(e){ _tr="fail"; }
     if(_tr==="ok") return;
@@ -9327,7 +9353,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     var pl=(typeof playing!=="undefined")&&playing;
     var hp=$("heroPlay"), wb=$("watchBtn");
     if(hp) hp.innerHTML=pl?PAUSE_HERO:PLAY_HERO;
-    if(wb) wb.innerHTML=pl?(PAUSE_S+" Pause"):(PLAY_S+" Lire le film");
+    if(wb) wb.innerHTML=pl?(PAUSE_S+" "+_st("Pause")):(PLAY_S+" "+_st("Lire le film"));
   }
   function relayPlay(){ var p=$("play"); if(p) p.click(); setTimeout(function(){ refreshPlay(); if((typeof playing!=="undefined")&&playing) armHide(); else forceChrome(); },40); }
   try{ window._refreshPlayUI=refreshPlay; }catch(e){}
