@@ -340,6 +340,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .mt-meta small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mtrack.on .mt-meta b{color:var(--gold2)}
 .mt-addbtn{flex-shrink:0;background:none;border:0;cursor:pointer;padding:2px;display:grid;place-items:center}
+.mt-dl{flex:0 0 auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-right:2px}
+.mt-dl.on{color:var(--gold);border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.12)}
 .mt-add{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#7fb0ff;border:1.5px solid rgba(127,176,255,.55);font-size:17px;line-height:1}
 .mt-act{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#1c1305;background:var(--gold);font-size:15px}
 .mt-load{width:30px;height:30px;display:grid;place-items:center}
@@ -828,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C254</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C255</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -9418,6 +9420,22 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   /* ---------- 5) Biblioth\u00e8que musique (fa\u00e7ade) ---------- */
   var msBody=q('.sheet-bg[data-bg="music"] .sh-body');
   var LIB=[], LIB_ACTIVE=null, LIB_SEQ=0, PENDING=null, _mLoading=false, _mQuery="", _mCat="";
+  /* ===== Téléchargement des morceaux (façon CapCut) : les téléchargés remontent en haut ===== */
+  var _DLK="magot_dl_v1", _DL={};
+  try{ _DL=JSON.parse(localStorage.getItem(_DLK)||"{}")||{}; }catch(e){ _DL={}; }
+  function _dlSave(){ try{ localStorage.setItem(_DLK, JSON.stringify(_DL)); }catch(e){} }
+  function isDL(t){ return !!(t && _DL[t.id]); }
+  function downloadTrack(t){
+    if(!t) return;
+    if(isDL(t)){ delete _DL[t.id]; _dlSave(); try{ if(typeof _pdel==="function") _pdel("dl:"+t.id); }catch(e){} renderLib(); return; }   /* re-clic = retirer du téléchargé */
+    if(t.file || t._file){ _DL[t.id]=Date.now(); _dlSave(); renderLib(); return; }   /* déjà local */
+    if(!t.url){ setState(_st("Musique non chargée.")); return; }
+    t.dling=true; renderLib();
+    fetch(t.url).then(function(r){ return r.blob(); }).then(function(b){
+      t._dlblob=b; try{ if(typeof _pput==="function") _pput("dl:"+t.id, b); }catch(e){}
+      _DL[t.id]=Date.now(); _dlSave(); t.dling=false; renderLib();
+    }).catch(function(){ t.dling=false; renderLib(); try{ setState("T\u00e9l\u00e9chargement impossible."); }catch(e){} });
+  }
   var MIX=[]; /* ids des pistes du mix, dans l'ordre (= enchaînement DJ) */
   function inMix(id){ return MIX.indexOf(id)>=0; }
   function mixPos(id){ return MIX.indexOf(id)+1; }
@@ -9517,18 +9535,25 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
       return true;
     });
     if(!_list.length){ lib.innerHTML='<p class="sh-note" style="opacity:.72">Aucun r\u00e9sultat'+(_mCat?(' dans \u00ab '+esc(_mCat)+' \u00bb'):'')+(_mQuery?(' pour \u00ab '+esc(_mQuery)+' \u00bb'):'')+'.</p>'; return; }
+    _list.sort(function(a,b){ var da=isDL(a)?(_DL[a.id]||1):0, db=isDL(b)?(_DL[b.id]||1):0; if(da!==db) return db-da; return 0; });   /* téléchargés en haut (plus récent d'abord) */
     lib.innerHTML=_list.map(function(t){
       var act=inMix(t.id); var _mp=mixPos(t.id);
       var playing=(PREV && PREV.id===t.id && PREV.audio && !PREV.audio.paused);
       var addBtn=t.loading?'<span class="mt-load"></span>':(act?'<span class="mt-act" title="Dans le mix">'+_mp+'</span>':'<span class="mt-add" title="Ajouter au mix">\uFF0B</span>');
-      return '<div class="mtrack'+(act?' on':'')+'" data-id="'+t.id+'">'
+      var _dl=isDL(t), _dlg=t.dling;
+      var dlBtn='<button class="mt-dl'+(_dl?' on':'')+'" data-id="'+t.id+'" title="'+(_dl?'T\u00e9l\u00e9charg\u00e9':'T\u00e9l\u00e9charger')+'">'+(_dlg?'<span class="mt-load"></span>':(_dl?'\u2713':'\u2193'))+'</button>';
+      return '<div class="mtrack'+(act?' on':'')+(_dl?' dl':'')+'" data-id="'+t.id+'">'
         +'<button class="mt-main" data-id="'+t.id+'">'
           +'<span class="mt-cov">'+coverHTML(t)+'<span class="mt-covplay">'+(playing?'\u23F8':'\u25B6')+'</span>'+(playing?'<span class="mt-prog"><i></i></span>':'')+'</span>'
           +'<span class="mt-meta"><b>'+esc(t.title)+'</b><small>'+esc(trackMeta(t))+'</small></span>'
         +'</button>'
+        +dlBtn
         +'<button class="mt-addbtn" data-id="'+t.id+'">'+addBtn+'</button>'
       +'</div>';
     }).join("");
+    Array.prototype.forEach.call(lib.querySelectorAll(".mt-dl"),function(b){
+      b.onclick=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); var t=byId(b.getAttribute("data-id")); if(t) downloadTrack(t); };
+    });
     Array.prototype.forEach.call(lib.querySelectorAll(".mt-main"),function(b){
       b.onclick=function(){ var t=byId(b.getAttribute("data-id")); if(t) togglePreview(t); };
     });
