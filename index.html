@@ -809,7 +809,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C227</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C228</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8148,7 +8148,7 @@ function _showClipOverlay(el){ try{
   var gc=document.getElementById("gl")||document.getElementById("base"); if(!gc||!el) return;
   var r=gc.getBoundingClientRect(); var _flt=_moodFilter();
   if(el!==_ovEl || el._flt!==_flt || !_ovRect || Math.abs(_ovRect.left-r.left)>1 || Math.abs(_ovRect.top-r.top)>1 || Math.abs(_ovRect.width-r.width)>1 || Math.abs(_ovRect.height-r.height)>1){
-    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;object-fit:contain;opacity:1;z-index:60;pointer-events:none;background:#000;border-radius:20px;filter:"+_flt+";-webkit-filter:"+_flt+";";
+    el.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;object-fit:contain;opacity:1;z-index:15;pointer-events:none;background:#000;border-radius:20px;filter:"+_flt+";-webkit-filter:"+_flt+";";
     el._flt=_flt; _ovRect={left:r.left,top:r.top,width:r.width,height:r.height};
   }
   if(_ovEl && _ovEl!==el) _hideEl(_ovEl);
@@ -9279,7 +9279,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
 
   /* ---------- 4) Feuilles (sources / ambiance / export) ---------- */
-  function openSheet(n){ var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
+  function openSheet(n){ try{ if(typeof stopPlay==="function"){ stopPlay(); resetBtn(); } }catch(e){} try{ if(typeof _hideClipOverlay==="function") _hideClipOverlay(); }catch(e){} var s=q('.sheet-bg[data-bg="'+n+'"]'); if(s) s.classList.add("show"); }
   function closeSheets(){ qa(".sheet-bg").forEach(function(e){ e.classList.remove("show"); }); if(typeof stopPreview==="function") stopPreview(); }
   qa(".source[data-sheet]").forEach(function(b){ b.onclick=function(){ var n=b.getAttribute("data-sheet"); openSheet(n); if(n==="photos"&&typeof renderPGrid==="function"){ try{ renderPGrid(); }catch(e){} } if(n==="video"&&typeof renderVideoSheet==="function"){ try{ renderVideoSheet(); }catch(e){} } }; });
   var oa=$("openAmbience"); if(oa) oa.onclick=function(){ openSheet("amb"); };
