@@ -795,7 +795,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C217</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C218</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8341,6 +8341,10 @@ function _restorePhotoFromBlob(id, blob, meta, maxD){ return new Promise(functio
     var _md=maxD||(window._PMAX||1200), _iw=im.naturalWidth||1, _ih=im.naturalHeight||1, _sc=Math.min(1,_md/Math.max(_iw,_ih,1));
     var cv=document.createElement("canvas"); cv.width=Math.max(1,Math.round(_iw*_sc)); cv.height=Math.max(1,Math.round(_ih*_sc)); cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
     var _ft=photoFeat(cv); _ft.q=qualityScore(cv); if(meta.skip)_ft.skip=true;
+    var _rsig=(blob.size||0)+"|"+cv.width+"|"+cv.height+"|"+Math.round((_ft.lum||0)*1000);
+    if(!window._restSeen) window._restSeen={};
+    if(window._restSeen[_rsig]){ try{ URL.revokeObjectURL(url); }catch(e){} res(false); return; }   /* doublon exact -> ignoré (nettoie les films dupliqués) */
+    window._restSeen[_rsig]=1;
     var p={img:cv,c:cv,url:null,lum:_ft.lum,feat:_ft,_w:cv.width,_h:cv.height,_id:id,_jpgBlob:blob};
     if(meta.day!=null)p._day=meta.day; if(meta.cap!=null)p._cap=meta.cap; if(meta.capStyle)p._capStyle=meta.capStyle; if(meta.capAnim)p._capAnim=meta.capAnim;
     if(meta.capColor)p._capColor=meta.capColor; if(meta.capBand)p._capBand=meta.capBand; if(meta.capFont)p._capFont=meta.capFont; if(meta.capSize!=null)p._capSize=meta.capSize;
@@ -8356,7 +8360,7 @@ function _restorePhotoFromBlob(id, blob, meta, maxD){ return new Promise(functio
 function studioOpenFilm(id){ try{ stopPlay(); }catch(e){}
   var proj=null; try{ proj=JSON.parse(localStorage.getItem(_filmKey(id))||"null"); }catch(e){}
   if(!proj){ return; }
-  _curFilmId=id; PHOTOS=[]; SEGS=[]; _PSEQ=0; try{ var te=document.getElementById("thumbs"); if(te) te.innerHTML=""; }catch(e){}
+  _curFilmId=id; PHOTOS=[]; SEGS=[]; _PSEQ=0; window._restSeen={}; try{ var te=document.getElementById("thumbs"); if(te) te.innerHTML=""; }catch(e){}
   try{ document.getElementById("empty").style.display="none"; }catch(e){}
   try{ closeFilms(); setState("Chargement du montage\u2026"); }catch(e){}
   var list=proj.photos||[], i=0;
@@ -8514,20 +8518,24 @@ document.getElementById("fVideo").onchange=function(e){ var files=Array.prototyp
 };
 document.getElementById("fPhotos").onchange=function(e){
   var files=Array.prototype.slice.call(e.target.files||[]); if(!files.length) return;
+  var _sigSet={}; try{ for(var _si=0;_si<PHOTOS.length;_si++){ if(PHOTOS[_si]&&PHOTOS[_si]._sig) _sigSet[PHOTOS[_si]._sig]=1; } }catch(e){}
+  var _sigOf=function(f){ return (f&&((f.name||"")+"|"+(f.size||0)+"|"+(f.lastModified||0)))||""; };
+  var _dupSkipped=0;
   e.target.value="";
   var total=files.length, done=0, idx=0, CONC=4, _kept=0;
   var pmax=(total>400)?1200:1440; window._PMAX=pmax;
   setState("Réception de "+total+" photos… traitement 0/"+total);
-  var after=function(){ if(A) buildPartition(); updateBadge(); var _ns=countSkipped(); setState(PHOTOS.length+" photos chargées"+(_ns>0?(" · "+_ns+" écartée(s)"):"")); if(A&&PHOTOS.length) paintStrip(playing?visualTime():0); embedPhotos(); };
+  var after=function(){ if(A) buildPartition(); updateBadge(); var _ns=countSkipped(); setState(PHOTOS.length+" photos chargées"+(_ns>0?(" · "+_ns+" écartée(s)"):"")+(_dupSkipped>0?(" · "+_dupSkipped+" doublon(s) ignoré(s)"):"")); if(A&&PHOTOS.length) paintStrip(playing?visualTime():0); embedPhotos(); };
   function addThumb(c){ var el=document.getElementById("thumbs"); if(!el||!c) return; var tw=108, th=Math.max(1,Math.round(tw*(c.height||1)/(c.width||1))); var tc=document.createElement("canvas"); tc.width=tw; tc.height=th; try{ tc.getContext("2d").drawImage(c,0,0,tw,th); }catch(e){} tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4)"; el.appendChild(tc); return tc; }
   try{ window.__addThumb=addThumb; }catch(e){}
-  function add(src,file){ try{ var c=prerender(src,pmax); if(c)_kept++; if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height,_id:"p"+(++_PSEQ)}); var _ix=PHOTOS.length-1; if(typeof _touchDec==="function") _touchDec(_ix); try{ if(c.toBlob){ c.toBlob(function(b){ if(b&&PHOTOS[_ix]){ PHOTOS[_ix]._jpgBlob=b; PHOTOS[_ix]._file=null; try{ _pput(PHOTOS[_ix]._id,b); }catch(e){} } },"image/jpeg",0.82); } }catch(e){} var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
+  function add(src,file){ try{ var c=prerender(src,pmax); if(c)_kept++; if(src&&src.close){ try{ src.close(); }catch(x){} } if(!c) return; var _ft=photoFeat(c); _ft.q=qualityScore(c); PHOTOS.push({img:c,c:c,url:null,lum:_ft.lum,feat:_ft,_file:file,_w:c.width,_h:c.height,_id:"p"+(++_PSEQ),_sig:_sigOf(file)}); var _ix=PHOTOS.length-1; if(typeof _touchDec==="function") _touchDec(_ix); try{ if(c.toBlob){ c.toBlob(function(b){ if(b&&PHOTOS[_ix]){ PHOTOS[_ix]._jpgBlob=b; PHOTOS[_ix]._file=null; try{ _pput(PHOTOS[_ix]._id,b); }catch(e){} } },"image/jpeg",0.82); } }catch(e){} var _th=addThumb(c); var _p=PHOTOS[PHOTOS.length-1]; _p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(_p,_th); }); }
       var _asp=c.width/(c.height||1);
       if(_asp<0.50 || _asp>2.1){ _ft.skip=true; _ft.label="format écran"; if(_th){ try{ _th.style.opacity="0.28"; _th.style.filter="grayscale(1)"; _th.title="écartée : format écran"; }catch(e){} } }
     }catch(x){} }
   function finishOne(){ done++; var _pct=Math.round(done*100/total); setState("Import photos \u00b7 "+done+"/"+total+" ("+_pct+"%)"); if(done>=total){ after(); } else { startNext(); } }
   function startNext(){
     if(idx>=total) return; var file=files[idx++];
+    var _fsig=_sigOf(file); if(_fsig && _sigSet[_fsig]){ _dupSkipped++; finishOne(); return; } if(_fsig) _sigSet[_fsig]=1;
     var settled=false;
     var doAdd=function(src){ if(settled)return; settled=true; try{ add(src,file); }catch(e){} finishOne(); };
     var doSkip=function(){ if(settled)return; settled=true; finishOne(); };
