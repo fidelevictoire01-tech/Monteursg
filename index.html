@@ -787,7 +787,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C215</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C216</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8336,7 +8336,9 @@ function _restorePhotoFromBlob(id, blob, meta, maxD){ return new Promise(functio
     if(meta.day!=null)p._day=meta.day; if(meta.cap!=null)p._cap=meta.cap; if(meta.capStyle)p._capStyle=meta.capStyle; if(meta.capAnim)p._capAnim=meta.capAnim;
     if(meta.capColor)p._capColor=meta.capColor; if(meta.capBand)p._capBand=meta.capBand; if(meta.capFont)p._capFont=meta.capFont; if(meta.capSize!=null)p._capSize=meta.capSize;
     if(meta.capPos)p._capPos=meta.capPos; if(meta.capAlign)p._capAlign=meta.capAlign; if(meta.grade)p._grade=meta.grade; if(meta.fit)p._fit=meta.fit; if(meta.dur!=null)p._dur=meta.dur;
-    PHOTOS.push(p); var _th=(window.__addThumb?window.__addThumb(cv):null); p._thumb=_th; if(_th){ _th.style.cursor="pointer"; _th.addEventListener("click",function(){ toggleSkip(p,_th); }); }
+    PHOTOS.push(p);
+    var _th=null; try{ var _tel=document.getElementById("thumbs"), _tw=108, _thh=Math.max(1,Math.round(_tw*(cv.height||1)/(cv.width||1))); var _tc=document.createElement("canvas"); _tc.width=_tw; _tc.height=_thh; _tc.getContext("2d").drawImage(cv,0,0,_tw,_thh); _tc.style.cssText="width:52px;height:auto;border-radius:6px;display:block;box-shadow:0 1px 3px rgba(0,0,0,.4);cursor:pointer"; if(_tel) _tel.appendChild(_tc); _th=_tc; }catch(e){}
+    p._thumb=_th; if(_th){ _th.addEventListener("click",function(){ toggleSkip(p,_th); }); }
     try{ if(typeof _touchDec==="function") _touchDec(PHOTOS.length-1); }catch(e){}   /* cache LRU : ne garde que ~14 photos décodées, re-décode le reste à la demande (plein qualité, mémoire faible) */
     if((""+id).indexOf("p")===0){ var _n=parseInt((""+id).slice(1),10); if(_n>_PSEQ)_PSEQ=_n; }
     try{ URL.revokeObjectURL(url); }catch(e){} res(true);
@@ -9496,7 +9498,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     }
     if(kept.length>=4){ PHOTOS[kept[0]]._capStyle="title"; PHOTOS[kept[0]]._capAnim="zoom"; PHOTOS[kept[kept.length-1]]._capStyle="credits"; PHOTOS[kept[kept.length-1]]._capAnim="fade"; }
   }
-  function _txtPreview(cv,p){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); if(!p.c&&p._file){ _ensureDecodedP(p,function(){ try{_txtPreview(cv,p);}catch(e){} }); } var src=p.c||p.img||p._thumb; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } var txt=(""+(p._cap||"")).trim(); if(txt && typeof drawCaption==="function"){ drawCaption(ctx,W,H,txt,0,1.3,3.2,1.3,(p._capStyle||"auto"),"none",p._capColor,p._capBand,p._capFont,p._capSize,p._capPos,p._capAlign); } }catch(e){} }
+  function _txtPreview(cv,p){ try{ var ctx=cv.getContext("2d"), W=cv.width, H=cv.height; ctx.clearRect(0,0,W,H); ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H); if(!p.c&&(p._jpgBlob||p._file)){ _ensureDecodedP(p,function(){ try{_txtPreview(cv,p);}catch(e){} }); } var src=p.c||p.img||p._thumb; if(src&&src.width){ var iw=src.width,ih=src.height, sc=Math.max(W/iw,H/ih), dw=iw*sc, dh=ih*sc; ctx.drawImage(src,(W-dw)/2,(H-dh)/2,dw,dh); } var txt=(""+(p._cap||"")).trim(); if(txt && typeof drawCaption==="function"){ drawCaption(ctx,W,H,txt,0,1.3,3.2,1.3,(p._capStyle||"auto"),"none",p._capColor,p._capBand,p._capFont,p._capSize,p._capPos,p._capAlign); } }catch(e){} }
   function _capPrimaryFam(ff){ if(!ff) return ""; return ff.split(",")[0].trim(); }
   function _loadCapFont(ff,cb){ try{ var pr=_capPrimaryFam(ff); if(!pr||!document.fonts||!document.fonts.load){ if(cb)cb(); return; } Promise.all([document.fonts.load('400 40px '+pr),document.fonts.load('700 40px '+pr)]).then(function(){ if(cb)cb(); setTimeout(function(){ if(cb)cb(); },220); }).catch(function(){ if(cb)cb(); }); }catch(e){ if(cb)cb(); } }
   function openTextEditor(i){
@@ -9567,7 +9569,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
     +'</div>';
     document.body.appendChild(ov);
     var cv=ov.querySelector(".prg-cv");
-    function draw(){ try{ var src=p.c||p.img||p._thumb; if(!p.c&&p._file){ _ensureDecodedP(p,function(){ try{draw();}catch(e){} }); } var iw=(src&&src.width)||16, ih=(src&&src.height)||9; var maxW=340,maxH=Math.round(window.innerHeight*0.26); var sc=Math.min(maxW/iw,maxH/ih); var cw=Math.max(1,Math.round(iw*sc)), ch=Math.max(1,Math.round(ih*sc)); cv.width=cw; cv.height=ch; var ctx=cv.getContext("2d"); ctx.clearRect(0,0,cw,ch); if(src&&src.width){ ctx.drawImage(src,0,0,cw,ch); } cv.style.filter=_cssFilter(work); }catch(e){} }
+    function draw(){ try{ var src=p.c||p.img||p._thumb; if(!p.c&&(p._jpgBlob||p._file)){ _ensureDecodedP(p,function(){ try{draw();}catch(e){} }); } var iw=(src&&src.width)||16, ih=(src&&src.height)||9; var maxW=340,maxH=Math.round(window.innerHeight*0.26); var sc=Math.min(maxW/iw,maxH/ih); var cw=Math.max(1,Math.round(iw*sc)), ch=Math.max(1,Math.round(ih*sc)); cv.width=cw; cv.height=ch; var ctx=cv.getContext("2d"); ctx.clearRect(0,0,cw,ch); if(src&&src.width){ ctx.drawImage(src,0,0,cw,ch); } cv.style.filter=_cssFilter(work); }catch(e){} }
     draw();
     function setAll(){ if(!window._gradeApplyAll) return; for(var z=0;z<PHOTOS.length;z++){ if(PHOTOS[z]){ PHOTOS[z]._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; PHOTOS[z]._fit=(p._fit||"fit"); if(p._dur!=null) PHOTOS[z]._dur=p._dur; } } }
     function apply(){ p._grade={expo:work.expo,contrast:work.contrast,sat:work.sat,temp:work.temp}; setAll(); draw(); try{ if(A&&SEGS&&SEGS.length) paintStrip(playing?visualTime():0); }catch(e){} }
