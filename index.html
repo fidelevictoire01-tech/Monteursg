@@ -733,6 +733,26 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   .fmtbar-l{ color:#6f6d68; font:700 9px system-ui; letter-spacing:2px; margin-right:2px; }
   .fmc{ flex:0 0 auto; padding:6px 13px; border-radius:999px; border:1px solid #282622; background:#151413; color:#A8A6A1; font:700 12px system-ui; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .fmc.on{ border-color:#D4AF37; color:#D4AF37; background:rgba(212,175,55,.12); }
+  /* ===== TABLETTE PORTRAIT : app plus large, moins de bords noirs ===== */
+  @media (min-width:600px) and (max-width:899px) and (min-height:640px){
+    body{ align-items:center !important; background:radial-gradient(130% 95% at 50% -12%, #111a2c, #070a12 62%, #05060a 100%) !important; }
+    .app{ width:min(calc(100vw - 44px), 660px) !important; height:min(calc(100svh - 30px), 980px) !important; border-radius:28px !important; box-shadow:0 30px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(212,175,55,.10) !important; }
+    .sheet{ max-width:620px !important; margin:0 auto !important; border-radius:26px 26px 0 0 !important; }
+  }
+  /* ===== ORDINATEUR / TABLETTE LARGE : plein écran, aperçu à gauche + panneau réglages à droite ===== */
+  .side-panel{ display:contents; }
+  @media (min-width:900px) and (min-height:640px){
+    html,body{ background:#05060a !important; }
+    body{ align-items:stretch !important; }
+    .app{ width:100vw !important; max-width:1240px !important; height:100svh !important; max-height:none !important; border-radius:0 !important; box-shadow:none !important;
+      display:grid !important; grid-template-columns: minmax(0,1fr) 410px !important; grid-template-rows:auto minmax(0,1fr) !important; gap:8px 30px !important; padding:26px 34px !important; }
+    .header{ grid-column:1 / -1 !important; }
+    .hero{ grid-column:1 !important; grid-row:2 !important; min-height:0 !important; margin:0 !important; }
+    .side-panel{ display:flex !important; flex-direction:column !important; grid-column:2 !important; grid-row:2 !important; gap:12px !important; overflow-y:auto !important; padding-right:3px; }
+    .side-panel .section, .side-panel .info, .side-panel .fmtbar, .side-panel .actions-wrap{ flex:0 0 auto !important; }
+    .fmtbar{ justify-content:flex-start !important; }
+    .actions-wrap{ margin-top:auto !important; }
+  }
   /* Plein écran (agrandir) : contenu CENTRÉ et entièrement visible (corrige le contenu collé en haut) */
   .hero.cinema{ height:100svh !important; top:0 !important; }
   .hero.cinema canvas#base, .hero.cinema canvas#gl{ position:absolute !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important; }
@@ -808,7 +828,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C237</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C239</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8486,6 +8506,14 @@ function renderFilms(){ var el=document.getElementById("filmsBody"); if(!el) ret
 }
 
 try{ window.openFilms=openFilms; }catch(e){}
+/* Regroupe les réglages dans un panneau (sidebar sur grand écran ; display:contents sur téléphone = aucun effet) */
+try{ window.addEventListener("load", function(){ setTimeout(function(){ try{
+  var app=document.querySelector(".app"); if(!app || document.querySelector(".side-panel")) return;
+  var side=document.createElement("div"); side.className="side-panel";
+  var fb=document.getElementById("fmtBar"); if(fb) side.appendChild(fb);
+  [".info",".s-seq",".s-src",".s-amb",".actions-wrap"].forEach(function(s){ var el=app.querySelector(s); if(el) side.appendChild(el); });
+  app.appendChild(side);
+}catch(e){} }, 250); }); }catch(e){}
 /* Menu déroulant du bouton « Films » : Mes films / Enregistrer / Nouveau montage */
 function _toggleFilmsMenu(anchor){
   var m=document.getElementById("filmsMenu");
