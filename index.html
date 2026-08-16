@@ -830,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C260</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C261</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1554,9 +1554,8 @@ function buildPartition(){
   if(clipVidReady && SEGS.length>=1){
     var _rc=[]; for(var _c=0;_c<CLIPS.length;_c++){ if(CLIPS[_c].ready) _rc.push(_c); }
     if(_rc.length && PHOTOS.length===0){
-      /* VIDÉO-ONLY : le réalisateur PIOCHE/MÉLANGE — tous les plans = morceaux de clips */
-      var _last=-1;
-      for(var _s=0;_s<SEGS.length;_s++){ var _pool=_rc.filter(function(x){return x!==_last||_rc.length===1;}); var _pk=_pool[Math.floor(Math.random()*_pool.length)]; SEGS[_s].video=true; SEGS[_s].vclip=_pk; _last=_pk; }
+      /* VIDÉO-ONLY : round-robin des clips -> chacun avance régulièrement, aucun bout repris */
+      for(var _s=0;_s<SEGS.length;_s++){ SEGS[_s].video=true; SEGS[_s].vclip=_rc[_s % _rc.length]; }
     } else if(_rc.length){
       /* PHOTOS + VIDÉOS : intercalage sur les temps forts, densité réglable */
       var _gap=({cinema:7,doux:8,dynamique:4,voyage:5})[MOOD]||6;
@@ -1580,7 +1579,15 @@ function buildPartition(){
     }
     /* vstart : varier le moment de chaque morceau dans son clip (respecte le trim) */
     var _byC2={}; for(var _s4=0;_s4<SEGS.length;_s4++){ if(SEGS[_s4].video && SEGS[_s4].vclip!=null){ (_byC2[SEGS[_s4].vclip]=_byC2[SEGS[_s4].vclip]||[]).push(_s4); } }
-    for(var _ck2 in _byC2){ var _arr2=_byC2[_ck2], _d2=CLIPS[_ck2].dur||1, _ts2=CLIPS[_ck2].trimStart, _span=(_ts2!=null)?Math.max(1,_d2-_ts2-0.35):Math.max(1,_d2-0.35); for(var _j2=0;_j2<_arr2.length;_j2++){ var _base=(_ts2!=null)?_ts2:0; SEGS[_arr2[_j2]].vstart=Math.max(0,Math.min(_d2-0.35, _base + _span*((_j2+0.5)/_arr2.length))); } }
+    for(var _ck2 in _byC2){
+      var _arr2=_byC2[_ck2].slice().sort(function(a,b){ return SEGS[a].start-SEGS[b].start; });
+      var _d2=CLIPS[_ck2].dur||1, _ts2=CLIPS[_ck2].trimStart, _base=(_ts2!=null)?_ts2:0, _spd=(CLIPS[_ck2].speed||1), _vt=_base;
+      for(var _j2=0;_j2<_arr2.length;_j2++){ var _s5=_arr2[_j2];
+        if(_vt>=_d2-0.25) _vt=_base;                                   /* on ne reboucle que si le clip est épuisé */
+        SEGS[_s5].vstart=Math.max(0,Math.min(_d2-0.15,_vt));
+        _vt += Math.max(0.25,(SEGS[_s5].end-SEGS[_s5].start))*_spd;    /* AVANCE dans le clip -> chaque bout passe une seule fois */
+      }
+    }
     /* PARAMS PAR MORCEAU (couleur/vitesse) : défaut = celui du clip (l'éditeur par morceau viendra les surcharger) */
     for(var _sp=0;_sp<SEGS.length;_sp++){ if(SEGS[_sp].video && CLIPS[SEGS[_sp].vclip]){ SEGS[_sp].vspeed=CLIPS[SEGS[_sp].vclip].speed||1; SEGS[_sp].vcolor=CLIPS[SEGS[_sp].vclip].color;
       var _mk=Math.round(SEGS[_sp].start*10); if(window.VMOVR && window.VMOVR[_mk]){ if(window.VMOVR[_mk].speed!=null) SEGS[_sp].vspeed=window.VMOVR[_mk].speed; if(window.VMOVR[_mk].color) SEGS[_sp].vcolor=window.VMOVR[_mk].color; } } }
