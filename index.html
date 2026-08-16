@@ -830,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C257</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C259</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8580,6 +8580,49 @@ try{ window.addEventListener("load", function(){ setTimeout(function(){ try{
   [".info",".s-seq",".s-src",".s-amb",".actions-wrap"].forEach(function(s){ var el=app.querySelector(s); if(el) side.appendChild(el); });
   app.appendChild(side);
 }catch(e){} }, 250); }); }catch(e){}
+function _fmtLrcTime(sec){ var m=Math.floor(sec/60), s=(sec-m*60); var ss=s.toFixed(2); if(s<10) ss="0"+ss; return "["+(m<10?"0"+m:m)+":"+ss+"]"; }
+/* Estimation du nombre de syllabes d'une ligne (approx multi-langue) */
+function _syllables(str){ var s=String(str||"").toLowerCase(); var m=s.match(/[aeiouyàâäéèêëîïôöûùüœ]+/g); var n=m?m.length:0; if(!n) n=Math.max(1,Math.round(s.replace(/\s/g,"").length/3)); return Math.max(1,n); }
+function _nearestBeat(t, beats){ if(!beats||!beats.length) return t; var best=beats[0], bd=Math.abs(beats[0]-t); for(var i=1;i<beats.length;i++){ var d=Math.abs(beats[i]-t); if(d<bd){ bd=d; best=beats[i]; } } return (bd<0.6)?best:t; }
+/* MOTEUR AUTO : paroles brutes -> LRC estimé (sans taper, sans serveur) */
+function _autoLRC(txt){
+  var lines=_parseLyricLines(txt); if(!lines.length) return "";
+  var dur=(A&&(A.dur||A.duration))||(AUDIOBUF?AUDIOBUF.duration:60);
+  var startT=Math.min(Math.max(1.5, dur*0.05), 6), endMargin=Math.min(Math.max(1.5, dur*0.05), 5);
+  var avail=Math.max(1, dur-startT-endMargin);
+  var w=[], total=0; for(var i=0;i<lines.length;i++){ var s=_syllables(lines[i]); w.push(s); total+=s; }
+  var beats=(A&&A.beats&&A.beats.length)?A.beats:(window._BEATS&&window._BEATS.length?window._BEATS:null);
+  var t=startT, lrc="";
+  for(var k=0;k<lines.length;k++){ var st=t; if(beats) st=_nearestBeat(st, beats); lrc+=_fmtLrcTime(Math.max(0,st))+" "+lines[k]+"\n"; t+=(w[k]/total)*avail; }
+  return lrc;
+}
+try{ window._autoLRC=_autoLRC; window.studioAutoLyrics=function(txt){ var l=_autoLRC(txt); window.studioSetLyrics(l); return l; }; }catch(e){}
+/* Découpe des paroles brutes en lignes (ignore les marqueurs [Verse]/[Chorus] et lignes vides) */
+function _parseLyricLines(txt){ var raw=String(txt||"").split(/\r?\n/), out=[]; for(var i=0;i<raw.length;i++){ var l=raw[i].trim(); if(!l) continue; if(/^\[[^\]]*\]$/.test(l)) continue; out.push(l); } return out; }
+/* Overlay "taper au rythme" : la musique joue, on tape à chaque ligne */
+function _startLyricSync(lines){
+  if(!lines||!lines.length){ try{ setState("Aucune ligne \u00e0 synchroniser."); }catch(e){} return; }
+  if(!A){ try{ setState(_st("Choisis d'abord une musique.")); }catch(e){} return; }
+  var ex=document.getElementById("lyrPaste"); if(ex) ex.remove();
+  var times=[], idx=0;
+  var o=document.createElement("div"); o.id="lyrSync";
+  o.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(5,6,10,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;-webkit-tap-highlight-color:transparent";
+  o.innerHTML='<div id="lsProg" style="color:#D4AF37;font:700 13px system-ui;letter-spacing:1px;margin-bottom:18px"></div>'
+    +'<div id="lsCur" style="color:#fff;font:700 clamp(20px,6vw,32px)/1.3 \'Playfair Display\',Georgia,serif;max-width:600px;margin-bottom:12px"></div>'
+    +'<div id="lsNext" style="color:#8a8782;font:400 clamp(14px,4vw,18px)/1.3 system-ui;max-width:600px;margin-bottom:32px;min-height:22px"></div>'
+    +'<div id="lsTap" style="width:min(78vw,340px);background:#D4AF37;color:#050505;border-radius:16px;font:800 17px system-ui;padding:22px;cursor:pointer;box-shadow:0 10px 30px rgba(212,175,55,.3)">\u25B6 TAPER quand la ligne commence</div>'
+    +'<div style="display:flex;gap:14px;margin-top:22px"><button id="lsRedo" style="background:none;color:#e6c15a;border:1px solid #3a352a;border-radius:10px;font:600 14px system-ui;padding:10px 16px;cursor:pointer">\u21ba Recommencer</button><button id="lsCancel" style="background:none;color:#8a8782;border:0;font:600 14px system-ui;padding:10px 16px;cursor:pointer">Annuler</button></div>';
+  document.body.appendChild(o);
+  function paint(){ document.getElementById("lsProg").textContent="Ligne "+(idx+1)+" / "+lines.length; document.getElementById("lsCur").textContent=lines[idx]||""; document.getElementById("lsNext").textContent=lines[idx+1]||""; }
+  function finish(){ var lrc=""; for(var i=0;i<lines.length;i++){ var tt=(times[i]!=null?times[i]:(i>0?times[i-1]+2:0)); lrc+=_fmtLrcTime(tt)+" "+lines[i]+"\n"; } try{ window.studioSetLyrics(lrc); }catch(e){} o.remove(); try{ stopPlay(); if(window._refreshPlayUI)window._refreshPlayUI(); }catch(e){} }
+  function tap(){ try{ times[idx]=Math.max(0,_musicTimeNow()); }catch(e){ times[idx]=0; } idx++; if(idx>=lines.length){ finish(); return; } paint(); }
+  document.getElementById("lsTap").onclick=tap;
+  document.getElementById("lsRedo").onclick=function(){ times=[]; idx=0; paint(); try{ stopPlay(); pausedOffset=0; startPlay(); }catch(e){} };
+  document.getElementById("lsCancel").onclick=function(){ o.remove(); try{ stopPlay(); }catch(e){} };
+  paint();
+  try{ stopPlay(); pausedOffset=0; startPlay(); }catch(e){}
+}
+try{ window._startLyricSync=function(txt){ return _startLyricSync(_parseLyricLines(txt)); }; }catch(e){}
 /* Overlay test : coller des paroles karaoké (LRC) */
 function _openLyricsPaste(){
   var ex=document.getElementById("lyrPaste"); if(ex){ ex.remove(); return; }
@@ -8590,13 +8633,14 @@ function _openLyricsPaste(){
     +'<div style="color:#A8A6A1;font:400 12px system-ui;margin-bottom:8px">Format LRC : <b>[00:00.00]</b> Ligne chant\u00e9e</div>'
     +'<textarea id="lyrTxt" rows="8" style="width:100%;box-sizing:border-box;background:#151413;border:1px solid #282622;border-radius:10px;color:#f4f7fc;font:400 14px ui-monospace,monospace;padding:10px;resize:vertical" placeholder="[00:00.00] Premier vers\n[00:04.00] Deuxi\u00e8me vers\n[00:08.50] Le refrain arrive"></textarea>'
     +'<div style="display:flex;gap:8px;margin-top:10px">'
-      +'<button id="lyrLoad" style="flex:1;background:#D4AF37;color:#050505;border:0;border-radius:10px;font:700 14px system-ui;padding:12px;cursor:pointer">Charger</button>'
-      +'<button id="lyrClear" style="background:#151413;color:#e6c15a;border:1px solid #282622;border-radius:10px;font:600 14px system-ui;padding:12px 16px;cursor:pointer">Vider</button>'
+      +'<button id="lyrAutoBtn" style="flex:1;background:#D4AF37;color:#050505;border:0;border-radius:10px;font:700 14px system-ui;padding:12px;cursor:pointer">\u2728 Creer le minutage (auto)</button>'
+      +'<button id="lyrLoad" style="background:#151413;color:#e6c15a;border:1px solid #282622;border-radius:10px;font:600 14px system-ui;padding:12px 14px;cursor:pointer" title="Si tes paroles ont déjà [00:00.00]">D\u00e9j\u00e0 minut\u00e9</button>'
       +'<button id="lyrClose" style="background:none;color:#A8A6A1;border:0;font:600 14px system-ui;padding:12px;cursor:pointer">Fermer</button>'
-    +'</div></div>';
+    +'</div>'
+    +'<div style="color:#8a8782;font:400 11px system-ui;margin-top:8px">Colle tes paroles (Suno), puis « Synchroniser » : la musique joue, tu tapes \u00e0 chaque ligne.</div></div>';
   document.body.appendChild(o);
+  document.getElementById("lyrAutoBtn").onclick=function(){ try{ var v=document.getElementById("lyrTxt").value; if(!A){ setState(_st("Choisis d\x27abord une musique.")); return; } window.studioSetLyrics(_autoLRC(v)); setState("Minutage auto cree \u00b7 lance la lecture."); }catch(e){} o.remove(); };
   document.getElementById("lyrLoad").onclick=function(){ try{ var v=document.getElementById("lyrTxt").value; window.studioSetLyrics(v); }catch(e){} o.remove(); };
-  document.getElementById("lyrClear").onclick=function(){ try{ window.studioSetLyrics(""); document.getElementById("lyrTxt").value=""; }catch(e){} };
   document.getElementById("lyrClose").onclick=function(){ o.remove(); };
   o.onclick=function(e){ if(e.target===o) o.remove(); };
 }
