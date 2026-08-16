@@ -830,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C255</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C256</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8185,6 +8185,21 @@ function _showClipOverlay(el){ try{
 /* ================= Horloge audio + boucle ================= */
 function _audioLat(){ try{ if(WA.on && ctx){ var l=(ctx.outputLatency!=null)?ctx.outputLatency:(ctx.baseLatency||0); return (l>0?l:0); } }catch(e){} return 0; }
 function visualTime(){ return montageNow() + ((window.LOOP_ON||window.MULTI)?0:LEAD) - _audioLat() + curSync(); }
+/* ===== KARAOKÉ : paroles synchronisées (format LRC) ===== */
+var SUBS=[], _subEl=null, _subLast="";
+function _parseLRC(txt){ SUBS=[]; if(!txt) return 0; var ls=String(txt).split(/\r?\n/);
+  for(var i=0;i<ls.length;i++){ var m=ls[i].match(/^\s*\[(\d+):(\d+(?:[.:]\d+)?)\]\s*(.*)$/); if(m){ var sec=parseInt(m[1],10)*60+parseFloat(String(m[2]).replace(":",".")); var tx=(m[3]||"").trim(); SUBS.push({t:sec, text:tx}); } }
+  SUBS.sort(function(a,b){ return a.t-b.t; }); return SUBS.length; }
+function _subAt(t){ if(!SUBS.length) return ""; var cur=""; for(var i=0;i<SUBS.length;i++){ if(SUBS[i].t<=t+0.02) cur=SUBS[i].text; else break; } return cur; }
+function _musicTimeNow(){ /* temps DANS la musique (pour caler les paroles) */
+  try{ if(window.LOOP_ON){ var md=(window.MUSIC_DUR||(A?A.dur:0))||0; var mt=montageNow(); return md>0?(mt%md):mt; } return (audioEl?audioEl.currentTime:montageNow()); }catch(e){ return montageNow(); } }
+function _updateSub(){ try{ if(!_subEl){ var h=document.querySelector(".hero"); if(!h) return; _subEl=document.createElement("div"); _subEl.id="karaokeSub"; _subEl.style.cssText="position:absolute;left:0;right:0;bottom:12%;text-align:center;padding:0 8%;z-index:16;pointer-events:none;font:700 clamp(15px,4.4vw,26px)/1.32 'Playfair Display',Georgia,serif;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.9);opacity:0;transition:opacity .25s"; h.appendChild(_subEl); }
+  if(!SUBS.length || !playing){ _subEl.style.opacity="0"; return; }
+  var line=_subAt(_musicTimeNow());
+  if(line!==_subLast){ _subLast=line; _subEl.textContent=line; }
+  _subEl.style.opacity=line?"1":"0";
+}catch(e){} }
+try{ window.studioSetLyrics=function(lrc){ var n=_parseLRC(lrc); try{ setState(n?("Karaok\u00e9 : "+n+" lignes charg\u00e9es."):"Paroles vid\u00e9es."); }catch(e){} return n; }; window._SUBS=function(){ return SUBS; }; }catch(e){}
 function loop(){
   if(!playing) return;
   try{
@@ -8229,6 +8244,7 @@ function loop(){
   if(window.SIGN_PE && t>window.SIGN_PE-1.5 && t<window.SIGN_PE){ try{ _fadeBlackOverlay((t-(window.SIGN_PE-1.5))/1.5); }catch(e){} }
   paintStrip(t);
   }catch(_lerr){}
+  try{ _updateSub(); }catch(e){}
   if(playing) raf=requestAnimationFrame(loop);
 }
 /* Phase outro de l'aperçu : coupe le son, joue la carte de fin, puis arrête. */
@@ -8250,7 +8266,7 @@ function startPlay(){
   var pr=audioEl.play();
   if(pr&&pr.then) pr.then(go).catch(function(){ go(); setState("Si pas de son, retape « Lire »."); }); else go();
 }
-function stopPlay(){ try{ _hideClipOverlay(); }catch(e){} if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
+function stopPlay(){ try{ _hideClipOverlay(); }catch(e){} try{ if(_subEl) _subEl.style.opacity="0"; }catch(e){} if(playing){ pausedOffset=Math.max(0, montageNow()); } try{ waStop(); }catch(e){} playing=false; cancelAnimationFrame(raf); if(audioEl){ try{ audioEl.pause(); }catch(e){} } if(ovVid){ try{ ovVid.pause(); }catch(e){} } }
 function resetBtn(){ pausedOffset=0; document.getElementById("play").textContent="▶ Lire le film"; }
 
 /* ================= UI ================= */
