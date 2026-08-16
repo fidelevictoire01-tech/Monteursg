@@ -830,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C263</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C264</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -8937,7 +8937,7 @@ function _showExportResult(blob, outType, ext, DUR, audioAdded, dt){
 async function _turboExport(){
   if(typeof VideoEncoder==="undefined" || typeof VideoFrame==="undefined" || typeof Mp4Muxer==="undefined") return "fail";
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
-  var _capPx=1280,_mxWH=Math.max(W,H);
+  var _capPx=((typeof navigator!=="undefined"&&navigator.deviceMemory&&navigator.deviceMemory<4)?1280:1920),_mxWH=Math.max(W,H);   /* pleine HD ; garde-fou 1280 sur appareils faibles */
   if(_mxWH>_capPx){ var _scl=_capPx/_mxWH; W=Math.max(2,Math.round(W*_scl/2)*2); H=Math.max(2,Math.round(H*_scl/2)*2); }
   var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
   var N=Math.round(DUR*FPS);
@@ -9329,7 +9329,7 @@ async function exportFast(){ return exportStudio(); /* MOTEUR UNIFIÉ : tout pas
   _expWatch=setTimeout(function(){ if(EXPORTING){ _expForceReset("Export interrompu : trop long (blocage encodeur probable). Réessaie, ou réduis la durée / le format."); } }, 180000);
   await new Promise(function(r){ setTimeout(r,30); });
   var W=EXPFMT.w,H=EXPFMT.h,FPS=30;
-  var _capPx=1280, _mxWH=Math.max(W,H);
+  var _capPx=((typeof navigator!=="undefined"&&navigator.deviceMemory&&navigator.deviceMemory<4)?1280:1920), _mxWH=Math.max(W,H);   /* pleine HD ; garde-fou 1280 sur appareils faibles */
   if(_mxWH>_capPx){ var _scl=_capPx/_mxWH; W=Math.max(2,Math.round(W*_scl/2)*2); H=Math.max(2,Math.round(H*_scl/2)*2); }
   if(typeof _PORDER!=="undefined" && _PORDER && _PORDER.length){ var _cpi=0, _csi=0; while(_csi<SEGS.length){ if(SEGS[_csi].video){ _csi++; continue; } if(_cpi>=_PORDER.length) break; var _cph=_PORDER[_cpi]; SEGS[_csi].img=_cph; var _need=_capNeeded(_cph); if(_need>0){ while((SEGS[_csi].end-SEGS[_csi].start) < _need-0.01 && _csi+1<SEGS.length && !SEGS[_csi+1].video){ SEGS[_csi].end=SEGS[_csi+1].end; SEGS.splice(_csi+1,1); } } _cpi++; _csi++; } }
   var DUR=Math.max(1, Math.min((window.MONTAGE_DUR||A.dur||6), SEGS.length?SEGS[SEGS.length-1].end:(window.MONTAGE_DUR||A.dur||6)));
@@ -9421,7 +9421,8 @@ async function exportFast(){ return exportStudio(); /* MOTEUR UNIFIÉ : tout pas
     for(var j=0;j<bs.length;j++) bs[j].classList.remove("on"); if(btn) btn.classList.add("on");
     EXPFMT={w:w,h:h,name:name};
     var sw=document.querySelector(".stageWrap"); if(sw) sw.style.aspectRatio=w+" / "+h;
-    var _ps=Math.min(1, 1280/Math.max(w,h)); setRenderSize(Math.round(w*_ps), Math.round(h*_ps));
+    var _cap=(typeof navigator!=="undefined" && navigator.deviceMemory && navigator.deviceMemory<4)?1280:1920;   /* pleine résolution (net sur retina) ; garde-fou : 1280 sur appareils peu puissants */
+    var _ps=Math.min(1, _cap/Math.max(w,h)); setRenderSize(Math.round(w*_ps), Math.round(h*_ps));
     try{ if(A&&SEGS.length) renderMontageAt(playing?visualTime():0); else if(glReady){ gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); } }catch(e){}
     var eb=document.getElementById("exportBtn"); if(eb) eb.textContent="⚡ Exporter la vidéo ("+name+")";
   }
