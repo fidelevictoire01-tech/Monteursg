@@ -830,7 +830,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 <main class="app">
   <header class="header">
     <div class="header-left"></div>
-    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C259</p></div>
+    <div class="brand"><h1>Studio Magot<i>✦</i></h1><p>Montage vidéo · C260</p></div>
     <button class="export" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5l5 5M5 15v4h14v-4"/></svg> Exporter</button>
   </header>
 
@@ -1940,7 +1940,7 @@ function drawSegAt(sg,t,ox,smul){
   var isVid=(_clip && _clip.el.videoWidth>0);
   var img, iw, ih;
   if(isVid){ img=_clip.el; iw=_clip.el.videoWidth; ih=_clip.el.videoHeight; }
-  else { if(sg.img<0||!PHOTOS[sg.img]){ bctx.fillStyle="#000"; bctx.fillRect(0,0,Wd,Hd); return; } var _pp=PHOTOS[sg.img]; img=_pp.c||_pp.img; if(img){ _touchDec(sg.img); } else { ensurePhotoDecoded(sg.img); img=_pp._thumb||null; } iw=img?img.width:0; ih=img?img.height:0; if(!img||!iw){ bctx.fillStyle="#000"; bctx.fillRect(0,0,Wd,Hd); return; } }
+  else { if(sg.img<0||!PHOTOS[sg.img]){ bctx.fillStyle="#000"; bctx.fillRect(0,0,Wd,Hd); return; } var _pp=PHOTOS[sg.img]; img=_pp.c||_pp.img; if(img){ _touchDec(sg.img); } else { ensurePhotoDecoded(sg.img, (!playing)?function(_cc){ try{ if(_cc && !playing && window._pauseRenderT!=null && typeof renderMontageAt==="function"){ renderMontageAt(window._pauseRenderT); } }catch(e){} }:null); img=_pp._thumb||null; } iw=img?img.width:0; ih=img?img.height:0; if(!img||!iw){ bctx.fillStyle="#000"; bctx.fillRect(0,0,Wd,Hd); return; } }
   var dur=Math.max(0.001,sg.end-sg.start), p=Math.max(0,Math.min(1,(t-sg.start)/dur));
   var M=MOODS[MOOD];
   /* fond : image en cover, assombrie -> pas de bandes noires */
@@ -8193,7 +8193,7 @@ function _parseLRC(txt){ SUBS=[]; if(!txt) return 0; var ls=String(txt).split(/\
 function _subAt(t){ if(!SUBS.length) return ""; var cur=""; for(var i=0;i<SUBS.length;i++){ if(SUBS[i].t<=t+0.02) cur=SUBS[i].text; else break; } return cur; }
 function _musicTimeNow(){ /* temps DANS la musique (pour caler les paroles) */
   try{ if(window.LOOP_ON){ var md=(window.MUSIC_DUR||(A?A.dur:0))||0; var mt=montageNow(); return md>0?(mt%md):mt; } return (audioEl?audioEl.currentTime:montageNow()); }catch(e){ return montageNow(); } }
-function _updateSub(){ try{ if(!_subEl){ var h=document.querySelector(".hero"); if(!h) return; _subEl=document.createElement("div"); _subEl.id="karaokeSub"; _subEl.style.cssText="position:absolute;left:0;right:0;bottom:12%;text-align:center;padding:0 8%;z-index:16;pointer-events:none;font:700 clamp(15px,4.4vw,26px)/1.32 'Playfair Display',Georgia,serif;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.9);opacity:0;transition:opacity .25s"; h.appendChild(_subEl); }
+function _updateSub(){ return; /* karaoké désactivé */ try{ if(!_subEl){ var h=document.querySelector(".hero"); if(!h) return; _subEl=document.createElement("div"); _subEl.id="karaokeSub"; _subEl.style.cssText="position:absolute;left:0;right:0;bottom:12%;text-align:center;padding:0 8%;z-index:16;pointer-events:none;font:700 clamp(15px,4.4vw,26px)/1.32 'Playfair Display',Georgia,serif;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.9);opacity:0;transition:opacity .25s"; h.appendChild(_subEl); }
   if(!SUBS.length || !playing){ _subEl.style.opacity="0"; return; }
   var line=_subAt(_musicTimeNow());
   if(line!==_subLast){ _subLast=line; _subEl.textContent=line; }
@@ -8655,13 +8655,11 @@ function _toggleFilmsMenu(anchor){
     var _bs="display:block;width:100%;text-align:left;background:none;border:0;color:#f4f7fc;font:600 15px system-ui;padding:13px 14px;border-radius:11px;cursor:pointer";
     m.innerHTML='<button class="fm-i" data-a="open" style="'+_bs+'">\uD83C\uDFAC '+_st("Mes films")+'</button>'
       +'<button class="fm-i" data-a="save" style="'+_bs+'">\uD83D\uDCBE '+_st("Enregistrer le montage")+'</button>'
-      +'<button class="fm-i" data-a="new" style="'+_bs+';color:#e6c15a">\u2728 '+_st("Nouveau montage")+'</button>'
-      +'<button class="fm-i" data-a="lyrics" style="'+_bs+'">\uD83C\uDFA4 Paroles karaok\u00e9 (test)</button>';
+      +'<button class="fm-i" data-a="new" style="'+_bs+';color:#e6c15a">\u2728 '+_st("Nouveau montage")+'</button>';
     document.body.appendChild(m);
     Array.prototype.forEach.call(m.querySelectorAll(".fm-i"), function(it){ it.onclick=function(ev){ ev.stopPropagation(); var a=it.getAttribute("data-a"); m.style.display="none";
       if(a==="open"){ try{ openFilms(); }catch(e){} }
       else if(a==="save"){ try{ if(!PHOTOS.length && !clipVidReady){ setState(_st("Rien \u00e0 enregistrer pour l\'instant.")); return; } studioSaveLocal(); setState(_st("\u2713 Montage enregistr\u00e9 dans \u00ab Mes films \u00bb.")); }catch(e){} }
-      else if(a==="lyrics"){ try{ _openLyricsPaste(); }catch(e){} }
       else if(a==="new"){ if(confirm("Enregistrer le montage en cours puis repartir \u00e0 z\u00e9ro ?")){ try{ if(PHOTOS.length||clipVidReady) studioSaveLocal(); }catch(e){} try{ _curFilmId=null; document.getElementById("clear").click(); setState(_st("Nouveau montage \u2014 ajoute des photos et une musique.")); }catch(e){} } }
     }; });
     document.addEventListener("click", function(ev){ var mm=document.getElementById("filmsMenu"); if(mm && mm.style.display!=="none" && !mm.contains(ev.target) && ev.target!==anchor && !anchor.contains(ev.target)) mm.style.display="none"; });
@@ -8796,6 +8794,7 @@ function setRenderSize(w,h){
 }
 function renderMontageAt(t){
   if(t<0)t=0;
+  try{ window._pauseRenderT = playing?null:t; }catch(e){}
   var idx=-1; for(var i=0;i<SEGS.length;i++){ if(t>=SEGS[i].start && t<SEGS[i].end){ idx=i; break; } }
   if(idx<0 && SEGS.length) idx=(t<SEGS[0].start)?0:SEGS.length-1;
   var sg=(idx>=0)?SEGS[idx]:null, prev=(idx>0)?SEGS[idx-1]:null, into=sg?(t-sg.start):0;
@@ -9733,6 +9732,7 @@ essentiaReady.then(function(ok){ if(!ok && !A){ /* silencieux : le repli se fait
   }
   try{ window.__useTrack=useTrack; }catch(e){}
   try{ window.__loadMusicBlob=function(blob,title){ if(!blob) return; try{
+    LIB=LIB.filter(function(x){ return x.artist!=="Ce montage"; });
     var t={ id:"restored"+(++LIB_SEQ), title:title||"Musique", artist:"Ce montage", file:blob, _file:blob, remote:false };
     LIB.unshift(t); renderLib(); probeDur(t);
     try{ _readID3(blob, function(meta){ if(!meta) return; if(meta.title)t.title=meta.title; if(meta.type)t.type=meta.type; if(meta.cover)t.cover=meta.cover; renderLib(); }); }catch(e){}
